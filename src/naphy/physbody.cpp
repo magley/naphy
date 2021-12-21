@@ -7,9 +7,9 @@ PhysBody::PhysBody() {
     dynamic_state = PHYSBODY_STATE_STATIC;
     pos = vel = force = Vec2(0, 0);
     ang = angvel = torque = 0.0;
-    sfric = 0.5;
-    kfric = 0.25;
-    e = 0.5;
+	sfric = 0.4;
+	kfric = 0.3;
+	e = 0.3;
     m = m_inv = I = I_inv = 0;
 
     set_angle(ang);
@@ -53,9 +53,6 @@ void PhysBody::calc_mass(double density) {
 	I = density * area_moment;
 	m_inv = m ? (1.0 / m) : 0.0;
 	I_inv = I ? (1.0 / I) : 0.0;
-
-    if (m_inv == 0 && I_inv == 0)
-        dynamic_state = PHYSBODY_STATE_STATIC;
 }
 
 

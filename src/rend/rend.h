@@ -1,6 +1,6 @@
 #pragma once
 #include "SDL2/SDL_render.h"
-#include "utils/mathutil.h"
+#include "utility/mathutil.h"
 #include <vector>
 
 

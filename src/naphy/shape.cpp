@@ -109,7 +109,8 @@ void Shape::compute_normals() {
 		const Vec2 edge = B - A;
 
 		Vec2 normal = Vec2(edge.y, -edge.x) * sgn;
-		norm.push_back(normal.normalized());
+		normal.normalize();
+		norm.push_back(normal);
 	}
 }
 
@@ -126,7 +127,8 @@ Vec2 Shape::support(Vec2 direction) const {
 
 
 	if (type == SHAPE_CIRCLE) {
-		Vec2 v = direction.normalized();
+		Vec2 v = direction;
+		v.normalize();
 		v *= radius;
 		return v;
 	} else if (type == SHAPE_POLYGON) {

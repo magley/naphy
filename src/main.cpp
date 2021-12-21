@@ -4,10 +4,8 @@
 #include <string>
 #include <iostream>
 
-#include "naphy/shape.h"
-#include "naphy/physbody.h"
-#include "rend/rend.h"
 #include "rend/image.h"
+#include "naphy/scene.h"
 
 
 void draw_text(int x, int y, Image& font_sheet, std::string text) {
@@ -25,16 +23,61 @@ void draw_text(int x, int y, Image& font_sheet, std::string text) {
 }
 
 
+
+double time_total = 0.0;									// Total time, in seconds.
+double time_scale = 1;										// Scale, because it's too slow by default.
+double time_curr = SDL_GetTicks() / 1000.0 * time_scale;	// Current time, in ms.
+double time_accumulator = 0.0;								// Accumulator for fixed time steps.
+unsigned ticks = 0;											// Number of game loop (not physics loop) frames.
+unsigned ticks_phys = 0;									// Number of physics loop frames.
+
+
+
 int main(int, char**) {
 	SDL_Init(SDL_INIT_VIDEO);
-	SDL_Window* win = SDL_CreateWindow("", 100, 100, 640, 480, SDL_WINDOW_OPENGL);
+	SDL_Window* win = SDL_CreateWindow("", 100, 100, 800, 608, SDL_WINDOW_OPENGL);
 	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
-
-
-	PhysBody bod = PhysBody(Vec2(80, 80), Shape(40));
 	Image font(rend, "res/font.png");
 
+	Scene scene = Scene();
+	PhysBody* b;
+
+
+	Shape poly = Shape(std::vector<Vec2> { Vec2(-400, 32), Vec2(-400, -32), Vec2(400, -32), Vec2(400, 32), });
+	Shape poly2 = Shape(std::vector<Vec2> { Vec2(-32, 32), Vec2(-32, -32), Vec2(32, -32), Vec2(32, 32)  });
+	Shape poly3 = Shape(3, 55);
+	Shape poly4 = Shape(std::vector<Vec2>{ Vec2(320, 0), Vec2(-320, 0)});
+	Shape poly5 = Shape(5, 64);
+	Shape c(25);
+	
+
+	b = scene.add(PhysBody(Vec2(300, 400), poly2));
+	b = scene.add(PhysBody(Vec2(300, 360), poly2));
+	b = scene.add(PhysBody(Vec2(500, 64), poly2));
+	b = scene.add(PhysBody(Vec2(490, 0), poly5));
+	b = scene.add(PhysBody(Vec2(400, 32), c));
+	b = scene.add(PhysBody(Vec2(450, 32), c));
+	b = scene.add(PhysBody(Vec2(500, 32), c));
+	b = scene.add(PhysBody(Vec2(550, 32), c));
+	b = scene.add(PhysBody(Vec2(400, 580), poly));
+	b->I_inv = 0.0;
+	b->I = 0.0;
+	b->m_inv = 0.0;
+	b->m = 0.0;
+	//b->dynamic_state = PHYSBODY_STATE_STATIC;
+
+
+
+
+
 	while (1) {
+		const double time_new = SDL_GetTicks() / 1000.0 * time_scale;
+		const double time_diff = time_new - time_curr;
+		time_curr = time_new;
+		time_accumulator += time_diff;
+
+
+
 		SDL_Event ev;
 		SDL_PollEvent(&ev);
 
@@ -42,14 +85,25 @@ int main(int, char**) {
 			break;
 
 
+		//b->set_angle(7 * DEG2RAD * cos((time_total + EPSILON) / PI * 5));
+
+		time_accumulator = clamp(0.0, 0.1, time_accumulator);
+		while (time_accumulator >= scene.dt) {
+			scene.update();
+			time_accumulator -= scene.dt;
+			time_total += scene.dt / time_scale;
+			ticks_phys++;
+		}
+
+
 		SDL_SetRenderDrawColor(rend, 0, 0, 0, 255);
 		SDL_RenderClear(rend);
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 
 
-		draw_text(0, 0, font, "123456 qwerty <>?.{}[]'\\ *()_+^%$#@!~`");
-		bod.draw(rend);
-		
+		draw_text(0, 0, font, "naphy ~ development version 2021.12.20");
+
+		scene.render(rend);
 
 		SDL_RenderPresent(rend);
 	}

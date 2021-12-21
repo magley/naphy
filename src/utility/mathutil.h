@@ -10,6 +10,16 @@ const double DEG2RAD = PI / 180.0;
 const double RAD2DEG = 180.0 / PI;
 
 
+inline double clamp(double mini, double maxi, double val) {
+	if (val < mini)
+		return mini;
+	if (val > maxi)
+		return maxi;
+	return val;
+}
+
+
+
 /**
  * @brief 2D Vector. Components of type double.
  * 
@@ -42,7 +52,7 @@ struct Vec2 {
 inline Vec2 operator * (double k, const Vec2& v) { return v * k; }
 inline double dist_sqr(const Vec2& a, const Vec2& b) { return (a - b).len_sqr(); }
 inline double dist(const Vec2& a, const Vec2& b) { return (a - b).len(); }
-inline double dot(const Vec2& a, const Vec2& b) { return a.x + b.x + a.y * b.y; }
+inline double dot(const Vec2& a, const Vec2& b) { return a.x * b.x + a.y * b.y; }
 inline Vec2 cross(const Vec2& v, double k) { return Vec2(v.y * k, v.x * -k); }
 inline Vec2 cross(double k, const Vec2& v) { return Vec2(v.y * -k, v.x * k); }
 inline double cross(const Vec2& a, const Vec2& b) { return a.x * b.y - a.y * b.x; } // z component of Vec3(a) x Vec3(b)
@@ -81,7 +91,7 @@ struct Mat2x2 {
 
 	Vec2 operator * (const Vec2& v) const { return Vec2(m00 * v.x + m01 * v.y, m10 * v.x + m11 * v.y); }
 	
-	double determinant() { return m00 * m11 - m01 * m10; }
-	Mat2x2 transpose() { return Mat2x2(m00, m10, m01, m11);	}
-	Mat2x2 inverse() { double d = determinant(); return Mat2x2(m11 / d, -m10 / d, -m01 / d, m00 / d); }
+	double determinant() const { return m00 * m11 - m01 * m10; }
+	Mat2x2 transpose() const { return Mat2x2(m00, m10, m01, m11);	}
+	Mat2x2 inverse() const{ double d = determinant(); return Mat2x2(m11 / d, -m10 / d, -m01 / d, m00 / d); }
 };
