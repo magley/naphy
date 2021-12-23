@@ -3,6 +3,9 @@
 #include "SDL2/SDL_image.h"
 
 
+/**
+ * @brief Wrapper structure for SDL_Texture.
+ */
 struct Image {
 	/**
 	 * @brief Pointer to the rendering target. Do not modify manually.

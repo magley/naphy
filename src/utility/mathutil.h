@@ -19,7 +19,6 @@ inline double clamp(double mini, double maxi, double val) {
 }
 
 
-
 /**
  * @brief 2D Vector. Components of type double.
  * 
@@ -63,11 +62,7 @@ inline double cross(const Vec2& a, const Vec2& b) { return a.x * b.y - a.y * b.x
  * 
  */
 struct Mat2x2 {
-	union {
-		struct { double m00, m01, m10, m11; };
-		double m[2][2];
-		double v[4];
-	};
+	double m00, m01, m10, m11;
 
 	Mat2x2() { ; }
 	Mat2x2(double x0, double x1, double x2, double x3) { m00=x0; m01=x1; m10=x2; m11=x3; }

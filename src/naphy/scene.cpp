@@ -3,7 +3,7 @@
 
 
 Scene::Scene() {
-	grav = Vec2(0, 500);
+	grav = Vec2(0, 400);
 	dt = 1 / 60.0;
 }
 
@@ -41,7 +41,7 @@ void Scene::render(SDL_Renderer* rend) {
 	SDL_SetRenderDrawColor(rend, 0, 255, 0, 255);
 	for (unsigned i = 0; i < arbiter.size(); i++) {
 		for (unsigned j = 0; j < arbiter[i].contact.size(); j++) {
-			rend_circle_filled(rend, arbiter[i].contact[j].x, arbiter[i].contact[j].y, 5);
+			draw_circle_filled(rend, arbiter[i].contact[j].x, arbiter[i].contact[j].y, 5);
 		}
 	}
 
@@ -94,7 +94,7 @@ static void scene_update_force(Scene* scene) {
 		b->vel += dv;
 		b->angvel += dang;
 
-		/*if (std::abs(dang) < 0.05)
+		if (std::abs(dang) < 0.05)
 			dang = 0;
 
 		if (b->dynamic_state == PHYSBODY_STATE_SLEEPING && dv.len_sqr() > 0.1)
@@ -103,7 +103,7 @@ static void scene_update_force(Scene* scene) {
 		if (b->dynamic_state == PHYSBODY_STATE_AWAKE) {
 			b->vel += dv;
 			b->angvel += dang;
-		}*/
+		}
 	}
 }
 static void scene_update_constraints(Scene* scene) {

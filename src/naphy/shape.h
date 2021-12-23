@@ -11,7 +11,6 @@ enum ShapeType {
 
 /**
  * @brief Shape object, defining basic physical properties of a body.
- * 
  */
 struct Shape {
     /**

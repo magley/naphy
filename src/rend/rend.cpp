@@ -1,12 +1,14 @@
 #include "rend.h"
 
 
-#pragma warning(push)
-#pragma warning(disable: 4244)	// double to float or int conversion
-#pragma warning(disable: 6386)	// buffer overrun
+void draw_circle(SDL_Renderer* rend, double centreX, double centreY, double radius) {
+	// It is order of magnitudes faster to draw an n-regular polygon instead of using
+	// Bresenham’s algorithm. This is because for polygons we can use SDL_RenderDrawLine
+	// which draws the whole line in 1 batch, whereas Bresenham’s algorithm would require
+	// using SDL_RenderDrawPoint which is 1 batch per pixel and that's very inefficient.
+	// SDL_RenderDrawPoints could poentitally be even faster (1 batch for entire shape).
 
 
-void rend_circle(SDL_Renderer* rend, double centreX, double centreY, double radius) {
 	const unsigned precision = (unsigned)((2 * radius * 3.141));
 	std::vector<Vec2> points;
 	for (unsigned k = 0; k < precision; k++) {
@@ -17,11 +19,11 @@ void rend_circle(SDL_Renderer* rend, double centreX, double centreY, double radi
 		points.push_back(Vec2(centreX + c, centreY + s));
 	}
 
-	rend_poly(rend, points, Vec2(0, 0), 0);
+	draw_poly(rend, points, Vec2(0, 0), 0);
 }
 
 
-void rend_circle_filled(SDL_Renderer* renderer, double centreX, double centreY, double radius) {
+void draw_circle_filled(SDL_Renderer* renderer, double centreX, double centreY, double radius) {
 	double offsetx, offsety, d;
 	offsetx = 0;
 	offsety = radius;
@@ -48,9 +50,9 @@ void rend_circle_filled(SDL_Renderer* renderer, double centreX, double centreY, 
 }
 
 
-void rend_poly(SDL_Renderer* renderer, std::vector<Vec2> vert, Vec2 pos, double angle) {
+void draw_poly(SDL_Renderer* renderer, std::vector<Vec2> vert, Vec2 pos, double angle) {
 	const Mat2x2 rot = Mat2x2(angle);
-	const unsigned points_count = vert.size() + 1; // To draw a proper loop, first vertex must be added twice.
+	const unsigned points_count = vert.size() + 1; // To draw a proper line loop, the first vertex must be added twice so it's +1.
 
 	SDL_FPoint* points = (SDL_FPoint*)malloc(sizeof(SDL_FPoint) * points_count);
 	for (unsigned i = 0; i < points_count; i++) {
@@ -66,7 +68,7 @@ void rend_poly(SDL_Renderer* renderer, std::vector<Vec2> vert, Vec2 pos, double 
 }
 
 
-void rend_arrow(SDL_Renderer* renderer, double x1, double y1, double x2, double y2) {
+void draw_arrow(SDL_Renderer* renderer, double x1, double y1, double x2, double y2) {
 	// Arrow = line & isosceles triangle.
 	// Tip of the triangle has to be at (x2, y2),
 	// so we have shorten the line at the point B
@@ -77,17 +79,10 @@ void rend_arrow(SDL_Renderer* renderer, double x1, double y1, double x2, double 
 
 	Vec2 A = Vec2(x1, x1);
 	Vec2 B = Vec2(x2, y2);
-	Vec2 ABn = B - A;
-
-	ABn.normalize();
+	const Vec2 ABn = (B - A).normalized();
 	B -= ABn * (tri_height * 0.866025); // 0.866025 ~ sqrt(3) / 2
 	std::vector<Vec2> triangle = { Vec2(tri_height, 0), Vec2(0, -tri_base * 0.5), Vec2(0, tri_base * 0.5) };
 	
 	SDL_RenderDrawLineF(renderer, A.x, A.y, B.x, B.y);
-	rend_poly(renderer, triangle, Vec2(B.x, B.y), std::atan2(B.y - A.y, B.x - A.x));
+	draw_poly(renderer, triangle, Vec2(B.x, B.y), std::atan2(B.y - A.y, B.x - A.x));
 }
-
-
-
-
-#pragma warning(pop)

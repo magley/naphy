@@ -6,6 +6,9 @@
 struct PhysBody;
 
 
+/**
+ * @brief Structure that stores information about collision between two PhysBody instances.
+ */
 struct Arbiter {
     /**
      * @brief Colliding body.
@@ -50,7 +53,7 @@ struct Arbiter {
      */
 	void solve();
     /**
-     * @brief Position correction.
+     * @brief Position correction. This should be called after all the velocities are integrated.
      */
 	void post_solve();
 };

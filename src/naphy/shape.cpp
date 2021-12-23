@@ -33,15 +33,16 @@ Shape::Shape(std::vector<Vec2> polygon_vertices) {
 
 
 void Shape::query(double* out_area, double* out_area_moment, Vec2* out_centroid) const {
-    //
-	// https://en.wikipedia.org/wiki/Second_moment_of_area
-	// https://en.wikipedia.org/wiki/List_of_second_moments_of_area
-	//
-	// Second moment of area is related to bending surfaces
-	// and not generally used to calculate moment of impulse
-	// but for very thin objects (2D shapes can be assumed to
-	// be infinitely thin in the z-axis):  I = mm * rho.
-	// That is, moment of inertia = moment of mass * density.
+    /*
+		https://en.wikipedia.org/wiki/Second_moment_of_area
+		https://en.wikipedia.org/wiki/List_of_second_moments_of_area
+				
+		Second moment of area is related to bending surfaces
+		and not generally used to calculate moment of impulse,
+		but for very thin objects (2D shapes can be assumed to
+		be infinitely thin in the z-axis):  I = mm * rho.
+		That is, moment of inertia = moment of mass * density.
+	*/
 
 
 	double area = 0;
@@ -75,12 +76,13 @@ void Shape::query(double* out_area, double* out_area_moment, Vec2* out_centroid)
 
 
 int Shape::get_orientation() const {
-    //
-	// http://www.faqs.org/faqs/graphics/algorithms-faq/ section 2.07.
-	// 
-	// This isn't the fastest way, but it doesn't matter since this procedure
-	// should be called once for a shape's lifetime. Otherwise, we could cache
-	// it in a struct member.
+    /*
+		http://www.faqs.org/faqs/graphics/algorithms-faq/ section 2.07.
+		
+		This isn't the fastest way, but it doesn't matter since this procedure
+		should be called once for a shape's lifetime. Otherwise, we could cache
+		it in a struct member.
+	*/
  
 
 	double sum = 0.0;
@@ -94,10 +96,12 @@ int Shape::get_orientation() const {
 
 
 void Shape::compute_normals() {
-    //
-	// Polygon normals are always pointing outwards, but
-	// if the vertices are given in a counter-clockwise
-	// order, the sign needs to be flipped.
+    /*
+		Polygon normals are always pointing outwards (this
+		is by convention), but if the vertices are given in 
+		a counter-clockwise order, the normals will be flipped
+		so we handle that by checking polygon oritentation.
+	*/
 
 
 	const int sgn = get_orientation();
@@ -108,28 +112,26 @@ void Shape::compute_normals() {
 		const Vec2 B = vert[(i + 1) % vert.size()];
 		const Vec2 edge = B - A;
 
-		Vec2 normal = Vec2(edge.y, -edge.x) * sgn;
-		normal.normalize();
+		const Vec2 normal = (Vec2(edge.y, -edge.x) * sgn).normalized();
 		norm.push_back(normal);
 	}
 }
 
 
 Vec2 Shape::support(Vec2 direction) const {
-    //
-	// For circles it'll be:
-	//       dir.normalized() * radius
-	// 
-	// For polygons, we search for a point that produces
-	// the maximum dot product with the direction vector.
-	// Note that only a point from the list of vertices
-	// can be a support point (which is ok for our needs).
+    /*
+		For circles it'll be:
+			dir.normalized() * radius
+		
+		For polygons, we search for a point that produces
+		the maximum dot product with the direction vector.
+		Note that only a point from the list of vertices
+		can be a support point (which is ok for our needs).
+	*/
 
 
 	if (type == SHAPE_CIRCLE) {
-		Vec2 v = direction;
-		v.normalize();
-		v *= radius;
+		const Vec2 v = direction.normalized() * radius;
 		return v;
 	} else if (type == SHAPE_POLYGON) {
 		double proj_best = -DBL_MAX;

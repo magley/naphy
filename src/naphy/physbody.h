@@ -15,6 +15,9 @@ enum PhysBodyDynamicState {
 };
 
 
+/**
+ * @brief Fundamental structure in naphy.
+ */
 struct PhysBody {
     /**
      * @brief Position.
@@ -93,7 +96,8 @@ struct PhysBody {
      * @brief Recalculates the mass and moment of inertia for this object, based on density and shape.
      * If the mass/moment of inertia is 0, the body is automatically tagged as static (see dynamic_state).
      * 
-     * @param density Density of the object. We have to be careful because of scaling.
+     * @param density Density of the object.
+     * Fine-tuning may be required if you plan on switching rendering backends because of scaling.
      * If unsure, use 0.1.
      */
 	void calc_mass(double density);
@@ -104,14 +108,15 @@ struct PhysBody {
      */
     void draw(SDL_Renderer* rend);
     /**
-     * @brief Get the bounding box in world space.
+     * @brief Get the minimal axis-aligned bounding box of this body (in world space).
+     * This is used for broad- and middle-phase collision detection.
      * 
      * @return 2 element vector of Vec2's denoting the top-left and bottom-right bounds of the bbox.
      */
 	std::vector<Vec2> get_bbox() const;
     /**
      * @brief Check whether this body's bounding box intersects the bounding box specified by the parameters.
-     * Used namely for bbox collision and quad trees.
+     * Used in broad-phase collision detection.
      * 
      * @param ul Top left point of the bounding box we check against.
      * @param dr Bottom right point of the bounding box we check against.
@@ -119,7 +124,8 @@ struct PhysBody {
      */
 	int bbox_query(Vec2 ul, Vec2 dr) const;
     /**
-     * @brief Check for collision between the two bodies' bounding boxes. This is used for middle-phase collision detection.
+     * @brief Check for collision between the two bodies' bounding boxes.
+     * This is used for middle-phase collision detection.
      * 
      * @param other Other body we check against.
      * @return int 1 if there is bounding box intersection (might be a false-positive), 0 otherwise (true-negative).

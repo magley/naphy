@@ -60,13 +60,9 @@ int main(int, char**) {
 	b = scene.add(PhysBody(Vec2(500, 32), c));
 	b = scene.add(PhysBody(Vec2(550, 32), c));
 	b = scene.add(PhysBody(Vec2(400, 580), poly));
-	b->I_inv = 0.0;
-	b->I = 0.0;
-	b->m_inv = 0.0;
-	b->m = 0.0;
-	//b->dynamic_state = PHYSBODY_STATE_STATIC;
+	b->calc_mass(0);
 
-
+	printf("%d\n", b->dynamic_state);
 
 
 
@@ -85,7 +81,7 @@ int main(int, char**) {
 			break;
 
 
-		//b->set_angle(7 * DEG2RAD * cos((time_total + EPSILON) / PI * 5));
+		b->set_angle(7 * DEG2RAD * cos((time_total + EPSILON) / PI * 5));
 
 		time_accumulator = clamp(0.0, 0.1, time_accumulator);
 		while (time_accumulator >= scene.dt) {
@@ -101,7 +97,7 @@ int main(int, char**) {
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 
 
-		draw_text(0, 0, font, "naphy ~ development version 2021.12.20");
+		draw_text(0, 0, font, "naphy ~ development version 2021.12.23");
 
 		scene.render(rend);
 

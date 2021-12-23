@@ -15,7 +15,13 @@ struct Scene {
 	std::vector<Arbiter> arbiter;
 
 
+	/**
+	 * @brief Gravity vector. Fine-tuning may be required because of scaling.
+	 */
 	Vec2 grav;
+	/**
+	 * @brief Delta time, should be equal to the inverse framerate.
+	 */
 	double dt;
 
 
@@ -44,8 +50,10 @@ struct Scene {
 	 * @brief Add a new PhysBody to the scene.
 	 * 
 	 * @param b The body to add.
-	 * @return PhysBody* Pointer to the body inside the vector.
-	 * Note that the return value is not equal to &b.
+	 * @return Pointer to the PhysBody instance inside 'body'.
+	 * Note that a copy of 'b' is inserted into the array, not
+	 * the actual instance of 'b', therefore this function does
+	 * NOT return a pointer to 'b'. 
 	 */
 	PhysBody* add(PhysBody b);
 };

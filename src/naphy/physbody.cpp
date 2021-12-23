@@ -53,6 +53,9 @@ void PhysBody::calc_mass(double density) {
 	I = density * area_moment;
 	m_inv = m ? (1.0 / m) : 0.0;
 	I_inv = I ? (1.0 / I) : 0.0;
+
+	if (m_inv == 0 || I_inv == 0)
+		dynamic_state = PHYSBODY_STATE_STATIC;
 }
 
 
@@ -112,10 +115,10 @@ void PhysBody::draw(SDL_Renderer* rend) {
 	Vec2 Q; // One point on the shape for a line that shows body orientation.
 
 	if (shape.type == SHAPE_CIRCLE) {
-		rend_circle(rend, pos.x, pos.y, shape.radius);
+		draw_circle(rend, pos.x, pos.y, shape.radius);
 		Q = rot * (Vec2(shape.radius, 0));
 	} if (shape.type == SHAPE_POLYGON) {
-		rend_poly(rend, shape.vert, pos, ang);
+		draw_poly(rend, shape.vert, pos, ang);
 		Q = rot * (shape.vert[0]);
 	}
 

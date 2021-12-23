@@ -49,7 +49,7 @@ void Arbiter::post_solve() {
 		The parameters slop and bias may need fine-tuning.
 	*/
 
-	const double slop = 0.075f;
+	const double slop = 0.035f;
 	const double bias = 0.6f;
 	const Vec2 correction = (std::max(depth - slop, 0.0) / (A->m_inv + B->m_inv)) * normal * bias;
 	A->pos -= correction * A->m_inv;
@@ -76,8 +76,8 @@ static void apply_impulse(PhysBody* body, const Vec2& impulse, const Vec2& r) {
 void Arbiter::solve() {
 	if (A->dynamic_state == PHYSBODY_STATE_STATIC && B->dynamic_state == PHYSBODY_STATE_STATIC)
 		return;
-	//if (depth < EPSILON)
-	//	return;
+	if (depth < EPSILON)
+		return;
 
 	/*
 		Accumulated normal impuse.
@@ -140,8 +140,7 @@ void Arbiter::solve() {
 		/* (2) tangent impulse */
 
 		dv = (B->vel + cross(B->angvel, r2)) - (A->vel + cross(A->angvel, r1));
-		Vec2 tangent = dv - (normal * dot(dv, normal));
-		tangent.normalize();
+		const Vec2 tangent = (dv - (normal * dot(dv, normal))).normalized();
 
 		double Pt = -(1.0) * dot(dv, tangent) / m_effective / contact.size();
 		if (std::abs(Pt) <= EPSILON)

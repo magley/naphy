@@ -2,13 +2,14 @@
 #include "physbody.h"
 #include "arbiter.h"
 
+// Helper functions, _cc means 'circle-circle', _cp mean 'circle-polygon' etc.
 
 static int collision_cc(const PhysBody* const A, const PhysBody* const B, Arbiter* const R);
 static int collision_cp(const PhysBody* const A, const PhysBody* const B, Arbiter* const R);
 static int collision_pc(const PhysBody* const A, const PhysBody* const B, Arbiter* const R);
 static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbiter* const R);
 
-// These are for polygon-polygon collision.
+// These are helper functions for polygon-polygon algorithm.
 
 static void best_axis(const PhysBody* A, const PhysBody* B, double* out_dist, unsigned* out_index);
 static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_index, Vec2 ref_vert[2], Vec2 inc_vert[2]);
@@ -148,8 +149,7 @@ static int collision_cp(const PhysBody* const A, const PhysBody* const B, Arbite
 		const Vec2 vertex = proj1 <= 0 ? v1 : v2;
 		if (dist_sqr(center, vertex) > shpA->radius * shpA->radius)
 			return 0;
-		Vec2 normal = B->rot * (vertex - center);
-		normal.normalize();
+		const Vec2 normal = B->rot * (vertex - center).normalized();
 		R->normal = normal;
 		R->contact.push_back(B->rot * vertex + B->pos);
 	} else {
@@ -173,19 +173,16 @@ static int collision_pc(const PhysBody* const A, const PhysBody* const B, Arbite
 
 
 static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbiter* const R) {
-	// Polygon-polygon collision algorithm.
-	// This is a modified SAT algorithm that
-	// utilizes support functions to reduce
-	// the number of checks.
-	// This detection algorithm is based
-	// on Dirk Gregorius' GDC 2013 talk. 
-	// Instead of O(n+m), it's O((n+m)/2).
-	//
-	// After that, we find the reference
-	// and incident edges, and clip the
-	// incident face against the edge face.
-	// That part is based on Erin Cato's
-	// presentations.
+	/* 
+		Polygon-polygon collision algorithm.
+		This is a modified SAT algorithm that utilizes support functions to reduce
+		the number of checks. It is based on Dirk Gregorius' GDC 2013 talk. 
+		Instead of O(n+m), it's O((n+m)/2).
+
+		After that, we find the reference and incident edges, and clip the incident 
+		face against the edge face. That part is based on Erin Cato's presentations,
+		while the implementation is based on Randy Gaul's ImpulseEngine.
+	*/
 
 	double distA, distB;
 	unsigned faceA, faceB;
@@ -196,12 +193,11 @@ static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbite
 	if (distA >= 0.0 || distB >= 0.0)
 		return 0;
 
-	// The polygons are colliding.
-	// Which polygon should be reference and
-	// which should be incident? The one with
-	// greater dist (smaller projected penetration) 
-	// should be the reference. If they're the same,
-	// either is OK.
+	/* 
+		The polygons are colliding. Which polygon should be reference and
+		which should be incident? The one with greater dist (smaller projected 
+		penetration)  should be the reference. If they're the same, either is OK.
+	*/
 
 	const PhysBody* ref = A;
 	const PhysBody* inc = B;
@@ -217,39 +213,37 @@ static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbite
 		dir = -1;
 	}
 
-	// We now need the vertices that make up
-	// the significant reference and incident
-	// faces (in world space).
+
+	// We now need the vertices that make up the significant reference and incident faces
+
 
 	Vec2 ref_vert[2];
 	Vec2 inc_vert[2];
 	get_inc_and_ref_face(ref, inc, ref_face, ref_vert, inc_vert);
 
-	Vec2 ref_vec_normalized = ref_vert[1] - ref_vert[0];
-	ref_vec_normalized.normalize();
+	const Vec2 ref_vec_normalized = (ref_vert[1] - ref_vert[0]).normalized();
 	const Vec2 ref_vec_normal(ref_vec_normalized.y, -ref_vec_normalized.x);
 
 	R->normal = ref_vec_normal * dir;
 	R->depth = 0;
 
-	// Equation of a line :: Ax + By = C
-	// The vector (A, B) is the normal of the line
-	// C is the negative distance from the origin.
-	// (A, B) dot (x, y) = C
-	// (x, y) can be either point of a face whose
-	// normal is (A, B). (A, B) is ref_vec_normal.
+
+	/* 
+		Equation of a line :: Ax + By = C
+		The vector (A, B) is the normal of the line
+		C is the negative distance from the origin.
+		(A, B) dot (x, y) = C
+		(x, y) can be either point of a face whose
+		normal is (A, B). (A, B) is ref_vec_normal.
+	*/
 	const double C = dot(ref_vec_normal, ref_vert[0]);
 
-	// Clip incident to reference face
-	// based on Randy Gaul's ImpulseEngine.
 	const double neg = -dot(ref_vec_normalized, ref_vert[0]);
 	const double pos = dot(ref_vec_normalized, ref_vert[1]);
 	if (clip(-ref_vec_normalized, neg, inc_vert) < 2) return 0;
 	if (clip(ref_vec_normalized, pos, inc_vert) < 2) return 0;
 
-	// We do a similar thing here, but with the
-	// vertices of incident face. We have to do
-	// it for both and then get the average.
+
 	for (unsigned i = 0; i < 2; i++) {
 		double sep = dot(ref_vec_normal, inc_vert[i]) - C;
 		if (sep <= 0.0) {
@@ -264,9 +258,7 @@ static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbite
 }
 
 static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_face, Vec2 ref_vert[2], Vec2 inc_vert[2]) {
-	// Reference face is easy, but for incident
-	// we need the face whose normal is most
-	// parallel to reference face's normal.
+	// Reference face is easy, but for incident we need the face whose normal is most parallel to reference face's normal.
 	// https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/previousinformation/physics5collisionArbiters/2017%20Tutorial%205%20-%20Collision%20Arbiters.pdf
 
 	Vec2 n = ref->shape.norm[ref_face];
@@ -298,26 +290,21 @@ static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsig
 }
 
 static void best_axis(const PhysBody* A, const PhysBody* B, double* out_dist, unsigned* out_index) {
-	// Finds the axis on which the penetration between polygons is minimal.
-	// Instead of projecting both shapes onto each axis, we use support
-	// functions which are more efficient (1 shape per axis instead of 2).
-	// Implementation based on slides from Dirk Gregorious' 2013 GDC talk.
+	/* 
+		Finds the axis where the penetration between polygons is minimal.
+		Instead of projecting both shapes onto each axis, we use support
+		functions which is more efficient (1 shape per axis instead of 2).
+	*/
 
 	double dist_best = -FLT_MAX;
 	unsigned index = 0;
 
 	for (unsigned i = 0; i < A->shape.norm.size(); i++) {
-		// Each normal of polygon A is a potential axis
-		// but we have to transform it into model space
-		// of polygon B.
 		Vec2 n = A->shape.norm[i];
 		n = B->rot.transpose() * (A->rot * n);
 
-		// Support point, in opposite direction.
 		const Vec2 sup = B->shape.support(-n);
 
-		// Distance of support point to axis. Again, 
-		// we have to convert to B's model space.
 		Vec2 v = A->shape.vert[i];
 		v = B->rot.transpose() * (((A->rot * v) + A->pos) - B->pos);
 		double dist = dot(n, sup - v);
@@ -333,6 +320,7 @@ static void best_axis(const PhysBody* A, const PhysBody* B, double* out_dist, un
 	*out_index = index;
 }
 
+
 static unsigned clip(Vec2 normal, double c, Vec2* out_face) {
 	unsigned point_count = 0;
 	Vec2 out[] = { out_face[0], out_face[1] };
@@ -346,13 +334,7 @@ static unsigned clip(Vec2 normal, double c, Vec2* out_face) {
 	if (d1 * d2 < 0) {
 		double alpha = d1 / (d1 - d2);
 
-		// d1 <= 0  AND  d2 <= 0   ===>   d1 * d2 >= 0
-		// therefore this block will never execute if
-		// point_count == 2 so we can ignore the warning.
-#pragma warning(push)
-#pragma warning(disable: 6386)
 		out[point_count++] = out_face[0] + alpha * (out_face[1] - out_face[0]);
-#pragma warning(pop)
 	}
 
 	out_face[0] = out[0];
