@@ -16,15 +16,15 @@ static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsig
 static unsigned clip(Vec2 normal, double c, Vec2* out_face);
 
 
-int collision(const PhysBody* const A, const PhysBody* const B, Arbiter* const R) {
-	if (A->shape.type == SHAPE_CIRCLE && B->shape.type == SHAPE_CIRCLE)
-		return collision_cc(A, B, R);
-	if (A->shape.type == SHAPE_CIRCLE && B->shape.type == SHAPE_POLYGON)
-		return collision_cp(A, B, R);
-	if (A->shape.type == SHAPE_POLYGON && B->shape.type == SHAPE_CIRCLE)
-		return collision_pc(A, B, R);	
-	if (A->shape.type == SHAPE_POLYGON && B->shape.type == SHAPE_POLYGON)
-		return collision_pp(A, B, R);
+int collision(Arbiter* const R) {
+	if (R->A->shape.type == SHAPE_CIRCLE && R->B->shape.type == SHAPE_CIRCLE)
+		return collision_cc(R->A, R->B, R);
+	if (R->A->shape.type == SHAPE_CIRCLE && R->B->shape.type == SHAPE_POLYGON)
+		return collision_cp(R->A, R->B, R);
+	if (R->A->shape.type == SHAPE_POLYGON && R->B->shape.type == SHAPE_CIRCLE)
+		return collision_pc(R->A, R->B, R);	
+	if (R->A->shape.type == SHAPE_POLYGON && R->B->shape.type == SHAPE_POLYGON)
+		return collision_pp(R->A, R->B, R);
 	return 0;
 }
 
@@ -257,6 +257,7 @@ static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbite
 	return 1;
 }
 
+
 static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_face, Vec2 ref_vert[2], Vec2 inc_vert[2]) {
 	// Reference face is easy, but for incident we need the face whose normal is most parallel to reference face's normal.
 	// https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/previousinformation/physics5collisionArbiters/2017%20Tutorial%205%20-%20Collision%20Arbiters.pdf
@@ -288,6 +289,7 @@ static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsig
 	inc_vert[0] = (inc->rot * inc_vert[0]) + inc->pos;
 	inc_vert[1] = (inc->rot * inc_vert[1]) + inc->pos;
 }
+
 
 static void best_axis(const PhysBody* A, const PhysBody* B, double* out_dist, unsigned* out_index) {
 	/* 

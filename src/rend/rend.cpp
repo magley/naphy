@@ -1,6 +1,7 @@
 #include "rend.h"
 
 
+
 void draw_circle(SDL_Renderer* rend, double centreX, double centreY, double radius) {
 	// It is order of magnitudes faster to draw an n-regular polygon instead of using
 	// Bresenham’s algorithm. This is because for polygons we can use SDL_RenderDrawLine
@@ -85,4 +86,19 @@ void draw_arrow(SDL_Renderer* renderer, double x1, double y1, double x2, double 
 	
 	SDL_RenderDrawLineF(renderer, A.x, A.y, B.x, B.y);
 	draw_poly(renderer, triangle, Vec2(B.x, B.y), std::atan2(B.y - A.y, B.x - A.x));
+}
+
+
+void draw_text(int x, int y, Image& font_sheet, std::string text) {
+	const unsigned char_w = 12;
+	const unsigned char_h = 20;
+	const unsigned chars_per_line = font_sheet.w / char_w;
+	for (unsigned i = 0; i < text.size(); i++) {
+
+		const char c = text[i];
+
+		const int char_x = (c % chars_per_line) * char_w;
+		const int char_y = (c / chars_per_line) * char_h;
+		font_sheet.draw(x + i * char_w, y, char_x, char_y, char_w, char_h);
+	}
 }

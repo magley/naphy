@@ -2,6 +2,8 @@
 #include "utility/mathutil.h"
 #include "physbody.h"
 #include "arbiter.h"
+#include "quadtree.h"
+#include "utility/timing.h"
 
 
 struct Scene {
@@ -13,16 +15,21 @@ struct Scene {
 	 * @brief All Arbiter instances registered in the scene.
 	 */
 	std::vector<Arbiter> arbiter;
+	/**
+	 * @brief Quad tree spatial indexing data structure for this scene.
+	 */
+	QuadNode quadtree;
+
+	/**
+	 * @brief Handles current program time state for constant framerate.
+	 */
+	Timing timing;
 
 
 	/**
 	 * @brief Gravity vector. Fine-tuning may be required because of scaling.
 	 */
 	Vec2 grav;
-	/**
-	 * @brief Delta time, should be equal to the inverse framerate.
-	 */
-	double dt;
 
 
 	/**
@@ -34,8 +41,16 @@ struct Scene {
 	 * 
 	 * @param grav Gravity.
 	 * @param dt Change in time.
+	 * @param w Maximum width of the scene. Used for the quad tree.
+	 * @param h Maximum height of the scene. Used for the quad tree.
+	 * @param quadtree_capacity Capacity of a quadtree node.
 	 */
-	Scene(Vec2 grav, double dt);
+	Scene(Vec2 grav, double dt, double w, double h, unsigned quadtree_capacity);
+
+	/**
+	 * @brief Nothing physics-related happens here, this is for the Scene object itself.
+	 */
+	void pre_update();
 	/**
 	 * @brief Updates the whole scene.
 	 */
