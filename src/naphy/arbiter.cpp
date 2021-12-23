@@ -16,7 +16,7 @@ Arbiter::Arbiter(PhysBody* A, PhysBody* B) {
 }
 
 
-void Arbiter::build(void) {
+void Arbiter::build() {
 	collision(A, B, this);
 	e = std::min(A->e, B->e);
 	sfric = std::sqrt(A->sfric * A->sfric);
@@ -24,7 +24,7 @@ void Arbiter::build(void) {
 }
 
 
-void Arbiter::pre_solve(void) {
+void Arbiter::pre_solve() {
 	const Vec2 Apos = A->pos;
 	const Vec2 Bpos = B->pos;
 
@@ -36,7 +36,7 @@ void Arbiter::pre_solve(void) {
 }
 
 
-void Arbiter::post_solve(void) {
+void Arbiter::post_solve() {
 	/*
 		Bias-slop correction mechanism.
 
@@ -73,7 +73,7 @@ static void apply_impulse(PhysBody* body, const Vec2& impulse, const Vec2& r) {
 }
 
 
-void Arbiter::solve(void) {
+void Arbiter::solve() {
 	if (A->dynamic_state == PHYSBODY_STATE_STATIC && B->dynamic_state == PHYSBODY_STATE_STATIC)
 		return;
 	//if (depth < EPSILON)
@@ -144,7 +144,7 @@ void Arbiter::solve(void) {
 		tangent.normalize();
 
 		double Pt = -(1.0) * dot(dv, tangent) / m_effective / contact.size();
-		if (Pt < EPSILON)
+		if (std::abs(Pt) <= EPSILON)
 			break;
 
 		/* 
