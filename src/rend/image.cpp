@@ -1,9 +1,16 @@
 #include "image.h"
 
 
+Image::Image() {
+    rend = NULL;
+    img = NULL;
+    w = -1;
+    h = -1;
+}
+
 Image::Image(SDL_Renderer* rend, const char* fname) {
     this->rend = rend;
-    this->img = IMG_LoadTexture(rend, "res/font.png");
+    this->img = IMG_LoadTexture(rend, fname);
     SDL_QueryTexture(img, NULL, NULL, &w, &h);
 }
 

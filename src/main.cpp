@@ -4,10 +4,11 @@
 #include <string>
 #include <iostream>
 
+#include "utility/input.h"
+
 #include "rend/rend.h"
 #include "rend/image.h"
 #include "naphy/scene.h"
-
 
 #define WIN_W 800
 #define WIN_H 608
@@ -21,10 +22,10 @@ int main(int, char**) {
 	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
 	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
 	Image font(rend, "res/font.png");
+	Input input;
 
 	Scene scene = Scene(Vec2(0, 400), 1 / 60.0, WIN_W, WIN_H, 4);
 	PhysBody* b;
-
 
 	Shape poly = Shape(std::vector<Vec2> { Vec2(-400, 32), Vec2(-400, -32), Vec2(400, -32), Vec2(400, 32), });
 	Shape poly2 = Shape(std::vector<Vec2> { Vec2(-32, 32), Vec2(-32, -32), Vec2(32, -32), Vec2(32, 32)  });
@@ -46,16 +47,26 @@ int main(int, char**) {
 	b->calc_mass(0);
 
 
-	while (1) {
+	bool running = true;
+	while (running) {
 		scene.pre_update();
 
 		SDL_Event ev;
-		SDL_PollEvent(&ev);
+		do {
+			if (ev.type == SDL_QUIT)
+				running = false;
+		} while (SDL_PollEvent(&ev));
 
-		if (ev.type == SDL_QUIT)
-			break;
+		input.update();
+
+		//=============================================================================================================
+		//Game logic goes here
 
 		b->set_angle(7 * DEG2RAD * cos((scene.timing.total + EPSILON) / PI * 5));
+
+		//
+		//=============================================================================================================
+
 		scene.update();
 
 
@@ -65,7 +76,6 @@ int main(int, char**) {
 
 		draw_text(0, 0, font, "naphy ~ development version 2021.12.23");
 		scene.render(rend);
-
 		SDL_RenderPresent(rend);
 	}
 

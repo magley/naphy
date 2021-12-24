@@ -24,6 +24,11 @@ struct Image {
 	 */
 	int h;
 
+
+	/**
+	 * @brief Construct an empty Image object. Don't use this manually.
+	 */
+	Image();
 	/**
 	 * @brief Construct a new Image object.
 	 * 
