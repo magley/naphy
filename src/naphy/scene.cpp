@@ -65,25 +65,27 @@ void Scene::update() {
 }
 
 
-void Scene::render(SDL_Renderer* rend) {
+void Scene::render(SDL_Renderer* rend, bool draw_meta) {
 	SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 	for (unsigned i = 0; i < body.size(); i++) {
 		body[i].draw(rend);
 	}
 
-	SDL_SetRenderDrawColor(rend, 0, 255, 0, 255);
-	for (unsigned i = 0; i < arbiter.size(); i++) {
-		for (unsigned j = 0; j < arbiter[i].contact.size(); j++) {
-			draw_circle_filled(rend, arbiter[i].contact[j].x, arbiter[i].contact[j].y, 5);
+	if (draw_meta) {
+		SDL_SetRenderDrawColor(rend, 0, 255, 0, 255);
+		for (unsigned i = 0; i < arbiter.size(); i++) {
+			for (unsigned j = 0; j < arbiter[i].contact.size(); j++) {
+				draw_circle_filled(rend, arbiter[i].contact[j].x, arbiter[i].contact[j].y, 5);
+			}
 		}
-	}
 
-	std::vector<QuadNode*> quadtree_nodes = quadtree.get_all_nodes();
-	SDL_SetRenderDrawColor(rend, 255, 255, 0, 50);
-	for (unsigned i = 0; i < quadtree_nodes.size(); i++) {
-		QuadNode* qn = quadtree_nodes[i];
-		SDL_FRect r{ (float)qn->pos.x, (float)qn->pos.y, (float)qn->size.x, (float)qn->size.y };
-		SDL_RenderDrawRectF(rend, &r);
+		std::vector<QuadNode*> quadtree_nodes = quadtree.get_all_nodes();
+		SDL_SetRenderDrawColor(rend, 255, 255, 0, 50);
+		for (unsigned i = 0; i < quadtree_nodes.size(); i++) {
+			QuadNode* qn = quadtree_nodes[i];
+			SDL_FRect r{ (float)qn->pos.x, (float)qn->pos.y, (float)qn->size.x, (float)qn->size.y };
+			SDL_RenderDrawRectF(rend, &r);
+		}
 	}
 
 	SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
@@ -103,11 +105,11 @@ static void scene_update_collision(Scene* scene) {
 	const std::vector<QuadNode*> quad_groups = scene->quadtree.get_leaves();
 	std::set<PhysBodyPair> checked_pairs;
 
-	for (unsigned i = 0; i < quad_groups.size(); i++) {
-
+	for (unsigned k = 0; k < quad_groups.size(); k++) {
 		// Broad-phase
 
-		std::vector<PhysBody*>* body_group = &quad_groups[i]->object;
+		std::vector<PhysBody*>* body_group = &quad_groups[k]->object;
+
 		for (unsigned i = 0; i < body_group->size(); i++) {
 			PhysBody* A = (*body_group)[i];
 			for (unsigned j = i + 1; j < body_group->size(); j++) {
@@ -139,6 +141,7 @@ static void scene_update_collision(Scene* scene) {
 			}
 		}
 	}
+	
 }
 static void scene_update_force(Scene* scene) {
 	for (unsigned i = 0; i < scene->body.size(); i++) {

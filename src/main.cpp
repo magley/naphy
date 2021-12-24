@@ -10,10 +10,28 @@
 #include "rend/image.h"
 #include "naphy/scene.h"
 
+#include "gui/gui.h"
+#include "gui/gui_checkbox.h"
+
 #define WIN_W 800
 #define WIN_H 608
 #define WIN_X ((1920 - WIN_W) / 2)
 #define WIN_Y ((1080 - WIN_H) / 2)
+
+
+
+void add_poly(GUI* gui, Scene* scene, GUIButton* btn) {
+	int vertices = 3 + (rand() % 4);
+	int size = 20 + (rand() % 30);
+	const Shape c = Shape(vertices, size);
+	scene->add(PhysBody(Vec2(400, 32), c));
+}
+
+void add_circle(GUI* gui, Scene* scene, GUIButton* btn) {
+	double radius = 10 + rand() % 20;
+	const Shape c = Shape(radius);
+	scene->add(PhysBody(Vec2(400, 32), c));
+}
 
 
 int main(int, char**) {
@@ -22,7 +40,10 @@ int main(int, char**) {
 	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
 	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
 	Image font(rend, "res/font.png");
+	Image gui_atlas(rend, "res/gui.png");
 	Input input;
+
+	GUI gui(gui_atlas, font);
 
 	Scene scene = Scene(Vec2(0, 400), 1 / 60.0, WIN_W, WIN_H, 4);
 	PhysBody* b;
@@ -43,8 +64,17 @@ int main(int, char**) {
 	b = scene.add(PhysBody(Vec2(450, 32), c));
 	b = scene.add(PhysBody(Vec2(500, 32), c));
 	b = scene.add(PhysBody(Vec2(550, 32), c));
-	b = scene.add(PhysBody(Vec2(400, 580), poly));
+	b = scene.add(PhysBody(Vec2(400, 500), poly));
 	b->calc_mass(0);
+
+	
+	GUICheckBox* view_meta_cb = gui.add(new GUICheckBox(Vec2(100, 100), "Display arbiters and quad tree"));
+	GUIButton* add_poly_btn = gui.add(new GUIButton(Vec2(100, 140), "Add new polygon"));
+				add_poly_btn->reg_click_callback(add_poly, NULL, &scene);
+	GUIButton* add_circle_btn = gui.add(new GUIButton(Vec2(100, 164), "Add new circle"));
+				add_circle_btn->reg_click_callback(add_circle, NULL, &scene);
+
+
 
 
 	bool running = true;
@@ -58,6 +88,7 @@ int main(int, char**) {
 		} while (SDL_PollEvent(&ev));
 
 		input.update();
+		gui.update(input);
 
 		//=============================================================================================================
 		//Game logic goes here
@@ -75,7 +106,8 @@ int main(int, char**) {
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 
 		draw_text(0, 0, font, "naphy ~ development version 2021.12.23");
-		scene.render(rend);
+		scene.render(rend, view_meta_cb->checked);
+		gui.draw(input);
 		SDL_RenderPresent(rend);
 	}
 

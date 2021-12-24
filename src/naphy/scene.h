@@ -59,8 +59,9 @@ struct Scene {
 	 * @brief Renders the whole scene.
 	 * 
 	 * @param rend Pointer to the SDL_Renderer on which everything will be rendered.
+	 * @param draw_meta [Debug] draw arbiters and quad tree.
 	 */
-	void render(SDL_Renderer* rend);
+	void render(SDL_Renderer* rend, bool draw_meta);
 	/**
 	 * @brief Add a new PhysBody to the scene.
 	 * 
