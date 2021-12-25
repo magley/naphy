@@ -42,30 +42,14 @@ int main(int, char**) {
 	Image font(rend, "res/font.png");
 	Image gui_atlas(rend, "res/gui.png");
 	Input input;
-
 	GUI gui(gui_atlas, font);
 
 	Scene scene = Scene(Vec2(0, 400), 1 / 60.0, WIN_W, WIN_H, 4);
-	PhysBody* b;
-
 	Shape poly = Shape(std::vector<Vec2> { Vec2(-400, 32), Vec2(-400, -32), Vec2(400, -32), Vec2(400, 32), });
-	Shape poly2 = Shape(std::vector<Vec2> { Vec2(-32, 32), Vec2(-32, -32), Vec2(32, -32), Vec2(32, 32)  });
-	Shape poly3 = Shape(3, 55);
-	Shape poly4 = Shape(std::vector<Vec2>{ Vec2(320, 0), Vec2(-320, 0)});
-	Shape poly5 = Shape(5, 64);
-	Shape c(25);
-	
 
-	b = scene.add(PhysBody(Vec2(300, 400), poly2));
-	b = scene.add(PhysBody(Vec2(300, 360), poly2));
-	b = scene.add(PhysBody(Vec2(500, 64), poly2));
-	b = scene.add(PhysBody(Vec2(490, 0), poly5));
-	b = scene.add(PhysBody(Vec2(400, 32), c));
-	b = scene.add(PhysBody(Vec2(450, 32), c));
-	b = scene.add(PhysBody(Vec2(500, 32), c));
-	b = scene.add(PhysBody(Vec2(550, 32), c));
+	unsigned b = 0;
 	b = scene.add(PhysBody(Vec2(400, 500), poly));
-	b->calc_mass(0);
+	scene.body[b].calc_mass(0);
 
 	
 	GUICheckBox* view_meta_cb = gui.add(new GUICheckBox(Vec2(100, 100), "Display arbiters and quad tree"));
@@ -73,8 +57,6 @@ int main(int, char**) {
 				add_poly_btn->reg_click_callback(add_poly, NULL, &scene);
 	GUIButton* add_circle_btn = gui.add(new GUIButton(Vec2(100, 164), "Add new circle"));
 				add_circle_btn->reg_click_callback(add_circle, NULL, &scene);
-
-
 
 
 	bool running = true;
@@ -93,21 +75,19 @@ int main(int, char**) {
 		//=============================================================================================================
 		//Game logic goes here
 
-		b->set_angle(7 * DEG2RAD * cos((scene.timing.total + EPSILON) / PI * 5));
+		scene.body[b].set_angle((10 * DEG2RAD) * sin((scene.timing.total + EPSILON) * 0.5));
 
 		//
 		//=============================================================================================================
 
 		scene.update();
-
-
 		SDL_SetRenderDrawColor(rend, 0, 0, 0, 255);
 		SDL_RenderClear(rend);
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 
-		draw_text(0, 0, font, "naphy ~ development version 2021.12.23");
 		scene.render(rend, view_meta_cb->checked);
 		gui.draw(input);
+		draw_text(0, 0, font, "naphy ~ development version 2021.12.25", {255,255,255,255}, {0,0,255,255});
 		SDL_RenderPresent(rend);
 	}
 

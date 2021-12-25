@@ -49,6 +49,9 @@ void Arbiter::post_solve() {
 		The parameters slop and bias may need fine-tuning.
 	*/
 
+	if (A->dynamic_state == PHYSBODY_STATE_STATIC && B->dynamic_state == PHYSBODY_STATE_STATIC)
+		return;
+
 	const double slop = 0.035f;
 	const double bias = 0.6f;
 	const Vec2 correction = (std::max(depth - slop, 0.0) / (A->m_inv + B->m_inv)) * normal * bias;

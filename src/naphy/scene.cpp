@@ -92,9 +92,9 @@ void Scene::render(SDL_Renderer* rend, bool draw_meta) {
 }
 
 
-PhysBody* Scene::add(PhysBody b) {
+unsigned Scene::add(PhysBody b) {
 	body.push_back(b);
-	return &body[body.size() - 1];
+	return body.size() - 1;
 }
 
 

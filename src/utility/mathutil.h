@@ -43,7 +43,7 @@ struct Vec2 {
 
 	double len_sqr() const { return x * x + y * y; }
 	double len() const { return std::sqrt(len_sqr()); }
-	Vec2 normalized() const { double l = len(); return ((l > EPSILON) ? (*this / l) : Vec2()); }
+	Vec2 normalized() const { double l = len(); return (std::abs(l) > EPSILON) ? (*this / l) : Vec2(0, 0); }
 	void normalize() { *this = normalized(); }
 };
 

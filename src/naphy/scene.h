@@ -66,10 +66,7 @@ struct Scene {
 	 * @brief Add a new PhysBody to the scene.
 	 * 
 	 * @param b The body to add.
-	 * @return Pointer to the PhysBody instance inside 'body'.
-	 * Note that a copy of 'b' is inserted into the array, not
-	 * the actual instance of 'b', therefore this function does
-	 * NOT return a pointer to 'b'. 
+	 * @return Index of the object in the array.
 	 */
-	PhysBody* add(PhysBody b);
+	unsigned add(PhysBody b);
 };

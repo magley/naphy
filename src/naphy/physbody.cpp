@@ -54,7 +54,7 @@ void PhysBody::calc_mass(double density) {
 	m_inv = m ? (1.0 / m) : 0.0;
 	I_inv = I ? (1.0 / I) : 0.0;
 
-	if (m_inv == 0 || I_inv == 0)
+	if (m_inv == 0 && I_inv == 0)
 		dynamic_state = PHYSBODY_STATE_STATIC;
 }
 
