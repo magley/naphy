@@ -24,17 +24,17 @@ void draw_circle(SDL_Renderer* rend, double centreX, double centreY, double radi
 }
 
 
-void draw_circle_filled(SDL_Renderer* renderer, double centreX, double centreY, double radius) {
+void draw_circle_filled(SDL_Renderer* renderer, double x, double y, double radius) {
 	double offsetx, offsety, d;
 	offsetx = 0;
 	offsety = radius;
 	d = radius - 1;
 
 	while (offsety >= offsetx) {
-		SDL_RenderDrawLine(renderer, centreX - offsety, centreY + offsetx, centreX + offsety, centreY + offsetx);
-		SDL_RenderDrawLine(renderer, centreX - offsetx, centreY + offsety, centreX + offsetx, centreY + offsety);
-		SDL_RenderDrawLine(renderer, centreX - offsetx, centreY - offsety, centreX + offsetx, centreY - offsety);
-		SDL_RenderDrawLine(renderer, centreX - offsety, centreY - offsetx, centreX + offsety, centreY - offsetx);
+		SDL_RenderDrawLine(renderer, x - offsety, y + offsetx, x + offsety, y + offsetx);
+		SDL_RenderDrawLine(renderer, x - offsetx, y + offsety, x + offsetx, y + offsety);
+		SDL_RenderDrawLine(renderer, x - offsetx, y - offsety, x + offsetx, y - offsety);
+		SDL_RenderDrawLine(renderer, x - offsety, y - offsetx, x + offsety, y - offsetx);
 
 		if (d >= 2 * offsetx) {
 			d -= 2 * offsetx + 1;
@@ -53,7 +53,7 @@ void draw_circle_filled(SDL_Renderer* renderer, double centreX, double centreY, 
 
 void draw_poly(SDL_Renderer* renderer, std::vector<Vec2> vert, Vec2 pos, double angle) {
 	const Mat2x2 rot = Mat2x2(angle);
-	const unsigned points_count = vert.size() + 1; // To draw a proper line loop, the first vertex must be added twice so it's +1.
+	const unsigned points_count = vert.size() + 1; // +1 because SDL_RenderDrawLinesF isn't closed.
 
 	SDL_FPoint* points = (SDL_FPoint*)malloc(sizeof(SDL_FPoint) * points_count);
 	for (unsigned i = 0; i < points_count; i++) {
@@ -82,7 +82,7 @@ void draw_arrow(SDL_Renderer* renderer, double x1, double y1, double x2, double 
 	Vec2 B = Vec2(x2, y2);
 	const Vec2 ABn = (B - A).normalized();
 	B -= ABn * (tri_height * 0.866025); // 0.866025 ~ sqrt(3) / 2
-	std::vector<Vec2> triangle = { Vec2(tri_height, 0), Vec2(0, -tri_base * 0.5), Vec2(0, tri_base * 0.5) };
+	std::vector<Vec2> triangle = { Vec2(tri_height, 0), Vec2(0, -tri_base/2), Vec2(0, tri_base/2) };
 	
 	SDL_RenderDrawLineF(renderer, A.x, A.y, B.x, B.y);
 	draw_poly(renderer, triangle, Vec2(B.x, B.y), std::atan2(B.y - A.y, B.x - A.x));
@@ -108,7 +108,7 @@ void draw_text(int x, int y, Image& font_sheet, std::string text, SDL_Color col,
 
 	// Background
 
-	const int p = 4; // padding
+	const int p = 0; // padding
 	SDL_Rect r = {x - p, y - p, FONT_CH_W * (int)text.size() + 2 * p, FONT_CH_H + 2 * p};
 	SDL_SetRenderDrawColor(font_sheet.rend, bg.r, bg.g, bg.b, bg.a);
 	SDL_RenderFillRect(font_sheet.rend, &r);

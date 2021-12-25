@@ -19,6 +19,11 @@ struct Scene {
 	 * @brief Quad tree spatial indexing data structure for this scene.
 	 */
 	QuadNode quadtree;
+	/**
+	 * @brief Size of the scene. Everything outside the bounds + padding
+	 * is safe to remove.
+	 */
+	Vec2 size;
 
 	/**
 	 * @brief Handles current program time state for constant framerate.
@@ -48,7 +53,7 @@ struct Scene {
 	Scene(Vec2 grav, double dt, double w, double h, unsigned quadtree_capacity);
 
 	/**
-	 * @brief Nothing physics-related happens here, this is for the Scene object itself.
+	 * @brief Nothing physics-related happens here.
 	 */
 	void pre_update();
 	/**
@@ -58,10 +63,10 @@ struct Scene {
 	/**
 	 * @brief Renders the whole scene.
 	 * 
-	 * @param rend Pointer to the SDL_Renderer on which everything will be rendered.
+	 * @param rend Pointer to the SDL_Renderer where everything will be drawn.
 	 * @param draw_meta [Debug] draw arbiters and quad tree.
 	 */
-	void render(SDL_Renderer* rend, bool draw_meta);
+	void draw(SDL_Renderer* rend, bool draw_meta);
 	/**
 	 * @brief Add a new PhysBody to the scene.
 	 * 

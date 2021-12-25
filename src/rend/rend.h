@@ -9,6 +9,10 @@
 #define FONT_CH_W 12
 #define FONT_CH_H 20
 
+#define COL_BLACK {0,0,0,0}
+#define COL_WHITE {255,255,255,255}
+#define COL_BLUE {0,0,255,255}
+
 
 void draw_circle(SDL_Renderer* renderer, double centreX, double centreY, double radius);
 void draw_circle_filled(SDL_Renderer* renderer, double centreX, double centreY, double radius);

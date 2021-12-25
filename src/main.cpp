@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
 
 #include "utility/input.h"
 
@@ -13,11 +14,11 @@
 #include "gui/gui.h"
 #include "gui/gui_checkbox.h"
 
+
 #define WIN_W 800
 #define WIN_H 608
 #define WIN_X ((1920 - WIN_W) / 2)
 #define WIN_Y ((1080 - WIN_H) / 2)
-
 
 
 void add_poly(GUI* gui, Scene* scene, GUIButton* btn) {
@@ -37,7 +38,7 @@ void add_circle(GUI* gui, Scene* scene, GUIButton* btn) {
 int main(int, char**) {
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_Window* win = SDL_CreateWindow("naphy", WIN_X, WIN_Y, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
-	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
+	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
 	Image font(rend, "res/font.png");
 	Image gui_atlas(rend, "res/gui.png");
@@ -72,22 +73,27 @@ int main(int, char**) {
 		input.update();
 		gui.update(input);
 
-		//=============================================================================================================
+		//======================================================================
 		//Game logic goes here
 
-		scene.body[b].set_angle((10 * DEG2RAD) * sin((scene.timing.total + EPSILON) * 0.5));
+		scene.body[b].set_angle(10 * DEG2RAD * sin((scene.timing.total + EPSILON) / 2));
 
 		//
-		//=============================================================================================================
+		//======================================================================
 
 		scene.update();
 		SDL_SetRenderDrawColor(rend, 0, 0, 0, 255);
 		SDL_RenderClear(rend);
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 
-		scene.render(rend, view_meta_cb->checked);
+		scene.draw(rend, view_meta_cb->checked);
 		gui.draw(input);
-		draw_text(0, 0, font, "naphy ~ development version 2021.12.25", {255,255,255,255}, {0,0,255,255});
+		draw_text(0, 0, font, "naphy ~ dev.2021.12.25", COL_WHITE, COL_BLUE);
+
+		std::stringstream ss;
+		ss << "obj: " << scene.body.size() << " fps:" << (int)(scene.timing.ticks / scene.timing.total);
+		draw_text(0, FONT_CH_H, font, ss.str(), COL_WHITE, COL_BLUE);
+
 		SDL_RenderPresent(rend);
 	}
 
