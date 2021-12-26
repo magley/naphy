@@ -16,7 +16,7 @@ QuadNode::QuadNode(Vec2 position, Vec2 size, unsigned max_elements) {
 }
 
 
-void QuadNode::build(std::vector<PhysBody>* objects) {
+void QuadNode::build(std::vector<PhysBody*>* objects) {
 	// Only for building the whole tree from zero.
 	// It adds everything into the root first and
 	// only then does it check for overflow. It's
@@ -24,7 +24,7 @@ void QuadNode::build(std::vector<PhysBody>* objects) {
 	// insert.
 
 	for (unsigned i = 0; i < objects->size(); i++) {
-		PhysBody* obj = &(*objects)[i];
+		PhysBody* obj = (*objects)[i];
 
 		if (obj->bbox_query(pos, pos + size))
 			object.push_back(obj);

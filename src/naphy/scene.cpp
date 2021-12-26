@@ -7,7 +7,8 @@
 
 static void scene_update_collision(Scene* scene);
 static void scene_update_force(Scene* scene);
-static void scene_update_constraints(Scene* scene);
+static void scene_update_force_constraints(Scene* scene);
+static void scene_update_impulse_constraints(Scene* scene);
 static void scene_update_velocity(Scene* scene);
 static void scene_remove_distant_objects(Scene* scene);
 
@@ -50,6 +51,12 @@ Scene::Scene(Vec2 grav, double dt, double w, double h, unsigned quadtree_cap) {
 }
 
 
+Scene::~Scene() {
+	for (auto o : body) delete o;
+	body.clear();
+}
+
+
 void Scene::pre_update() {
 	timing.tick();
 }
@@ -60,8 +67,9 @@ void Scene::update() {
 		///////////////////////////////////////
 
 		scene_update_collision(this);
+		scene_update_force_constraints(this);
 		scene_update_force(this);
-		scene_update_constraints(this);
+		scene_update_impulse_constraints(this);
 		scene_update_velocity(this);
 		for (unsigned i = 0; i < arbiter.size(); i++) {
 			arbiter[i].post_solve();
@@ -85,7 +93,7 @@ void Scene::draw(SDL_Renderer* rend) {
 	{
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 		for (unsigned i = 0; i < body.size(); i++) {
-			body[i].draw(rend);
+			body[i]->draw(rend);
 		}
 	}
 
@@ -119,22 +127,34 @@ void Scene::draw(SDL_Renderer* rend) {
 		}
 	}
 
+	if (debug_draw_springs)
+	{
+		for (unsigned i = 0; i < spring.size(); i++) {
+			Spring* s = &spring[i];
+			SDL_SetRenderDrawColor(rend, 255, 0, 0, 255);
+			SDL_RenderDrawLineF(rend, s->A->pos.x, s->A->pos.y, s->B->pos.x, s->B->pos.y);
+
+			const Vec2 dpos = s->A->pos - s->B->pos;
+			const Vec2 C = s->A->pos - std::min(dpos.len(), s->rest_length) * (dpos).normalized();
+			SDL_SetRenderDrawColor(rend, 0, 255, 0, 255);
+			SDL_RenderDrawLineF(rend, s->A->pos.x, s->A->pos.y, C.x, C.y);
+		}
+	}
+
+
+
 	SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 }
 
 
-unsigned Scene::add(PhysBody b) {
+PhysBody* Scene::add(PhysBody* b) {
 	body.push_back(b);
-	return body.size() - 1;
+	return b;
 }
 
 
 //==============================================================================
 // Helper functions
-
-
-// Warm starting: determine which arbiters we can keep
-// apply their impulses (old impulse must be projected onto the new tangent direction for friiction)
 
 
 static void collision_quadtree(Scene* scene) {
@@ -185,9 +205,9 @@ static void collision_quadtree(Scene* scene) {
 
 static void collision_naive(Scene* scene) {
 	for (unsigned i = 0; i < scene->body.size(); i++) {
-		PhysBody* A = &(scene->body[i]);
+		PhysBody* A = (scene->body[i]);
 		for (unsigned j = i + 1; j < scene->body.size(); j++) {
-			PhysBody* B = &(scene->body[j]);
+			PhysBody* B = (scene->body[j]);
 
 			// If neither body is awake, don't do collision.
 
@@ -224,22 +244,21 @@ static void scene_update_collision(Scene* scene) {
 
 static void scene_update_force(Scene* scene) {
 	for (unsigned i = 0; i < scene->body.size(); i++) {
-		PhysBody* b = &scene->body[i];
+		PhysBody* b = scene->body[i];
 
+		if (b->dynamic_state == PHYSBODY_STATE_STATIC)
+			continue;
 		if (b->m_inv == 0)
 			continue;
 
 		const Vec2 dv = (b->force * b->m_inv + scene->grav) * scene->timing.dt;
 		double dang = (b->torque * b->I_inv) * scene->timing.dt;
 
-		b->vel += dv;
-		b->angvel += dang;
-
 		if (std::abs(dang) < 0.05)
 			dang = 0;
 
-		if (b->dynamic_state == PHYSBODY_STATE_SLEEPING && dv.len_sqr() > 0.1)
-			b->dynamic_state = PHYSBODY_STATE_AWAKE;		
+		if (b->dynamic_state == PHYSBODY_STATE_SLEEPING && dv.len_sqr() > 0.01)
+			b->dynamic_state = PHYSBODY_STATE_AWAKE;
 
 		if (b->dynamic_state == PHYSBODY_STATE_AWAKE) {
 			b->vel += dv;
@@ -248,7 +267,14 @@ static void scene_update_force(Scene* scene) {
 	}
 }
 
-static void scene_update_constraints(Scene* scene) {
+
+static void scene_update_force_constraints(Scene* scene) {
+	for (unsigned i = 0; i < scene->spring.size(); i++) {
+		scene->spring[i].solve();
+	}
+}
+
+static void scene_update_impulse_constraints(Scene* scene) {
 	for (unsigned i = 0; i < scene->arbiter.size(); i++)
 		scene->arbiter[i].pre_solve();
 
@@ -256,14 +282,14 @@ static void scene_update_constraints(Scene* scene) {
 		for (unsigned i = 0; i < scene->arbiter.size(); i++)
 			scene->arbiter[i].solve();
 	}
-
-	// post_solve() goes after everything else
 }
 
 static void scene_update_velocity(Scene* scene) {
 	for (unsigned i = 0; i < scene->body.size(); i++) {
-		PhysBody* b = &scene->body[i];
+		PhysBody* b = scene->body[i];
 
+		if (b->dynamic_state == PHYSBODY_STATE_STATIC)
+			continue;
 		if (b->m_inv == 0)
 			continue;
 		if (b->dynamic_state != PHYSBODY_STATE_AWAKE)
@@ -290,13 +316,10 @@ static void scene_remove_distant_objects(Scene* scene) {
 	const Vec2 my_dr = my_ul + scene->size + 2 * Vec2(padding, padding);
 
 	for (int i = scene->body.size() - 1; i >= 0; i--) {
-		PhysBody* b = &scene->body[i];
+		PhysBody* b = scene->body[i];
 		if (!b->bbox_query(my_ul, my_dr)) {
-			scene->body.erase(scene->body.begin() + i);
+			// TODO : finish this
+			// TODO : remove all arbiters and springs that are involved with this body
 		}
 	}
-
-	// We don't have to remove the arbiters because the arbiter vector will be 
-	// cleared in the next scene_update_collision(). If we ever implement warm 
-	// starting, we'll have to remove all arbiters outisde the range, too.
 }

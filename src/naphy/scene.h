@@ -3,14 +3,17 @@
 #include "physbody.h"
 #include "arbiter.h"
 #include "quadtree.h"
+#include "spring.h"
 #include "utility/timing.h"
 
 
 struct Scene {
 	// All PhysBody instances registered in the scene.
-	std::vector<PhysBody> body;
+	std::vector<PhysBody*> body;
 	// All Arbiter instances registered in the scene.
 	std::vector<Arbiter> arbiter;
+	// All Spring instances registered in the scene.
+	std::vector<Spring> spring;
 	// Quad tree spatial indexing data structure for this scene.
 	QuadNode quadtree;
 	// Size of the scene. Everything outside the bounds + padding is safe to remove.
@@ -20,10 +23,13 @@ struct Scene {
 	// Gravity vector. Fine-tuning may be required because of scaling.
 	Vec2 grav;
 
+	~Scene();
+
 
 	bool debug_draw_shapes;
 	bool debug_draw_arbiters;
 	bool debug_draw_quadtree;
+	bool debug_draw_springs;
 	bool debug_use_quadtree;
 
 
@@ -60,7 +66,7 @@ struct Scene {
 	 * @brief Add a new PhysBody to the scene.
 	 * 
 	 * @param b The body to add.
-	 * @return Index of the object in the array.
+	 * @return The pointer to the body.
 	 */
-	unsigned add(PhysBody b);
+	PhysBody* add(PhysBody* b);
 };

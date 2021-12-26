@@ -34,7 +34,7 @@ struct QuadNode {
 	 * @brief Rebuild, should be called on the root.
 	 * @param objects All objects to pass to the tree.
 	 */
-	void build(std::vector<PhysBody>* objects);
+	void build(std::vector<PhysBody*>* objects);
 	/**
 	 * @brief Clear everything.
 	 */

@@ -2,18 +2,25 @@
 #include "physbody.h"
 #include "arbiter.h"
 
-// Helper functions, _cc means 'circle-circle', _cp mean 'circle-polygon' etc.
+// Specialized collision functions, _cc means 'circle-circle', _cp mean 'circle-polygon' etc.
 
 static int collision_cc(const PhysBody* const A, const PhysBody* const B, Arbiter* const R);
 static int collision_cp(const PhysBody* const A, const PhysBody* const B, Arbiter* const R);
 static int collision_pc(const PhysBody* const A, const PhysBody* const B, Arbiter* const R);
 static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbiter* const R);
 
-// These are helper functions for polygon-polygon algorithm.
+// Helper functions for the polygon-polygon algorithm.
 
+// Get axis of minimal penetration between bodies. It's always one of A's face normals.
+// Instead of projecting both shapes, we use support functions which is faster.
+// @param A,B are the physics bodies. Order matters.
+// @param out_dist is the penetration in the resulting axis.
+// @param out_index is the index of the face normal in body A.
 static void best_axis(const PhysBody* A, const PhysBody* B, double* out_dist, unsigned* out_index);
+// 
 static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_index, Vec2 ref_vert[2], Vec2 inc_vert[2]);
-static unsigned clip(Vec2 normal, double c, Vec2* out_face);
+//
+static std::vector<Vec2> clip(Vec2 normal, double c, const Vec2* face);
 
 
 int collision(Arbiter* const R) {
@@ -29,7 +36,7 @@ int collision(Arbiter* const R) {
 }
 
 
-/*********************************************************************************/
+//=================================================================================================
 
 
 static int collision_cc(const PhysBody* const A, const PhysBody* const B, Arbiter* const R) {
@@ -175,13 +182,9 @@ static int collision_pc(const PhysBody* const A, const PhysBody* const B, Arbite
 static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbiter* const R) {
 	/* 
 		Polygon-polygon collision algorithm.
-		This is a modified SAT algorithm that utilizes support functions to reduce
-		the number of checks. It is based on Dirk Gregorius' GDC 2013 talk. 
-		Instead of O(n+m), it's O((n+m)/2).
-
-		After that, we find the reference and incident edges, and clip the incident 
-		face against the edge face. That part is based on Erin Cato's presentations,
-		while the implementation is based on Randy Gaul's ImpulseEngine.
+		This is a modified SAT algorithm that utilizes support functions to reduce the number of 
+		checks. It is based on Dirk Gregorius' GDC 2013 talk. Instead of O(n+m), it's O((n+m)/2).
+		Then we find reference and incident edges, and clip the incident face against the edge face. 
 	*/
 
 	double distA, distB;
@@ -227,7 +230,6 @@ static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbite
 	R->normal = ref_vec_normal * dir;
 	R->depth = 0;
 
-
 	/* 
 		Equation of a line :: Ax + By = C
 		The vector (A, B) is the normal of the line
@@ -237,12 +239,16 @@ static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbite
 		normal is (A, B). (A, B) is ref_vec_normal.
 	*/
 	const double C = dot(ref_vec_normal, ref_vert[0]);
-
 	const double neg = -dot(ref_vec_normalized, ref_vert[0]);
 	const double pos = dot(ref_vec_normalized, ref_vert[1]);
-	if (clip(-ref_vec_normalized, neg, inc_vert) < 2) return 0;
-	if (clip(ref_vec_normalized, pos, inc_vert) < 2) return 0;
+	std::vector<Vec2> inc_clipped;
 
+	inc_clipped = clip(-ref_vec_normalized, neg, inc_vert);
+	inc_vert[0] = inc_clipped[0];
+	inc_vert[1] = inc_clipped[1];
+	inc_clipped = clip(ref_vec_normalized, pos, inc_vert);
+	inc_vert[0] = inc_clipped[0];
+	inc_vert[1] = inc_clipped[1];
 
 	for (unsigned i = 0; i < 2; i++) {
 		double sep = dot(ref_vec_normal, inc_vert[i]) - C;
@@ -258,9 +264,12 @@ static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbite
 }
 
 
+//=================================================================================================
+
+
 static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_face, Vec2 ref_vert[2], Vec2 inc_vert[2]) {
-	// Reference face is easy, but for incident we need the face whose normal is most parallel to reference face's normal.
-	// https://research.ncl.ac.uk/game/mastersdegree/gametechnologies/previousinformation/physics5collisionArbiters/2017%20Tutorial%205%20-%20Collision%20Arbiters.pdf
+	// We know what the reference face is (getting it here is mostly for readabililty).
+	// The incident face is the one that's most parallel to the reference face's normal.
 
 	Vec2 n = ref->shape.norm[ref_face];
 	n = inc->rot.transpose() * (ref->rot * n);
@@ -292,26 +301,19 @@ static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsig
 
 
 static void best_axis(const PhysBody* A, const PhysBody* B, double* out_dist, unsigned* out_index) {
-	/* 
-		Finds the axis where the penetration between polygons is minimal.
-		Instead of projecting both shapes onto each axis, we use support
-		functions which is more efficient (1 shape per axis instead of 2).
-	*/
-
 	double dist_best = -FLT_MAX;
 	unsigned index = 0;
 
 	for (unsigned i = 0; i < A->shape.norm.size(); i++) {
-		Vec2 n = A->shape.norm[i];
-		n = B->rot.transpose() * (A->rot * n);
+		// Everything is calculated in B's model-space, hence the rotations and translations.
 
+		const Vec2 n = B->rot.transpose() * (A->rot * A->shape.norm[i]);
 		const Vec2 sup = B->shape.support(-n);
 
 		Vec2 v = A->shape.vert[i];
 		v = B->rot.transpose() * (((A->rot * v) + A->pos) - B->pos);
-		double dist = dot(n, sup - v);
 
-		// Best signed distance (smallest possible intersection).
+		const double dist = dot(n, sup - v);
 		if (dist > dist_best) {
 			dist_best = dist;
 			index = i;
@@ -323,24 +325,26 @@ static void best_axis(const PhysBody* A, const PhysBody* B, double* out_dist, un
 }
 
 
-static unsigned clip(Vec2 normal, double c, Vec2* out_face) {
-	unsigned point_count = 0;
-	Vec2 out[] = { out_face[0], out_face[1] };
+static std::vector<Vec2> clip(Vec2 normal, double c, const Vec2* face) {
+	// Sutherland-Hodgman clopping algorithm (we only clip 'face' against 'normal').
 
-	double d1 = dot(normal, out_face[0]) - c;
-	double d2 = dot(normal, out_face[1]) - c;
+	std::vector<Vec2> out;
 
-	if (d1 <= 0) out[point_count++] = out_face[0];
-	if (d2 <= 0) out[point_count++] = out_face[1];
+	for (unsigned i = 0; i < 2; i++) {
+		Vec2 p0 = face[i];
+		Vec2 p1 = face[(i + 1) % 2];
 
-	if (d1 * d2 < 0) {
-		double alpha = d1 / (d1 - d2);
+		const double side_0 = dot(normal, p0) - c;
+		const double side_1 = dot(normal, p1) - c;
 
-		out[point_count++] = out_face[0] + alpha * (out_face[1] - out_face[0]);
+		const Vec2 intersecting = lerp(p0, p1, side_0 / (side_0 - side_1));
+
+		if (side_0 <= 0)
+			out.push_back(p0);
+
+		if (side_0 * side_1 < 0)
+			out.push_back(intersecting);
 	}
 
-	out_face[0] = out[0];
-	out_face[1] = out[1];
-
-	return point_count;
+	return out;
 }

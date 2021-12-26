@@ -21,19 +21,42 @@
 #define WIN_Y ((1080 - WIN_H) / 2)
 
 
+
+void init_test_scene(Scene* scene) {
+	scene->body.clear();
+	scene->arbiter.clear();
+	scene->spring.clear();
+
+	Shape poly = Shape({Vec2(-WIN_W/2,32), Vec2(-WIN_W/2,-32), Vec2(WIN_W/2,-32), Vec2(WIN_W/2,32)});
+	Shape poly2 = Shape({ Vec2(-4, 350), Vec2(-4, -350), Vec2(4, -350), Vec2(4, 350) });
+
+	PhysBody* b;
+	b = scene->add(new PhysBody(Vec2(16, WIN_H/2), poly2));			
+	b->calc_mass(0);
+	b = scene->add(new PhysBody(Vec2(WIN_W - 16, WIN_H/2), poly2));	
+	b->calc_mass(0);
+	b = scene->add(new PhysBody(Vec2(WIN_W/2, WIN_H - 100), poly));	
+	b->calc_mass(0);
+}
+
 void add_poly(GUI* gui, Scene* scene, GUIButton* btn) {
 	int vertices = 3 + (rand() % 4);
 	int size = 20 + (rand() % 30);
 	const Shape c = Shape(vertices, size);
-	scene->add(PhysBody(Vec2(400, 32), c));
+	scene->add(new PhysBody(Vec2(400, 32), c));
 }
 
 void add_circle(GUI* gui, Scene* scene, GUIButton* btn) {
 	double radius = 10 + rand() % 20;
 	const Shape c = Shape(radius);
-	scene->add(PhysBody(Vec2(400, 32), c));
+	scene->add(new PhysBody(Vec2(400, 32), c));
 }
 
+void reset_scene(GUI* gui, Scene* scene, GUIButton* btn) {
+	scene->body.clear();
+	scene->arbiter.clear();
+	init_test_scene(scene);
+}
 
 int main(int, char**) {
 	SDL_Init(SDL_INIT_VIDEO);
@@ -45,26 +68,33 @@ int main(int, char**) {
 	Input input;
 	GUI gui(gui_atlas, font);
 
-	Scene scene = Scene(Vec2(0, 400), 1 / 60.0, WIN_W, WIN_H, 16);
-	Shape poly = Shape({Vec2(-WIN_W/2,32), Vec2(-WIN_W/2,-32), Vec2(WIN_W/2,-32), Vec2(WIN_W/2,32)});
-	Shape poly2 = Shape({ Vec2(-4, 350), Vec2(-4, -350), Vec2(4, -350), Vec2(4, 350) });
 
-	unsigned b = 0;
-	b = scene.add(PhysBody(Vec2(16, WIN_H/2), poly2));			scene.body[b].calc_mass(0);
-	b = scene.add(PhysBody(Vec2(WIN_W - 16, WIN_H/2), poly2));	scene.body[b].calc_mass(0);
-	b = scene.add(PhysBody(Vec2(WIN_W/2, WIN_H - 100), poly));	scene.body[b].calc_mass(0);
-	
+	Scene scene = Scene(Vec2(0, 981), 1 / 60.0, WIN_W, WIN_H, 16);
+	init_test_scene(&scene);
+
+
+	PhysBody *b1, *b2;
+	b1 = scene.add(new PhysBody(Vec2(100, 460), Shape(40)));
+	b2 = scene.add(new PhysBody(Vec2(800, 300), Shape(30)));
+	b1->calc_mass(0);
+	scene.spring.push_back(Spring(b1, b2, 200, 200, 150));
+
+
 	GUICheckBox* draw_physbody = gui.add(new GUICheckBox(Vec2(100, 100), "Draw PhysBody"));
 				 draw_physbody->checked = true;
 	GUICheckBox* draw_arbiter = gui.add(new GUICheckBox(Vec2(124, 100), "Draw Arbiter"));
 	GUICheckBox* draw_quadtree = gui.add(new GUICheckBox(Vec2(148, 100), "Draw QuadTree"));
-	GUICheckBox* use_quadtree = gui.add(new GUICheckBox(Vec2(170, 100), "Use QuadTree"));
+	GUICheckBox* draw_springs = gui.add(new GUICheckBox(Vec2(170, 100), "Draw Spring"));
+				 draw_springs->checked = true;
+	GUICheckBox* use_quadtree = gui.add(new GUICheckBox(Vec2(192, 100), "Use QuadTree"));
 				 use_quadtree->checked = true;
 
 	GUIButton*	add_poly_btn = gui.add(new GUIButton(Vec2(100, 140), "Add new polygon"));
 				add_poly_btn->reg_click_callback(add_poly, NULL, &scene);
 	GUIButton* 	add_circle_btn = gui.add(new GUIButton(Vec2(100, 164), "Add new circle"));
 			   	add_circle_btn->reg_click_callback(add_circle, NULL, &scene);
+	GUIButton* 	reset_scene_btn = gui.add(new GUIButton(Vec2(100, 188), "Reset scene"));
+			   	reset_scene_btn->reg_click_callback(reset_scene, NULL, &scene);
 
 
 	bool running = true;
@@ -83,12 +113,18 @@ int main(int, char**) {
 		scene.debug_draw_shapes = draw_physbody->checked;
 		scene.debug_draw_arbiters = draw_arbiter->checked;
 		scene.debug_draw_quadtree = draw_quadtree->checked;
+		scene.debug_draw_springs = draw_springs->checked;
 		scene.debug_use_quadtree = use_quadtree->checked;
 
 		//======================================================================
 		//Game logic goes here
 
-		scene.body[b].set_angle(10 * DEG2RAD * sin((scene.timing.total + EPSILON) / 2));
+		if (input.key_down(SDL_SCANCODE_UP))
+			b2->vel.y -= 10;
+		if (input.key_down(SDL_SCANCODE_RIGHT))
+			b2->vel.x += 10;
+		if (input.key_down(SDL_SCANCODE_LEFT))
+			b2->vel.x -= 10;
 
 		//
 		//======================================================================
@@ -100,7 +136,7 @@ int main(int, char**) {
 
 		scene.draw(rend);
 		gui.draw(input);
-		draw_text(0, 0, font, "naphy ~ dev.2021.12.25", COL_WHITE, COL_BLUE);
+		draw_text(0, 0, font, "naphy ~ dev.2021.12.26", COL_WHITE, COL_BLUE);
 
 		std::stringstream ss;
 		ss << "obj: " << scene.body.size() << " fps:" << (int)(scene.timing.ticks / scene.timing.total);

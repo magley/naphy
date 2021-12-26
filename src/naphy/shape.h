@@ -13,25 +13,13 @@ enum ShapeType {
  * @brief Shape object, defining basic physical properties of a body.
  */
 struct Shape {
-    /**
-     * @brief See ShapeType enum for valid values.
-     * 
-     */
+    // See ShapeType enum for valid values.
 	unsigned type;
-    /**
-     * @brief Radius of the circle. Used only for circles.
-     * 
-     */
+    // Radius of the circle. Used only for circles.
 	double radius;
-    /**
-     * @brief Vector of all vertices. Used only for polygons.
-     * 
-     */
+    // Vector of all vertices. Used only for polygons.
 	std::vector<Vec2> vert;
-    /**
-     * @brief Vector of all normals. Used only for polygons.
-     * 
-     */
+    // Vector of all normals. Used only for polygons.
 	std::vector<Vec2> norm;
 
 

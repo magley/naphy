@@ -10,9 +10,7 @@ struct PhysBody;
  * @brief Structure that stores information about collision between two PhysBody instances.
  */
 struct Arbiter {
-    /**
-     * @brief Colliding body.
-     */
+    // Colliding body
 	PhysBody *A, *B;
     /**
      * @brief Intersection depth.

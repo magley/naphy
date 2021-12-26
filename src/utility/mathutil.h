@@ -10,19 +10,7 @@ const double DEG2RAD = PI / 180.0;
 const double RAD2DEG = 180.0 / PI;
 
 
-inline double clamp(double mini, double maxi, double val) {
-	if (val < mini)
-		return mini;
-	if (val > maxi)
-		return maxi;
-	return val;
-}
-
-
-/**
- * @brief 2D Vector. Components of type double.
- * 
- */
+// 2D vector.
 struct Vec2 {
 	double x, y;
 
@@ -57,10 +45,7 @@ inline Vec2 cross(double k, const Vec2& v) { return Vec2(v.y * -k, v.x * k); }
 inline double cross(const Vec2& a, const Vec2& b) { return a.x * b.y - a.y * b.x; } // z component of Vec3(a) x Vec3(b)
 
 
-/**
- * @brief 2x2 matrix. Components are of type double.
- * 
- */
+// 2x2 matrix.
 struct Mat2x2 {
 	double m00, m01, m10, m11;
 
@@ -90,3 +75,20 @@ struct Mat2x2 {
 	Mat2x2 transpose() const { return Mat2x2(m00, m10, m01, m11);	}
 	Mat2x2 inverse() const{ double d = determinant(); return Mat2x2(m11 / d, -m10 / d, -m01 / d, m00 / d); }
 };
+
+
+//==================================================================================================
+
+
+
+inline double clamp(double mini, double maxi, double val) {
+	if (val < mini)
+		return mini;
+	if (val > maxi)
+		return maxi;
+	return val;
+}
+
+inline Vec2 lerp(Vec2 v1, Vec2 v2, double t) {
+	return v1 + (v2 - v1) * t;
+}

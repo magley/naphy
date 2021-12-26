@@ -4,6 +4,24 @@
 #include <iostream>
 
 
+
+
+/**
+ * @brief Apply impulse on a body (only for dynamic bodies).
+ * 
+ * @param body The body to apply impulse to.
+ * @param impulse Vector of impulse.
+ * @param r Difference vector from body->pos to impulse point. 
+ */
+static void apply_impulse(PhysBody* body, const Vec2& impulse, const Vec2& r) {
+	if (body->dynamic_state == PHYSBODY_STATE_STATIC)
+		return;
+
+	body->vel	 += body->m_inv * impulse;
+	body->angvel += body->I_inv * cross(r, impulse);
+}
+
+
 Arbiter::Arbiter(PhysBody* A, PhysBody* B) {
 	this->A = A;
 	this->B = B;
@@ -52,28 +70,13 @@ void Arbiter::post_solve() {
 	if (A->dynamic_state == PHYSBODY_STATE_STATIC && B->dynamic_state == PHYSBODY_STATE_STATIC)
 		return;
 
-	const double slop = 0.035f;
-	const double bias = 0.6f;
+	const double slop = 0.025f;
+	const double bias = 0.5f;
 	const Vec2 correction = (std::max(depth - slop, 0.0) / (A->m_inv + B->m_inv)) * normal * bias;
 	A->pos -= correction * A->m_inv;
 	B->pos += correction * B->m_inv;
 }
 
-
-/**
- * @brief Apply impulse on a body (only for dynamic bodies).
- * 
- * @param body The body to apply impulse to.
- * @param impulse Vector of impulse.
- * @param r (C - body->pos), where C is the physical point in which impulse is applied. 
- */
-static void apply_impulse(PhysBody* body, const Vec2& impulse, const Vec2& r) {
-	if (body->dynamic_state == PHYSBODY_STATE_STATIC)
-		return;
-
-	body->vel	 += body->m_inv * impulse;
-	body->angvel += body->I_inv * cross(r, impulse);
-}
 
 
 void Arbiter::solve() {
@@ -125,12 +128,15 @@ void Arbiter::solve() {
 		const Vec2 pa = A->pos - r1;
 		const Vec2 pb = B->pos - r2;
 		const double d = dot(pb - pa, normal);
-		const double b = -0.01 * d / (60);
+		const double b = -0.00 * d / (60);
 
 		const double r1n = cross(r1, normal);
 		const double r2n = cross(r2, normal);
 		const double m_effective = (A->m_inv + r1n * r1n * A->I_inv) + (B->m_inv + r2n * r2n * B->I_inv);
 		double Pn = -(1.0 + e + b) * dvn / m_effective / contact.size();
+
+		if (std::abs(Pn) < EPSILON)
+			break;
 
 		const double Pn_temp = Pn_total;
 		Pn_total = std::max(Pn_temp + Pn, 0.0);
@@ -146,7 +152,7 @@ void Arbiter::solve() {
 		const Vec2 tangent = (dv - (normal * dot(dv, normal))).normalized();
 
 		double Pt = -(1.0) * dot(dv, tangent) / m_effective / contact.size();
-		if (std::abs(Pt) <= EPSILON)
+		if (std::abs(Pt) < EPSILON)
 			break;
 
 		/* 
@@ -180,7 +186,7 @@ void Arbiter::solve() {
 		*/
 
 		if (std::abs(Pt) >= sfric * std::abs(Pn)) {
-			Pt = -kfric * Pn;
+			Pt = -kfric * std::abs(Pn);
 		} else {
 			Pt = 0;
 		}
