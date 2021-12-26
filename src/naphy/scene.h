@@ -7,34 +7,24 @@
 
 
 struct Scene {
-	/**
-	 * @brief All PhysBody instances registered in the scene.
-	 */
+	// All PhysBody instances registered in the scene.
 	std::vector<PhysBody> body;
-	/**
-	 * @brief All Arbiter instances registered in the scene.
-	 */
+	// All Arbiter instances registered in the scene.
 	std::vector<Arbiter> arbiter;
-	/**
-	 * @brief Quad tree spatial indexing data structure for this scene.
-	 */
+	// Quad tree spatial indexing data structure for this scene.
 	QuadNode quadtree;
-	/**
-	 * @brief Size of the scene. Everything outside the bounds + padding
-	 * is safe to remove.
-	 */
+	// Size of the scene. Everything outside the bounds + padding is safe to remove.
 	Vec2 size;
-
-	/**
-	 * @brief Handles current program time state for constant framerate.
-	 */
+	// Stores time, frame count etc. Used to maintain a fixed framerate.
 	Timing timing;
-
-
-	/**
-	 * @brief Gravity vector. Fine-tuning may be required because of scaling.
-	 */
+	// Gravity vector. Fine-tuning may be required because of scaling.
 	Vec2 grav;
+
+
+	bool debug_draw_shapes;
+	bool debug_draw_arbiters;
+	bool debug_draw_quadtree;
+	bool debug_use_quadtree;
 
 
 	/**
@@ -64,9 +54,8 @@ struct Scene {
 	 * @brief Renders the whole scene.
 	 * 
 	 * @param rend Pointer to the SDL_Renderer where everything will be drawn.
-	 * @param draw_meta [Debug] draw arbiters and quad tree.
 	 */
-	void draw(SDL_Renderer* rend, bool draw_meta);
+	void draw(SDL_Renderer* rend);
 	/**
 	 * @brief Add a new PhysBody to the scene.
 	 * 

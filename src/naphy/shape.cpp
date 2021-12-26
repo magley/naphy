@@ -2,38 +2,38 @@
 
 
 Shape::Shape() {
-    type = SHAPE_CIRCLE;
-    radius = 10;
+	type = SHAPE_CIRCLE;
+	radius = 10;
 }
 
 
 Shape::Shape(double circle_radius) {
-    type = SHAPE_CIRCLE;
-    radius = circle_radius;
+	type = SHAPE_CIRCLE;
+	radius = circle_radius;
 }
 
 
 Shape::Shape(unsigned regular_poly_vertex_count, double regular_poly_radius) {
-    type = SHAPE_POLYGON;
-    for (unsigned i = 0; i < regular_poly_vertex_count; i++) {
-        const double angle = i * (2.0 * PI) / regular_poly_vertex_count;
-        const double c = cos(angle) * regular_poly_radius;
-        const double s = sin(angle) * regular_poly_radius;
-        vert.push_back(Vec2(c, s));
-    }
-    compute_normals();
+	type = SHAPE_POLYGON;
+	for (unsigned i = 0; i < regular_poly_vertex_count; i++) {
+		const double angle = i * (2.0 * PI) / regular_poly_vertex_count;
+		const double c = cos(angle) * regular_poly_radius;
+		const double s = sin(angle) * regular_poly_radius;
+		vert.push_back(Vec2(c, s));
+	}
+	compute_normals();
 }
 
 
 Shape::Shape(std::vector<Vec2> polygon_vertices) {
-    type = SHAPE_POLYGON;
-    vert = polygon_vertices;
-    compute_normals();
+	type = SHAPE_POLYGON;
+	vert = polygon_vertices;
+	compute_normals();
 }
 
 
 void Shape::query(double* out_area, double* out_area_moment, Vec2* out_centroid) const {
-    /*
+	/*
 		https://en.wikipedia.org/wiki/Second_moment_of_area
 		https://en.wikipedia.org/wiki/List_of_second_moments_of_area
 				
@@ -76,7 +76,7 @@ void Shape::query(double* out_area, double* out_area_moment, Vec2* out_centroid)
 
 
 int Shape::get_orientation() const {
-    /*
+	/*
 		http://www.faqs.org/faqs/graphics/algorithms-faq/ section 2.07.
 		
 		This isn't the fastest way, but it doesn't matter since this procedure
@@ -96,7 +96,7 @@ int Shape::get_orientation() const {
 
 
 void Shape::compute_normals() {
-    /*
+	/*
 		Polygon normals are always pointing outwards (this
 		is by convention), but if the vertices are given in 
 		a counter-clockwise order, the normals will be flipped
@@ -119,7 +119,7 @@ void Shape::compute_normals() {
 
 
 Vec2 Shape::support(Vec2 direction) const {
-    /*
+	/*
 		For circles it'll be:
 			dir.normalized() * radius
 		

@@ -3,11 +3,13 @@
 
 GUICheckBox::GUICheckBox() {
 	pos = Vec2(0, 0);
+	checked = false;
 }
 
 GUICheckBox::GUICheckBox(Vec2 pos, std::string hover_text) {
 	this->pos = pos;
 	this->hover_text = hover_text;
+	this->checked = false;
 }
 
 void GUICheckBox::draw(const Image& img_gui) {

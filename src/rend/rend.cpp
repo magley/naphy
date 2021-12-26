@@ -70,22 +70,23 @@ void draw_poly(SDL_Renderer* renderer, std::vector<Vec2> vert, Vec2 pos, double 
 
 
 void draw_arrow(SDL_Renderer* renderer, double x1, double y1, double x2, double y2) {
-	// Arrow = line & isosceles triangle.
-	// Tip of the triangle has to be at (x2, y2),
-	// so we have shorten the line at the point B
-	// The triangle's origin is the base altitude. 
+	// Arrow = line + equilateral triangle.
 
-	const double tri_base = 12;
-	const double tri_height = 10;
+	const Vec2 A = Vec2(x1, y1);
+	const Vec2 B = Vec2(x2, y2);
+	const double triangle_size = (B - A).len() / 4;
+	const Vec2 C = Vec2(B.x, B.y) - Vec2(0, triangle_size / 2); // Where the triangle base starts
 
-	Vec2 A = Vec2(x1, x1);
-	Vec2 B = Vec2(x2, y2);
-	const Vec2 ABn = (B - A).normalized();
-	B -= ABn * (tri_height * 0.866025); // 0.866025 ~ sqrt(3) / 2
-	std::vector<Vec2> triangle = { Vec2(tri_height, 0), Vec2(0, -tri_base/2), Vec2(0, tri_base/2) };
-	
+	std::vector<Vec2> triangle;
+	for (unsigned i = 0; i < 3; i++) {
+		double theta = i * (2.0 * PI) / 3;
+		const double c = cos(theta) * triangle_size;
+		const double s = sin(theta) * triangle_size;
+		triangle.push_back(Vec2(c, s));
+	}
+
 	SDL_RenderDrawLineF(renderer, A.x, A.y, B.x, B.y);
-	draw_poly(renderer, triangle, Vec2(B.x, B.y), std::atan2(B.y - A.y, B.x - A.x));
+	draw_poly(renderer, triangle, C, std::atan2(B.y - A.y, B.x - A.x));
 }
 
 

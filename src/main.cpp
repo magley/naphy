@@ -15,8 +15,8 @@
 #include "gui/gui_checkbox.h"
 
 
-#define WIN_W 800
-#define WIN_H 608
+#define WIN_W 1280
+#define WIN_H 720
 #define WIN_X ((1920 - WIN_W) / 2)
 #define WIN_Y ((1080 - WIN_H) / 2)
 
@@ -45,19 +45,26 @@ int main(int, char**) {
 	Input input;
 	GUI gui(gui_atlas, font);
 
-	Scene scene = Scene(Vec2(0, 400), 1 / 60.0, WIN_W, WIN_H, 4);
-	Shape poly = Shape(std::vector<Vec2> { Vec2(-400, 32), Vec2(-400, -32), Vec2(400, -32), Vec2(400, 32), });
+	Scene scene = Scene(Vec2(0, 400), 1 / 60.0, WIN_W, WIN_H, 16);
+	Shape poly = Shape({Vec2(-WIN_W/2,32), Vec2(-WIN_W/2,-32), Vec2(WIN_W/2,-32), Vec2(WIN_W/2,32)});
+	Shape poly2 = Shape({ Vec2(-4, 350), Vec2(-4, -350), Vec2(4, -350), Vec2(4, 350) });
 
 	unsigned b = 0;
-	b = scene.add(PhysBody(Vec2(400, 500), poly));
-	scene.body[b].calc_mass(0);
-
+	b = scene.add(PhysBody(Vec2(16, WIN_H/2), poly2));			scene.body[b].calc_mass(0);
+	b = scene.add(PhysBody(Vec2(WIN_W - 16, WIN_H/2), poly2));	scene.body[b].calc_mass(0);
+	b = scene.add(PhysBody(Vec2(WIN_W/2, WIN_H - 100), poly));	scene.body[b].calc_mass(0);
 	
-	GUICheckBox* view_meta_cb = gui.add(new GUICheckBox(Vec2(100, 100), "Display arbiters and quad tree"));
-	GUIButton* add_poly_btn = gui.add(new GUIButton(Vec2(100, 140), "Add new polygon"));
+	GUICheckBox* draw_physbody = gui.add(new GUICheckBox(Vec2(100, 100), "Draw PhysBody"));
+				 draw_physbody->checked = true;
+	GUICheckBox* draw_arbiter = gui.add(new GUICheckBox(Vec2(124, 100), "Draw Arbiter"));
+	GUICheckBox* draw_quadtree = gui.add(new GUICheckBox(Vec2(148, 100), "Draw QuadTree"));
+	GUICheckBox* use_quadtree = gui.add(new GUICheckBox(Vec2(170, 100), "Use QuadTree"));
+				 use_quadtree->checked = true;
+
+	GUIButton*	add_poly_btn = gui.add(new GUIButton(Vec2(100, 140), "Add new polygon"));
 				add_poly_btn->reg_click_callback(add_poly, NULL, &scene);
-	GUIButton* add_circle_btn = gui.add(new GUIButton(Vec2(100, 164), "Add new circle"));
-				add_circle_btn->reg_click_callback(add_circle, NULL, &scene);
+	GUIButton* 	add_circle_btn = gui.add(new GUIButton(Vec2(100, 164), "Add new circle"));
+			   	add_circle_btn->reg_click_callback(add_circle, NULL, &scene);
 
 
 	bool running = true;
@@ -73,6 +80,11 @@ int main(int, char**) {
 		input.update();
 		gui.update(input);
 
+		scene.debug_draw_shapes = draw_physbody->checked;
+		scene.debug_draw_arbiters = draw_arbiter->checked;
+		scene.debug_draw_quadtree = draw_quadtree->checked;
+		scene.debug_use_quadtree = use_quadtree->checked;
+
 		//======================================================================
 		//Game logic goes here
 
@@ -82,11 +94,11 @@ int main(int, char**) {
 		//======================================================================
 
 		scene.update();
-		SDL_SetRenderDrawColor(rend, 0, 0, 0, 255);
+		SDL_SetRenderDrawColor(rend, 29, 18, 37, 255);
 		SDL_RenderClear(rend);
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 
-		scene.draw(rend, view_meta_cb->checked);
+		scene.draw(rend);
 		gui.draw(input);
 		draw_text(0, 0, font, "naphy ~ dev.2021.12.25", COL_WHITE, COL_BLUE);
 

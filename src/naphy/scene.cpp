@@ -11,7 +11,8 @@ static void scene_update_constraints(Scene* scene);
 static void scene_update_velocity(Scene* scene);
 static void scene_remove_distant_objects(Scene* scene);
 
-
+static void collision_quadtree(Scene* scene);
+static void collision_naive(Scene* scene);
 
 
 /**
@@ -79,21 +80,31 @@ void Scene::update() {
 }
 
 
-void Scene::draw(SDL_Renderer* rend, bool draw_meta) {
-	SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
-	for (unsigned i = 0; i < body.size(); i++) {
-		body[i].draw(rend);
+void Scene::draw(SDL_Renderer* rend) {
+	if (debug_draw_shapes) 
+	{
+		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
+		for (unsigned i = 0; i < body.size(); i++) {
+			body[i].draw(rend);
+		}
 	}
 
-	if (draw_meta) {
+	if (debug_draw_arbiters)
+	{
 		SDL_SetRenderDrawColor(rend, 0, 255, 0, 255);
 		for (unsigned i = 0; i < arbiter.size(); i++) {
 			for (unsigned j = 0; j < arbiter[i].contact.size(); j++) {
-				const Vec2* cp = &arbiter[i].contact[j];
-				draw_circle_filled(rend, cp->x, cp->y, 5);
+				const Vec2& cp = arbiter[i].contact[j];
+				const Vec2& n = arbiter[i].normal;
+
+				draw_circle_filled(rend, cp.x, cp.y, 5);
+				draw_arrow(rend, cp.x, cp.y, cp.x + n.x * 30, cp.y + n.y * 30);
 			}
 		}
+	}
 
+	if (debug_draw_quadtree)
+	{
 		std::vector<QuadNode*> quadtree_nodes = quadtree.get_all_nodes();
 		SDL_SetRenderDrawColor(rend, 255, 255, 0, 50);
 		for (unsigned i = 0; i < quadtree_nodes.size(); i++) {
@@ -122,9 +133,11 @@ unsigned Scene::add(PhysBody b) {
 // Helper functions
 
 
-static void scene_update_collision(Scene* scene) {
-	scene->arbiter.clear();
-	scene->quadtree.clear();
+// Warm starting: determine which arbiters we can keep
+// apply their impulses (old impulse must be projected onto the new tangent direction for friiction)
+
+
+static void collision_quadtree(Scene* scene) {
 	scene->quadtree.build(&scene->body);
 	const std::vector<QuadNode*> quad_groups = scene->quadtree.get_leaves();
 	std::set<PhysBodyPair> checked_pairs;
@@ -139,8 +152,10 @@ static void scene_update_collision(Scene* scene) {
 			for (unsigned j = i + 1; j < body_group->size(); j++) {
 				PhysBody* B = (*body_group)[j];
 
-				if (A->dynamic_state == PHYSBODY_STATE_SLEEPING 
-				&& B->dynamic_state == PHYSBODY_STATE_SLEEPING)
+				// If neither body is awake, don't do collision.
+
+				if (A->dynamic_state != PHYSBODY_STATE_AWAKE 
+				&& B->dynamic_state != PHYSBODY_STATE_AWAKE)
 					continue;
 
 				// Avoid duplicate checking.
@@ -165,6 +180,45 @@ static void scene_update_collision(Scene* scene) {
 				scene->arbiter.push_back(a);
 			}
 		}
+	}
+}
+
+static void collision_naive(Scene* scene) {
+	for (unsigned i = 0; i < scene->body.size(); i++) {
+		PhysBody* A = &(scene->body[i]);
+		for (unsigned j = i + 1; j < scene->body.size(); j++) {
+			PhysBody* B = &(scene->body[j]);
+
+			// If neither body is awake, don't do collision.
+
+			if (A->dynamic_state != PHYSBODY_STATE_AWAKE 
+			&& B->dynamic_state != PHYSBODY_STATE_AWAKE)
+				continue;
+
+			// Middle-phase
+
+			if (A->bbox_collision(B) == 0)
+				continue;
+
+			// Narrow-phase
+
+			Arbiter a(A, B);
+			a.build();
+			if (a.contact.size() == 0)
+				continue;
+			scene->arbiter.push_back(a);
+		}
+	}
+}
+
+static void scene_update_collision(Scene* scene) {
+	scene->arbiter.clear();
+	scene->quadtree.clear();
+
+	if (scene->debug_use_quadtree){
+		collision_quadtree(scene);
+	} else {
+		collision_naive(scene);
 	}
 }
 

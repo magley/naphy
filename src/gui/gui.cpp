@@ -33,13 +33,16 @@ void GUI::update(const Input& input) {
 
 	for (GUIButton* o : button) {
 		if (input.mouse_in_bounds(o->pos.x, o->pos.x + 48, o->pos.y, o->pos.y + 24)) {
-			o->clicked = input.mouse_down(SDL_BUTTON_LMASK);
-
-			if (input.mouse_up(SDL_BUTTON_LMASK)) {
+			if (o->clicked && input.mouse_up(SDL_BUTTON_LMASK)) {
 				if (o->click_callback != NULL) {
 					o->click_callback(o->gui, o->scene, o);
 				}
 			}
+
+			if (o->clicked)
+				o->clicked = input.mouse_down(SDL_BUTTON_LMASK);
+			else
+				o->clicked = input.mouse_press(SDL_BUTTON_LMASK);
 		} else {
 			o->clicked = false;
 		}

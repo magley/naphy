@@ -6,12 +6,14 @@ GUIButton::GUIButton() {
 	click_callback = NULL;
 	gui = NULL;
 	scene = NULL;
+	clicked = false;
 }
 
 GUIButton::GUIButton(Vec2 pos, std::string hover_text) {
 	this->pos = pos;
 	this->hover_text = hover_text;
-	click_callback = NULL;
+	this->click_callback = NULL;
+	this->clicked = false;
 }
 
 void GUIButton::draw(const Image& img_gui) {
