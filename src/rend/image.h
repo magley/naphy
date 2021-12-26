@@ -23,8 +23,6 @@ struct Image {
 	 * @brief Height of the image. Do not modify manully.
 	 */
 	int h;
-
-
 	/**
 	 * @brief Construct an empty Image object. Don't use this manually.
 	 */
