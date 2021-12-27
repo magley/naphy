@@ -33,10 +33,13 @@ void init_test_scene(Scene* scene) {
 	PhysBody* b;
 	b = scene->add(new PhysBody(Vec2(16, WIN_H/2), poly2));			
 	b->calc_mass(0);
+	b->material.set_jelly();
 	b = scene->add(new PhysBody(Vec2(WIN_W - 16, WIN_H/2), poly2));	
 	b->calc_mass(0);
+	b->material.set_jelly();
 	b = scene->add(new PhysBody(Vec2(WIN_W/2, WIN_H - 100), poly));	
 	b->calc_mass(0);
+	b->material.set_ice();
 }
 
 void add_poly(GUI* gui, Scene* scene, GUIButton* btn) {
@@ -74,16 +77,20 @@ int main(int, char**) {
 
 
 	PhysBody *b0, *b1, *b2;
-	b0 = scene.add(new PhysBody(Vec2(900, 460), Shape(10, 40)));
+	b0 = scene.add(new PhysBody(Vec2(900, 360), Shape(10, 140)));
+	b0->calc_mass(100);
+	b0->angvel = 0.5;
 	b0->m_inv = 0;
 	b0->m = 0;
-	b1 = scene.add(new PhysBody(Vec2(200, 160), Shape(10)));
+	b0->material.set_metal();
+	b1 = scene.add(new PhysBody(Vec2(200, 460), Shape(40)));
 	b1->calc_mass(0);
-	b2 = scene.add(new PhysBody(Vec2(500, 300), Shape(4, 30)));
+	b1->material.set_metal();
+	b2 = scene.add(new PhysBody(Vec2(500, 300), Shape(6, 30)));
 	
 
-	scene.spring.push_back(Spring(b0, b2, 0, 200, 200));
-	scene.spring.push_back(Spring(b1, b2, 100, 100, 100));
+	scene.spring.push_back(Spring(b0, b2, 0, 300, 200));
+	scene.spring.push_back(Spring(b1, b2, 100, 100, 50));
 
 
 	GUICheckBox* draw_physbody = gui.add(new GUICheckBox(Vec2(100, 100), "Draw PhysBody"));

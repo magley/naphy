@@ -91,8 +91,13 @@ void Scene::update() {
 void Scene::draw(SDL_Renderer* rend) {
 	if (debug_draw_shapes) 
 	{
-		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 		for (unsigned i = 0; i < body.size(); i++) {
+			SDL_SetRenderDrawColor(rend, 
+				body[i]->material.col.r,
+				body[i]->material.col.g,
+				body[i]->material.col.b,
+				body[i]->material.col.a
+			);
 			body[i]->draw(rend);
 		}
 	}

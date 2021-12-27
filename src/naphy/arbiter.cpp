@@ -36,9 +36,9 @@ Arbiter::Arbiter(PhysBody* A, PhysBody* B) {
 
 void Arbiter::build() {
 	collision(this);
-	e = std::min(A->e, B->e);
-	sfric = std::sqrt(A->sfric * A->sfric);
-	kfric = std::sqrt(A->kfric * A->kfric);
+	e = std::max(A->material.e, B->material.e);
+	sfric = std::sqrt(A->material.sfric * B->material.sfric);
+	kfric = std::sqrt(A->material.kfric * B->material.kfric);
 }
 
 

@@ -3,6 +3,7 @@
 
 #include "utility/mathutil.h"
 #include "shape.h"
+#include "physmaterial.h"
 
 
 struct SDL_Renderer;
@@ -62,17 +63,11 @@ struct PhysBody {
      */
 	double m, m_inv;
     /**
-     * @brief sfric is static friction, kfric is kinetic friction.
-     */
-	double sfric, kfric;
-    /**
-     * @brief Coefficient of restitution i.e. bounce factor. Values should be in range (0, 1).
-     */
-	double e;
-    /**
      * @brief Shape of this body. Determines the body's mass and moment of inertia.
      */
     Shape shape;
+
+    PhysMaterial material;
 
 
     /**

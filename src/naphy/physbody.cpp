@@ -7,10 +7,8 @@ PhysBody::PhysBody() {
     dynamic_state = PHYSBODY_STATE_STATIC;
     pos = vel = force = Vec2(0, 0);
     ang = angvel = torque = 0.0;
-	sfric = 0.4;
-	kfric = 0.3;
-	e = 0.3;
     m = m_inv = I = I_inv = 0;
+	material = PhysMaterial();
 
     set_angle(ang);
     calc_mass(0.1);
@@ -19,18 +17,12 @@ PhysBody::PhysBody() {
 
 PhysBody::PhysBody(Vec2 position, Shape shape) {
 	this->shape = shape;
-
 	dynamic_state = PHYSBODY_STATE_AWAKE;
 	pos = position;
-	vel = Vec2(0, 0);
-	force = Vec2(0, 0);
-	ang = 0;
-	angvel = 0;
-	torque = 0;
-	sfric = 0.4;
-	kfric = 0.3;
-	e = 0.3;
+	vel = force = Vec2(0, 0);
+    ang = angvel = torque = 0.0;
 	m = m_inv = I = I_inv = 0;
+	material = PhysMaterial();
 
 	set_angle(ang);
 	calc_mass(0.1);
@@ -42,17 +34,16 @@ void PhysBody::calc_mass(double density) {
 	shape.query(&area, &area_moment, NULL);
 
 	if (shape.type == SHAPE_POLYGON && shape.vert.size() < 3) {
-		m = 1;
-		I = 1;
-		m_inv = 1;
-		I_inv = 1;
-		return;
+		m = 1 * density;
+		I = 1 * density;
+		m_inv = 1 * density;;
+		I_inv = 1 * density;
+	} else {
+		m = density * area;
+		I = density * area_moment * 2;
+		m_inv = m ? (1.0 / m) : 0.0;
+		I_inv = I ? (1.0 / I) : 0.0;
 	}
-
-	m = density * area;
-	I = density * area_moment;
-	m_inv = m ? (1.0 / m) : 0.0;
-	I_inv = I ? (1.0 / I) : 0.0;
 
 	if (m_inv == 0 && I_inv == 0)
 		dynamic_state = PHYSBODY_STATE_STATIC;
