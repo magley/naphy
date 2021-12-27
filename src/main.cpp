@@ -73,11 +73,17 @@ int main(int, char**) {
 	init_test_scene(&scene);
 
 
-	PhysBody *b1, *b2;
-	b1 = scene.add(new PhysBody(Vec2(100, 460), Shape(40)));
-	b2 = scene.add(new PhysBody(Vec2(800, 300), Shape(30)));
+	PhysBody *b0, *b1, *b2;
+	b0 = scene.add(new PhysBody(Vec2(900, 460), Shape(10, 40)));
+	b0->m_inv = 0;
+	b0->m = 0;
+	b1 = scene.add(new PhysBody(Vec2(200, 160), Shape(10)));
 	b1->calc_mass(0);
-	scene.spring.push_back(Spring(b1, b2, 200, 200, 150));
+	b2 = scene.add(new PhysBody(Vec2(500, 300), Shape(4, 30)));
+	
+
+	scene.spring.push_back(Spring(b0, b2, 0, 200, 200));
+	scene.spring.push_back(Spring(b1, b2, 100, 100, 100));
 
 
 	GUICheckBox* draw_physbody = gui.add(new GUICheckBox(Vec2(100, 100), "Draw PhysBody"));
@@ -120,11 +126,11 @@ int main(int, char**) {
 		//Game logic goes here
 
 		if (input.key_down(SDL_SCANCODE_UP))
-			b2->vel.y -= 10;
-		if (input.key_down(SDL_SCANCODE_RIGHT))
-			b2->vel.x += 10;
+			b2->vel.y -= 20;
 		if (input.key_down(SDL_SCANCODE_LEFT))
 			b2->vel.x -= 10;
+		if (input.key_down(SDL_SCANCODE_RIGHT))
+			b2->vel.x += 10;
 
 		//
 		//======================================================================
@@ -136,7 +142,7 @@ int main(int, char**) {
 
 		scene.draw(rend);
 		gui.draw(input);
-		draw_text(0, 0, font, "naphy ~ dev.2021.12.26", COL_WHITE, COL_BLUE);
+		draw_text(0, 0, font, "naphy ~ dev.2021.12.27", COL_WHITE, COL_BLUE);
 
 		std::stringstream ss;
 		ss << "obj: " << scene.body.size() << " fps:" << (int)(scene.timing.ticks / scene.timing.total);

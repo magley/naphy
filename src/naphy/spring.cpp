@@ -1,6 +1,7 @@
 #include "spring.h"
 #include "physbody.h"
 
+
 Spring::Spring(PhysBody* A, PhysBody* B, double d, double k, double c) {
 	this->A = A;
 	this->B = B;
@@ -9,12 +10,10 @@ Spring::Spring(PhysBody* A, PhysBody* B, double d, double k, double c) {
 	this->c = c;
 }
 
-#include <stdio.h>
 
 void Spring::solve() {
 	if (A->dynamic_state == PHYSBODY_STATE_STATIC && B->dynamic_state == PHYSBODY_STATE_STATIC)
 		return;
-
 
 	const Vec2 dp = B->pos - A->pos;
 	const Vec2 dv = B->vel - A->vel;

@@ -248,21 +248,25 @@ static void scene_update_force(Scene* scene) {
 
 		if (b->dynamic_state == PHYSBODY_STATE_STATIC)
 			continue;
-		if (b->m_inv == 0)
-			continue;
-
-		const Vec2 dv = (b->force * b->m_inv + scene->grav) * scene->timing.dt;
+		
+		Vec2 dv = (b->force * b->m_inv + scene->grav) * scene->timing.dt;
 		double dang = (b->torque * b->I_inv) * scene->timing.dt;
 
-		if (std::abs(dang) < 0.05)
-			dang = 0;
-
-		if (b->dynamic_state == PHYSBODY_STATE_SLEEPING && dv.len_sqr() > 0.01)
-			b->dynamic_state = PHYSBODY_STATE_AWAKE;
+		if (b->dynamic_state == PHYSBODY_STATE_SLEEPING) {
+			if (b->m_inv != 0 && dv.len_sqr() + b->vel.len_sqr() > 0.01)
+				b->dynamic_state = PHYSBODY_STATE_AWAKE;
+			if (b->I_inv != 0 && std::abs(dang) + std::abs(b->angvel) > 0.01)
+				b->dynamic_state = PHYSBODY_STATE_AWAKE;
+		}	
 
 		if (b->dynamic_state == PHYSBODY_STATE_AWAKE) {
-			b->vel += dv;
-			b->angvel += dang;
+			if (b->m_inv != 0) {
+				b->vel += dv;
+			}
+
+			if (b->I_inv != 0) {
+				b->angvel += dang;
+			}
 		}
 	}
 }
@@ -288,21 +292,22 @@ static void scene_update_velocity(Scene* scene) {
 	for (unsigned i = 0; i < scene->body.size(); i++) {
 		PhysBody* b = scene->body[i];
 
-		if (b->dynamic_state == PHYSBODY_STATE_STATIC)
-			continue;
-		if (b->m_inv == 0)
-			continue;
 		if (b->dynamic_state != PHYSBODY_STATE_AWAKE)
 			continue;
 
-		if (b->vel.len_sqr() <= 0.01) {
+		if (b->vel.len_sqr() <= 0.01 && std::abs(b->angvel) <= 0.01) {
 			b->dynamic_state = PHYSBODY_STATE_SLEEPING;
 			b->vel = Vec2(0, 0);
 			b->angvel = 0;
 		} else {
-			b->pos += b->vel * scene->timing.dt;
-			b->ang += b->angvel * scene->timing.dt;
-			b->set_angle(b->ang);
+			if (b->m_inv != 0) {
+				b->pos += b->vel * scene->timing.dt;
+			}
+
+			if (b->I_inv != 0) {
+				b->ang += b->angvel * scene->timing.dt;
+				b->set_angle(b->ang);
+			}
 		}
 
 		b->force = {0, 0};
