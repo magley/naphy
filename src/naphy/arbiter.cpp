@@ -118,7 +118,7 @@ void Arbiter::solve() {
 		const Vec2 pa = A->pos - r1;
 		const Vec2 pb = B->pos - r2;
 		const double d = dot(pb - pa, normal);
-		const double b = -0.00 * d / (60);
+		const double b = -1.0 / (60.0);
 
 		const double r1n = cross(r1, normal);
 		const double r2n = cross(r2, normal);

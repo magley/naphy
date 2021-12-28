@@ -53,8 +53,8 @@ PhysBody* init_test_scene(Scene* scene) {
 		b1->material.set_metal();
 	b2 = scene->add(new PhysBody(Vec2(500, 300), Shape(6, 30)));
 
-	scene->spring.push_back(Spring(b0, b2, 150, 1, 0.4));
-	scene->spring.push_back(Spring(b1, b2, 200, 2, 0.8));
+	scene->spring.push_back(Spring(b0, b2, 150, 1, 2));
+	scene->spring.push_back(Spring(b1, b2, 200, 2, 4));
 
 
 	PhysBody *c0, *c1;
@@ -64,7 +64,7 @@ PhysBody* init_test_scene(Scene* scene) {
 			p = c1;
 		}
 		if (i > 0) {
-			scene->spring.push_back(Spring(c0, c1, 0, 5, 0.8));
+			scene->spring.push_back(Spring(c0, c1, 0, 5, 3));
 		}
 		c0 = c1;
 	}
@@ -95,7 +95,7 @@ void reset_scene(GUI* gui, Scene* scene, GUIButton* btn) {
 int main(int, char**) {
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_Window* win = SDL_CreateWindow("naphy", WIN_X, WIN_Y, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
-	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
 	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
 	Image font(rend, "res/font.png");
 	Image gui_atlas(rend, "res/gui.png");
@@ -148,12 +148,12 @@ int main(int, char**) {
 		//
 		//Game logic goes here
 
-		if (input.key_down(SDL_SCANCODE_UP))
-			player->vel.y -= 20;
+		if (input.key_down(SDL_SCANCODE_UP) && player->vel.y > -300)
+			player->vel.y -= 5;
 		if (input.key_down(SDL_SCANCODE_LEFT) && player->vel.x > -300)
-			player->vel.x -= 10;
+			player->vel.x -= 5;
 		if (input.key_down(SDL_SCANCODE_RIGHT) && player->vel.x < 300)
-			player->vel.x += 10;
+			player->vel.x += 5;
 		if (input.key_press(SDL_SCANCODE_SPACE)) {
 			if (player->dynamic_state == PHYSBODY_STATE_STATIC)
 				player->calc_mass(10);
@@ -178,7 +178,7 @@ int main(int, char**) {
 		draw_text(0, 0, font, "naphy ~ dev.2021.12.28", COL_WHITE, COL_BLUE);
 
 		std::stringstream ss;
-		ss << "obj: " << scene.body.size() << " fps:" << (int)(scene.timing.ticks / scene.timing.total);
+		ss << "obj: " << scene.body.size();
 		draw_text(0, FONT_CH_H, font, ss.str(), COL_WHITE, COL_BLUE);
 
 		SDL_RenderPresent(rend);

@@ -158,7 +158,10 @@ PhysBody* Scene::add(PhysBody* b) {
 
 
 void Scene::clear() {
-	for (auto o : body) delete o;
+	for (auto o : body) { 
+		delete o; 
+		o = NULL; 
+	}
 	body.clear();
 	arbiter.clear();
 	spring.clear();
