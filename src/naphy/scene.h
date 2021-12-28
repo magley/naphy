@@ -33,40 +33,27 @@ struct Scene {
 	bool debug_use_quadtree;
 
 
-	/**
-	 * @brief Construct a new Scene object.
-	 */
+	// Construct a new Scene object.
 	Scene();
-	/**
-	 * @brief Construct a new Scene object
-	 * 
-	 * @param grav Gravity.
-	 * @param dt Change in time.
-	 * @param w Maximum width of the scene. Used for the quad tree.
-	 * @param h Maximum height of the scene. Used for the quad tree.
-	 * @param quadtree_capacity Capacity of a quadtree node.
-	 */
+	// Construct a new Scene object
+	// @param grav Gravity.
+	// @param dt Change in time.
+	// @param w Maximum width of the scene. Used for the quad tree.
+	// @param h Maximum height of the scene. Used for the quad tree.
+	// @param quadtree_capacity Capacity of a quadtree node.
 	Scene(Vec2 grav, double dt, double w, double h, unsigned quadtree_capacity);
 
-	/**
-	 * @brief Nothing physics-related happens here.
-	 */
+	// Nothing physics-related happens here.
 	void pre_update();
-	/**
-	 * @brief Updates the whole scene.
-	 */
+	// Updates the whole scene.
 	void update();
-	/**
-	 * @brief Renders the whole scene.
-	 * 
-	 * @param rend Pointer to the SDL_Renderer where everything will be drawn.
-	 */
+	// Renders the whole scene.
+	// @param rend Pointer to the SDL_Renderer where everything will be drawn.
 	void draw(SDL_Renderer* rend);
-	/**
-	 * @brief Add a new PhysBody to the scene.
-	 * 
-	 * @param b The body to add.
-	 * @return The pointer to the body.
-	 */
+	// @brief Add a new PhysBody to the scene.
+	// @param b The body to add.
+	// @return The pointer to the body.
 	PhysBody* add(PhysBody* b);
+	// Removes all PhysBodies, Arbiters and Springs from the scene and frees memory.
+	void clear();
 };

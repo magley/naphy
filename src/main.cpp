@@ -22,13 +22,13 @@
 
 
 
-void init_test_scene(Scene* scene) {
+PhysBody* init_test_scene(Scene* scene) {
 	scene->body.clear();
 	scene->arbiter.clear();
 	scene->spring.clear();
 
 	Shape poly = Shape({Vec2(-WIN_W/2,32), Vec2(-WIN_W/2,-32), Vec2(WIN_W/2,-32), Vec2(WIN_W/2,32)});
-	Shape poly2 = Shape({ Vec2(-4, 350), Vec2(-4, -350), Vec2(4, -350), Vec2(4, 350) });
+	Shape poly2 = Shape({ Vec2(-32, 350), Vec2(-32, -350), Vec2(32, -350), Vec2(32, 350) });
 
 	PhysBody* b;
 	b = scene->add(new PhysBody(Vec2(16, WIN_H/2), poly2));			
@@ -40,6 +40,38 @@ void init_test_scene(Scene* scene) {
 	b = scene->add(new PhysBody(Vec2(WIN_W/2, WIN_H - 100), poly));	
 	b->calc_mass(0);
 	b->material.set_ice();
+
+	PhysBody* p;
+
+	PhysBody *b0, *b1, *b2;
+	b0 = scene->add(new PhysBody(Vec2(900, 360), Shape(10, 140)));
+		b0->m_inv = 0;
+		b0->m = 0;
+		b0->material.set_metal();
+	b1 = scene->add(new PhysBody(Vec2(200, 460), Shape(40)));
+		b1->calc_mass(0);
+		b1->material.set_metal();
+	b2 = scene->add(new PhysBody(Vec2(500, 300), Shape(6, 30)));
+
+	scene->spring.push_back(Spring(b0, b2, 150, 1, 0.4));
+	scene->spring.push_back(Spring(b1, b2, 200, 2, 0.8));
+
+
+	PhysBody *c0, *c1;
+	for (int i = 0; i < 50; i++) {
+		c1 = scene->add(new PhysBody(Vec2(100 + 3 * i, 300), Shape(5)));
+		if (i == 0) {
+			p = c1;
+		}
+		if (i > 0) {
+			scene->spring.push_back(Spring(c0, c1, 0, 5, 0.8));
+		}
+		c0 = c1;
+	}
+	
+	p->calc_mass(10);
+
+	return p;
 }
 
 void add_poly(GUI* gui, Scene* scene, GUIButton* btn) {
@@ -56,8 +88,7 @@ void add_circle(GUI* gui, Scene* scene, GUIButton* btn) {
 }
 
 void reset_scene(GUI* gui, Scene* scene, GUIButton* btn) {
-	scene->body.clear();
-	scene->arbiter.clear();
+	scene->clear();
 	init_test_scene(scene);
 }
 
@@ -73,24 +104,8 @@ int main(int, char**) {
 
 
 	Scene scene = Scene(Vec2(0, 981), 1 / 60.0, WIN_W, WIN_H, 16);
-	init_test_scene(&scene);
+	PhysBody* player = init_test_scene(&scene);
 
-
-	PhysBody *b0, *b1, *b2;
-	b0 = scene.add(new PhysBody(Vec2(900, 360), Shape(10, 140)));
-	b0->calc_mass(100);
-	b0->angvel = 0.5;
-	b0->m_inv = 0;
-	b0->m = 0;
-	b0->material.set_metal();
-	b1 = scene.add(new PhysBody(Vec2(200, 460), Shape(40)));
-	b1->calc_mass(0);
-	b1->material.set_metal();
-	b2 = scene.add(new PhysBody(Vec2(500, 300), Shape(6, 30)));
-	
-
-	scene.spring.push_back(Spring(b0, b2, 0, 300, 200));
-	scene.spring.push_back(Spring(b1, b2, 100, 100, 50));
 
 
 	GUICheckBox* draw_physbody = gui.add(new GUICheckBox(Vec2(100, 100), "Draw PhysBody"));
@@ -129,18 +144,29 @@ int main(int, char**) {
 		scene.debug_draw_springs = draw_springs->checked;
 		scene.debug_use_quadtree = use_quadtree->checked;
 
-		//======================================================================
+		//-----------------------------------------------------------------------------------------
+		//
 		//Game logic goes here
 
 		if (input.key_down(SDL_SCANCODE_UP))
-			b2->vel.y -= 20;
-		if (input.key_down(SDL_SCANCODE_LEFT))
-			b2->vel.x -= 10;
-		if (input.key_down(SDL_SCANCODE_RIGHT))
-			b2->vel.x += 10;
+			player->vel.y -= 20;
+		if (input.key_down(SDL_SCANCODE_LEFT) && player->vel.x > -300)
+			player->vel.x -= 10;
+		if (input.key_down(SDL_SCANCODE_RIGHT) && player->vel.x < 300)
+			player->vel.x += 10;
+		if (input.key_press(SDL_SCANCODE_SPACE)) {
+			if (player->dynamic_state == PHYSBODY_STATE_STATIC)
+				player->calc_mass(10);
+			else {
+				player->vel = {0, 0};
+				player->angvel = 0;
+				player->calc_mass(0.0);
+			}
+		}
 
 		//
-		//======================================================================
+		//
+		//-----------------------------------------------------------------------------------------
 
 		scene.update();
 		SDL_SetRenderDrawColor(rend, 29, 18, 37, 255);
@@ -149,7 +175,7 @@ int main(int, char**) {
 
 		scene.draw(rend);
 		gui.draw(input);
-		draw_text(0, 0, font, "naphy ~ dev.2021.12.27", COL_WHITE, COL_BLUE);
+		draw_text(0, 0, font, "naphy ~ dev.2021.12.28", COL_WHITE, COL_BLUE);
 
 		std::stringstream ss;
 		ss << "obj: " << scene.body.size() << " fps:" << (int)(scene.timing.ticks / scene.timing.total);

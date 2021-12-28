@@ -6,13 +6,10 @@
 
 
 
-/**
- * @brief Apply impulse on a body (only for dynamic bodies).
- * 
- * @param body The body to apply impulse to.
- * @param impulse Vector of impulse.
- * @param r Difference vector from body->pos to impulse point. 
- */
+// Apply impulse on a body. Static bodies are ignored.
+// @param body The target body.
+// @param impulse Vector of impulse.
+// @param r Difference vector from body->pos to the impulse point. 
 static void apply_impulse(PhysBody* body, const Vec2& impulse, const Vec2& r) {
 	if (body->dynamic_state == PHYSBODY_STATE_STATIC)
 		return;
@@ -55,23 +52,16 @@ void Arbiter::pre_solve() {
 
 
 void Arbiter::post_solve() {
-	/*
-		Bias-slop correction mechanism.
-
-		The idea is that sequential impulses may overshoot 
-		or undershoot, resulting in one body sinking into 
-		a static body (like a floor). We can push the body
-		in the opposite direction by an amount proportional
-		to the bodies' intersection depth along the normal.
-
-		The parameters slop and bias may need fine-tuning.
-	*/
+	// Bias-slop correction mechanism.
+	// The idea is that sequential impulses may overshoot/undershoot, resulting in bodies clipping.
+	// We can push the body in the opposite direction along the normal by an amount proportional to 
+	// the two bodies' intersection depth . The parameters slop and bias may need fine-tuning.
 
 	if (A->dynamic_state == PHYSBODY_STATE_STATIC && B->dynamic_state == PHYSBODY_STATE_STATIC)
 		return;
 
-	const double slop = 0.025f;
-	const double bias = 0.5f;
+	const double slop = 0.01f;	// How much clipping is allowed
+	const double bias = 0.6f;	// How much to push the body backwards
 	const Vec2 correction = (std::max(depth - slop, 0.0) / (A->m_inv + B->m_inv)) * normal * bias;
 	A->pos -= correction * A->m_inv;
 	B->pos += correction * B->m_inv;

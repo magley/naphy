@@ -3,7 +3,8 @@
 #include "utility/mathutil.h"
 struct PhysBody;
 
-// Binds two bodies using Hooke's law.
+// A Spring binds two bodies using Hooke's law.
+// TODO The parameters k and c should be normalized to [0, 1].
 struct Spring {
 	// Connected body.
 	PhysBody *A, *B;
@@ -18,8 +19,8 @@ struct Spring {
 	// @param A First body.
 	// @param B Second body.
 	// @param rest_length Distance at which the bodes are in equilibrium.
-	// @param k Strength of the spring. If unsure, try 100.
-	// @param c Damping factor. If unsure, try 100.
+	// @param k Strength of the spring. If unsure, try 0.5.
+	// @param c Damping factor. If unsure, try 0.5.
 	Spring(PhysBody* A, PhysBody* B, double rest_length, double k, double c);
 
 	// Apply force to the two bound bodies.

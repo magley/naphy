@@ -23,7 +23,7 @@ struct QuadNode {
 	 */
 	std::vector<PhysBody*> object;
 	/**
-	 * @brief Children. If no children, all must be NULL.
+	 * @brief Children. If no children, all pointers are guaranteed to be NULL.
 	 */
 	QuadNode* child[4];
 

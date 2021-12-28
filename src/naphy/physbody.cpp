@@ -47,6 +47,8 @@ void PhysBody::calc_mass(double density) {
 
 	if (m_inv == 0 && I_inv == 0)
 		dynamic_state = PHYSBODY_STATE_STATIC;
+	else if (dynamic_state == PHYSBODY_STATE_STATIC)
+		dynamic_state = PHYSBODY_STATE_AWAKE;
 }
 
 

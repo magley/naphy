@@ -52,8 +52,7 @@ Scene::Scene(Vec2 grav, double dt, double w, double h, unsigned quadtree_cap) {
 
 
 Scene::~Scene() {
-	for (auto o : body) delete o;
-	body.clear();
+	clear();
 }
 
 
@@ -155,6 +154,14 @@ void Scene::draw(SDL_Renderer* rend) {
 PhysBody* Scene::add(PhysBody* b) {
 	body.push_back(b);
 	return b;
+}
+
+
+void Scene::clear() {
+	for (auto o : body) delete o;
+	body.clear();
+	arbiter.clear();
+	spring.clear();
 }
 
 
@@ -278,8 +285,10 @@ static void scene_update_force(Scene* scene) {
 
 
 static void scene_update_force_constraints(Scene* scene) {
-	for (unsigned i = 0; i < scene->spring.size(); i++) {
-		scene->spring[i].solve();
+	for (unsigned j = 0; j < 5; j++) {
+		for (unsigned i = 0; i < scene->spring.size(); i++) {
+			scene->spring[i].solve();
+		}
 	}
 }
 
@@ -297,21 +306,22 @@ static void scene_update_velocity(Scene* scene) {
 	for (unsigned i = 0; i < scene->body.size(); i++) {
 		PhysBody* b = scene->body[i];
 
-		if (b->dynamic_state != PHYSBODY_STATE_AWAKE)
-			continue;
+		if (b->dynamic_state == PHYSBODY_STATE_AWAKE) {
+			if (b->vel.len_sqr() <= 0.01 && std::abs(b->angvel) <= 0.01) {
+				b->dynamic_state = PHYSBODY_STATE_SLEEPING;
+				b->vel = Vec2(0, 0);
+				b->angvel = 0;
+			} else {
+				if (b->m_inv != 0) {
+					if (b->vel.len() > 5000)
+						b->vel = b->vel.normalized() * 5000;
+					b->pos += b->vel * scene->timing.dt;
+				}
 
-		if (b->vel.len_sqr() <= 0.01 && std::abs(b->angvel) <= 0.01) {
-			b->dynamic_state = PHYSBODY_STATE_SLEEPING;
-			b->vel = Vec2(0, 0);
-			b->angvel = 0;
-		} else {
-			if (b->m_inv != 0) {
-				b->pos += b->vel * scene->timing.dt;
-			}
-
-			if (b->I_inv != 0) {
-				b->ang += b->angvel * scene->timing.dt;
-				b->set_angle(b->ang);
+				if (b->I_inv != 0) {
+					b->ang += b->angvel * scene->timing.dt;
+					b->set_angle(b->ang);
+				}
 			}
 		}
 
