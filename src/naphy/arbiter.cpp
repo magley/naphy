@@ -63,13 +63,15 @@ void Arbiter::post_solve() {
 	const double slop = 0.01f;	// How much clipping is allowed
 	const double bias = 0.6f;	// How much to push the body backwards
 	const Vec2 correction = (std::max(depth - slop, 0.0) / (A->m_inv + B->m_inv)) * normal * bias;
-	A->pos -= correction * A->m_inv;
-	B->pos += correction * B->m_inv;
+	
+	if (A->m_inv != 0) A->pos -= correction * A->m_inv;
+	if (B->m_inv != 0) B->pos += correction * B->m_inv;
 }
 
 
-
 void Arbiter::solve() {
+	if (A->m_inv == 0 && B->m_inv == 0)
+		return;
 	if (A->dynamic_state == PHYSBODY_STATE_STATIC && B->dynamic_state == PHYSBODY_STATE_STATIC)
 		return;
 	if (depth < EPSILON)
@@ -103,7 +105,6 @@ void Arbiter::solve() {
 	*/
 	double Pn_total = 0.0;
 
-
 	for (unsigned i = 0; i < contact.size(); ++i) {
 		/* (1) normal impulse */
 
@@ -123,6 +124,7 @@ void Arbiter::solve() {
 		const double r1n = cross(r1, normal);
 		const double r2n = cross(r2, normal);
 		const double m_effective = (A->m_inv + r1n * r1n * A->I_inv) + (B->m_inv + r2n * r2n * B->I_inv);
+
 		double Pn = -(1.0 + e + b) * dvn / m_effective / contact.size();
 
 		if (std::abs(Pn) < EPSILON)
@@ -142,6 +144,7 @@ void Arbiter::solve() {
 		const Vec2 tangent = (dv - (normal * dot(dv, normal))).normalized();
 
 		double Pt = -(1.0) * dot(dv, tangent) / m_effective / contact.size();
+
 		if (std::abs(Pt) < EPSILON)
 			break;
 
@@ -175,11 +178,10 @@ void Arbiter::solve() {
 				friction = -tangent * kinetic_friction * |normal_force|
 		*/
 
-		if (std::abs(Pt) >= sfric * std::abs(Pn)) {
+		if (std::abs(Pt) >= sfric * std::abs(Pn))
 			Pt = -kfric * std::abs(Pn);
-		} else {
+		else
 			Pt = 0;
-		}
 
 		const Vec2 PT = tangent * Pt;
 		apply_impulse(A, -PT, r1);

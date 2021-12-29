@@ -3,12 +3,9 @@
 #include <set>
 
 
-
-
 static void scene_update_collision(Scene* scene);
 static void scene_update_force(Scene* scene);
-static void scene_update_force_constraints(Scene* scene);
-static void scene_update_impulse_constraints(Scene* scene);
+static void scene_update_constraints(Scene* scene);
 static void scene_update_velocity(Scene* scene);
 static void scene_remove_distant_objects(Scene* scene);
 
@@ -16,10 +13,8 @@ static void collision_quadtree(Scene* scene);
 static void collision_naive(Scene* scene);
 
 
-/**
- * @brief Pairs of physics bodies with a '<' operator.
- * Used in ordered sequences to detect duplicates.
- */
+// Pairs of physics bodies with a '<' operator.
+// Used in ordered sequences to detect duplicates.
 struct PhysBodyPair {
 	PhysBody* A;
 	PhysBody* B;
@@ -63,19 +58,17 @@ void Scene::pre_update() {
 
 void Scene::update() {
 	while (timing.accumulator >= timing.dt) {
-		///////////////////////////////////////
+		// Update scene
 
 		scene_update_collision(this);
-		scene_update_force_constraints(this);
 		scene_update_force(this);
-		scene_update_impulse_constraints(this);
+		scene_update_constraints(this);
 		scene_update_velocity(this);
 		for (unsigned i = 0; i < arbiter.size(); i++) {
 			arbiter[i].post_solve();
 		}
 
-		///////////////////////////////////////
-	
+		// Update timestep
 	
 		timing.accumulator -= timing.dt;
 		timing.total += timing.dt / timing.scale;
@@ -145,8 +138,6 @@ void Scene::draw(SDL_Renderer* rend) {
 		}
 	}
 
-
-
 	SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 }
 
@@ -168,7 +159,7 @@ void Scene::clear() {
 }
 
 
-//==============================================================================
+//=================================================================================================
 // Helper functions
 
 
@@ -194,7 +185,7 @@ static void collision_quadtree(Scene* scene) {
 					continue;
 
 				// Avoid duplicate checking.
-				// It's a waste of CPU and duplicate arbiters mess up impulses.
+				// It's a waste of CPU and duplicate arbiters mess up constraint solvers (why?).
 
 				PhysBodyPair p = { A, B };
 				if (checked_pairs.find(p) != checked_pairs.end())
@@ -258,6 +249,17 @@ static void scene_update_collision(Scene* scene) {
 }
 
 static void scene_update_force(Scene* scene) {
+	// Accumulate external forces.
+	// For now, only springs. Gravity is done below, in-place.
+
+	for (unsigned j = 0; j < 5; j++) {
+		for (unsigned i = 0; i < scene->spring.size(); i++) {
+			scene->spring[i].solve();
+		}
+	}
+
+	// Apply force
+
 	for (unsigned i = 0; i < scene->body.size(); i++) {
 		PhysBody* b = scene->body[i];
 
@@ -286,16 +288,7 @@ static void scene_update_force(Scene* scene) {
 	}
 }
 
-
-static void scene_update_force_constraints(Scene* scene) {
-	for (unsigned j = 0; j < 5; j++) {
-		for (unsigned i = 0; i < scene->spring.size(); i++) {
-			scene->spring[i].solve();
-		}
-	}
-}
-
-static void scene_update_impulse_constraints(Scene* scene) {
+static void scene_update_constraints(Scene* scene) {
 	for (unsigned i = 0; i < scene->arbiter.size(); i++)
 		scene->arbiter[i].pre_solve();
 

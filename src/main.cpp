@@ -34,7 +34,7 @@ PhysBody* init_test_scene(Scene* scene) {
 	b = scene->add(new PhysBody(Vec2(16, WIN_H/2), poly2));			
 	b->calc_mass(0);
 	b->material.set_jelly();
-	b = scene->add(new PhysBody(Vec2(WIN_W - 16, WIN_H/2), poly2));	
+	b = scene->add(new PhysBody(Vec2(WIN_W - 16, WIN_H/2), poly2));
 	b->calc_mass(0);
 	b->material.set_jelly();
 	b = scene->add(new PhysBody(Vec2(WIN_W/2, WIN_H - 100), poly));	
@@ -52,19 +52,20 @@ PhysBody* init_test_scene(Scene* scene) {
 		b1->calc_mass(0);
 		b1->material.set_metal();
 	b2 = scene->add(new PhysBody(Vec2(500, 300), Shape(6, 30)));
+		b2->material.set_jelly();
 
-	scene->spring.push_back(Spring(b0, b2, 150, 1, 2));
-	scene->spring.push_back(Spring(b1, b2, 200, 2, 4));
-
+	scene->spring.push_back(Spring(b0, b2, 150, 2, 4));
+	scene->spring.push_back(Spring(b1, b2, 200, 4, 8));
 
 	PhysBody *c0, *c1;
 	for (int i = 0; i < 50; i++) {
 		c1 = scene->add(new PhysBody(Vec2(100 + 3 * i, 300), Shape(5)));
+		c1->calc_mass(0.1);
 		if (i == 0) {
 			p = c1;
 		}
 		if (i > 0) {
-			scene->spring.push_back(Spring(c0, c1, 0, 5, 3));
+			scene->spring.push_back(Spring(c0, c1, 0, 10, 6));
 		}
 		c0 = c1;
 	}
@@ -175,7 +176,7 @@ int main(int, char**) {
 
 		scene.draw(rend);
 		gui.draw(input);
-		draw_text(0, 0, font, "naphy ~ dev.2021.12.28", COL_WHITE, COL_BLUE);
+		draw_text(0, 0, font, "naphy ~ dev.2021.12.29", COL_WHITE, COL_BLUE);
 
 		std::stringstream ss;
 		ss << "obj: " << scene.body.size();
