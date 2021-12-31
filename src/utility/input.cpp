@@ -1,10 +1,9 @@
 #include "input.h"
-#include "SDL2/SDL_keyboard.h"
-#include "SDL2/SDL_mouse.h"
-#include "SDL2/SDL_events.h"
+#include "SDL2/SDL.h"
 
+Input::Input(SDL_Window* win) {
+	this->win = win;
 
-Input::Input() {
 	for (unsigned i = 0; i < 256; i++) {
 		kb_prev[i] = 0;
 		kb_curr[i] = 0;
@@ -30,6 +29,14 @@ void Input::update() {
 	mouse_x_prev = mouse_x;
 	mouse_y_prev = mouse_y;
 	mouse_curr = SDL_GetMouseState(&mouse_x, &mouse_y);
+
+	int win_w, win_h;
+	int view_w, view_h;
+	SDL_GetWindowSize(win, &win_w, &win_h);
+	SDL_RenderGetLogicalSize(SDL_GetRenderer(win), &view_w, &view_h);
+
+	mouse_x = mouse_x * ((double)view_w / win_w);
+	mouse_y = mouse_y * ((double)view_h / win_h);
 }
 
 

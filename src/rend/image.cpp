@@ -26,3 +26,15 @@ void Image::draw(int x, int y, int subimage_x, int subimage_y, int subimage_w, i
     const SDL_Rect src{subimage_x, subimage_y, subimage_w, subimage_h};
     SDL_RenderCopy(rend, img, &src, &dest);
 }
+
+void Image::draw(int x, int y, int w, int h, int subimage_x, int subimage_y, int subimage_w, int subimage_h) const {
+    const SDL_Rect dest{x, y, w, h};
+    const SDL_Rect src{subimage_x, subimage_y, subimage_w, subimage_h};
+    SDL_RenderCopy(rend, img, &src, &dest);
+}
+
+void Image::draw(int x, int y, double scale, int subimage_x, int subimage_y, int subimage_w, int subimage_h) const {
+    const SDL_Rect dest{x, y, (int)(subimage_w * scale), (int)(subimage_h * scale)};
+    const SDL_Rect src{subimage_x, subimage_y, subimage_w, subimage_h};
+    SDL_RenderCopy(rend, img, &src, &dest);
+}

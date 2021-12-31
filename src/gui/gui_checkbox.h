@@ -5,13 +5,16 @@
 #include "utility/mathutil.h"
 #include <string>
 
+struct GUI;
+
 struct GUICheckBox {
+	GUI* gui;
 	Vec2 pos;
 	bool checked;
 	std::string hover_text;
 
 	GUICheckBox();
-	GUICheckBox(Vec2 pos, std::string hover_text = "");
+	GUICheckBox(GUI* gui, Vec2 pos, std::string hover_text = "");
 
 	void draw(const Image& img_gui);
 };

@@ -20,6 +20,10 @@
 #define WIN_X ((1920 - WIN_W) / 2)
 #define WIN_Y ((1080 - WIN_H) / 2)
 
+#define VIEW_W 960
+#define VIEW_H 540
+
+#define VIEW_SCALE ((double)((WIN_W / VIEW_W)))
 
 
 PhysBody* init_test_scene(Scene* scene) {
@@ -27,68 +31,76 @@ PhysBody* init_test_scene(Scene* scene) {
 	scene->arbiter.clear();
 	scene->spring.clear();
 
-	Shape poly = Shape({Vec2(-WIN_W/2,32), Vec2(-WIN_W/2,-32), Vec2(WIN_W/2,-32), Vec2(WIN_W/2,32)});
-	Shape poly2 = Shape({ Vec2(-32, 350), Vec2(-32, -350), Vec2(32, -350), Vec2(32, 350) });
+	Shape rect = Shape({{-500, 32}, {-500, -32}, {500, -32}, {500, 32}});
+
+	// Floor
 
 	PhysBody* b;
-	b = scene->add(new PhysBody(Vec2(16, WIN_H/2), poly2));			
-	b->calc_mass(0);
-	b->material.set_jelly();
-	b = scene->add(new PhysBody(Vec2(WIN_W - 16, WIN_H/2), poly2));
-	b->calc_mass(0);
-	b->material.set_jelly();
-	b = scene->add(new PhysBody(Vec2(WIN_W/2, WIN_H - 100), poly));	
+	b = scene->add(new PhysBody({VIEW_W / 2, VIEW_H - 48}, rect));
 	b->calc_mass(0);
 	b->material.set_ice();
 
-	PhysBody* p;
+	// Springy thingy
 
 	PhysBody *b0, *b1, *b2;
-	b0 = scene->add(new PhysBody(Vec2(900, 360), Shape(10, 140)));
+	b0 = scene->add(new PhysBody(Vec2(400, 260), Shape(10, 60)));
 		b0->m_inv = 0;
 		b0->m = 0;
-		b0->material.set_metal();
-	b1 = scene->add(new PhysBody(Vec2(200, 460), Shape(40)));
+		b0->material.set_jelly();
+	b1 = scene->add(new PhysBody(Vec2(100, 200), Shape(40)));
 		b1->calc_mass(0);
-		b1->material.set_metal();
-	b2 = scene->add(new PhysBody(Vec2(500, 300), Shape(6, 30)));
+		b1->material.set_jelly();
+	b2 = scene->add(new PhysBody(Vec2(200, 300), Shape(6, 30)));
 		b2->material.set_jelly();
 
-	scene->spring.push_back(Spring(b0, b2, 150, 2, 4));
-	scene->spring.push_back(Spring(b1, b2, 200, 4, 8));
+	scene->spring.push_back(Spring(b0, b2, 50, 2, 4));
+	scene->spring.push_back(Spring(b1, b2, 40, 4, 8));
 
-	PhysBody *c0, *c1;
-	for (int i = 0; i < 50; i++) {
-		c1 = scene->add(new PhysBody(Vec2(100 + 3 * i, 300), Shape(5)));
-		c1->calc_mass(0.1);
-		if (i == 0) {
-			p = c1;
+	// Curtain
+
+	const int bw = 15;
+	const int bh = 10;
+
+	std::vector<std::vector<PhysBody*>> curtain(bh, std::vector<PhysBody*>(bw, NULL));
+
+	for (int y = 0; y < bh; y++) {
+		for (int x = 0; x < bw; x++) {
+			curtain[y][x] = new PhysBody(Vec2(600 + 16 * x, 100 + 16 * y), Shape(4));
+			scene->add(curtain[y][x]);
+
+			if (y == 0) {
+				curtain[y][x]->calc_mass(0);
+			}
 		}
-		if (i > 0) {
-			scene->spring.push_back(Spring(c0, c1, 0, 10, 6));
-		}
-		c0 = c1;
 	}
-	
-	p->calc_mass(10);
 
-	return p;
+	for (int y = 0; y < bh; y++) {
+		for (int x = 0; x < bw; x++) {
+			if (y < bh-1) 
+				scene->spring.push_back(Spring(curtain[y][x], curtain[y + 1][x], 0, 4, 1));
+			if (x < bw-1) 
+				scene->spring.push_back(Spring(curtain[y][x], curtain[y][x + 1], 0, 4, 1));
+		}
+	}
+
+	b = scene->add(new PhysBody({16, 0}, Shape(10)));
+	return b;
 }
 
-void add_poly(GUI* gui, Scene* scene, GUIButton* btn) {
+void add_poly(Scene* scene, GUIButton* btn) {
 	int vertices = 3 + (rand() % 4);
 	int size = 20 + (rand() % 30);
 	const Shape c = Shape(vertices, size);
 	scene->add(new PhysBody(Vec2(400, 32), c));
 }
 
-void add_circle(GUI* gui, Scene* scene, GUIButton* btn) {
+void add_circle(Scene* scene, GUIButton* btn) {
 	double radius = 10 + rand() % 20;
 	const Shape c = Shape(radius);
 	scene->add(new PhysBody(Vec2(400, 32), c));
 }
 
-void reset_scene(GUI* gui, Scene* scene, GUIButton* btn) {
+void reset_scene(Scene* scene, GUIButton* btn) {
 	scene->clear();
 	init_test_scene(scene);
 }
@@ -98,32 +110,35 @@ int main(int, char**) {
 	SDL_Window* win = SDL_CreateWindow("naphy", WIN_X, WIN_Y, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
 	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
 	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
+	SDL_RenderSetLogicalSize(rend, VIEW_W, VIEW_H);
+	SDL_Rect viewport = {0, 0, VIEW_W, VIEW_H};
+	SDL_RenderSetViewport(rend, &viewport);
 	Image font(rend, "res/font.png");
 	Image gui_atlas(rend, "res/gui.png");
-	Input input;
-	GUI gui(gui_atlas, font);
+	Input input(win);
+	GUI gui(win, gui_atlas, font);
 
 
-	Scene scene = Scene(Vec2(0, 981), 1 / 60.0, WIN_W, WIN_H, 16);
+	Scene scene = Scene(Vec2(0, 981), 1 / 60.0, VIEW_W, VIEW_H, 16);
 	PhysBody* player = init_test_scene(&scene);
 
 
 
-	GUICheckBox* draw_physbody = gui.add(new GUICheckBox(Vec2(100, 100), "Draw PhysBody"));
+	GUICheckBox* draw_physbody = gui.add(new GUICheckBox(&gui, Vec2(100, 100), "Draw PhysBody"));
 				 draw_physbody->checked = true;
-	GUICheckBox* draw_arbiter = gui.add(new GUICheckBox(Vec2(124, 100), "Draw Arbiter"));
-	GUICheckBox* draw_quadtree = gui.add(new GUICheckBox(Vec2(148, 100), "Draw QuadTree"));
-	GUICheckBox* draw_springs = gui.add(new GUICheckBox(Vec2(170, 100), "Draw Spring"));
+	GUICheckBox* draw_arbiter = gui.add(new GUICheckBox(&gui, Vec2(124, 100), "Draw Arbiter"));
+	GUICheckBox* draw_quadtree = gui.add(new GUICheckBox(&gui, Vec2(148, 100), "Draw QuadTree"));
+	GUICheckBox* draw_springs = gui.add(new GUICheckBox(&gui, Vec2(170, 100), "Draw Spring"));
 				 draw_springs->checked = true;
-	GUICheckBox* use_quadtree = gui.add(new GUICheckBox(Vec2(192, 100), "Use QuadTree"));
+	GUICheckBox* use_quadtree = gui.add(new GUICheckBox(&gui, Vec2(192, 100), "Use QuadTree"));
 				 use_quadtree->checked = true;
 
-	GUIButton*	add_poly_btn = gui.add(new GUIButton(Vec2(100, 140), "Add new polygon"));
-				add_poly_btn->reg_click_callback(add_poly, NULL, &scene);
-	GUIButton* 	add_circle_btn = gui.add(new GUIButton(Vec2(100, 164), "Add new circle"));
-			   	add_circle_btn->reg_click_callback(add_circle, NULL, &scene);
-	GUIButton* 	reset_scene_btn = gui.add(new GUIButton(Vec2(100, 188), "Reset scene"));
-			   	reset_scene_btn->reg_click_callback(reset_scene, NULL, &scene);
+	GUIButton*	add_poly_btn = gui.add(new GUIButton(&gui, Vec2(100, 140), "Add new polygon"));
+				add_poly_btn->reg_click_callback(add_poly, &scene);
+	GUIButton* 	add_circle_btn = gui.add(new GUIButton(&gui, Vec2(100, 164), "Add new circle"));
+			   	add_circle_btn->reg_click_callback(add_circle, &scene);
+	GUIButton* 	reset_scene_btn = gui.add(new GUIButton(&gui, Vec2(100, 188), "Reset scene"));
+			   	reset_scene_btn->reg_click_callback(reset_scene, &scene);
 
 
 	bool running = true;
@@ -149,38 +164,30 @@ int main(int, char**) {
 		//
 		//Game logic goes here
 
-		if (input.key_down(SDL_SCANCODE_UP) && player->vel.y > -300)
-			player->vel.y -= 5;
-		if (input.key_down(SDL_SCANCODE_LEFT) && player->vel.x > -300)
-			player->vel.x -= 5;
-		if (input.key_down(SDL_SCANCODE_RIGHT) && player->vel.x < 300)
-			player->vel.x += 5;
-		if (input.key_press(SDL_SCANCODE_SPACE)) {
-			if (player->dynamic_state == PHYSBODY_STATE_STATIC)
-				player->calc_mass(10);
-			else {
-				player->vel = {0, 0};
-				player->angvel = 0;
-				player->calc_mass(0.0);
-			}
-		}
+		player->vel.x += (input.key_down(SDL_SCANCODE_D) - input.key_down(SDL_SCANCODE_A)) * 3;
+		player->vel.y += (input.key_down(SDL_SCANCODE_S) - input.key_down(SDL_SCANCODE_W)) * 10; 
 
-		//
+		if (player->vel.y < -500) player->vel.y = -500;
+		if (player->vel.y > +500) player->vel.y = +500;
+		if (player->vel.x < -500) player->vel.x = -500;
+		if (player->vel.x > +500) player->vel.x = +500;
+
 		//
 		//-----------------------------------------------------------------------------------------
 
 		scene.update();
+
 		SDL_SetRenderDrawColor(rend, 29, 18, 37, 255);
 		SDL_RenderClear(rend);
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 
 		scene.draw(rend);
 		gui.draw(input);
-		draw_text(0, 0, font, "naphy ~ dev.2021.12.29", COL_WHITE, COL_BLUE);
+		draw_text(0, 0, gui.scale, font, "naphy ~ dev.2021.12.31", COL_WHITE, COL_BLUE);
 
 		std::stringstream ss;
 		ss << "obj: " << scene.body.size();
-		draw_text(0, FONT_CH_H, font, ss.str(), COL_WHITE, COL_BLUE);
+		draw_text(0, FONT_CH_H, gui.scale, font, ss.str(), COL_WHITE, COL_BLUE);
 
 		SDL_RenderPresent(rend);
 	}

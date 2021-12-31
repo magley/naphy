@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 
+struct SDL_Window;
 
 /**
  * @brief SDL Input wrapper. Supports keyboard and mouse.
@@ -18,12 +19,14 @@ struct Input {
 	int mouse_x, mouse_y;
 	// Mouse position in the previous frame.
 	int mouse_x_prev, mouse_y_prev;
+	// Pointer to the window.
+	SDL_Window* win;
 
 
 	/**
 	 * @brief Construct a new Input object.
 	 */
-	Input();
+	Input(SDL_Window* win);
 
 
 	/**

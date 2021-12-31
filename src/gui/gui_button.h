@@ -9,7 +9,7 @@ struct Scene;
 struct GUI;
 struct GUIButton;
 
-typedef void (*GUIButtonCallback)(GUI* gui, Scene* scene, GUIButton* btn);
+typedef void (*GUIButtonCallback)(Scene* scene, GUIButton* btn);
 
 struct GUIButton {
 	Vec2 pos;
@@ -20,7 +20,7 @@ struct GUIButton {
 
 
 	GUIButton();
-	GUIButton(Vec2 pos, std::string hover_text = "");
+	GUIButton(GUI* gui, Vec2 pos, std::string hover_text = "");
 
 	void draw(const Image& img_gui);
 
@@ -31,6 +31,6 @@ struct GUIButton {
 	Scene* scene;
 
 	GUIButtonCallback click_callback;
-	void reg_click_callback(GUIButtonCallback func, GUI* gui, Scene* scene);
+	void reg_click_callback(GUIButtonCallback func, Scene* scene);
 
 };

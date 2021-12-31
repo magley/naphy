@@ -131,3 +131,39 @@ void draw_text(int x, int y, Image& font_sheet, std::string text, SDL_Color col,
 	SDL_SetTextureColorMod(font_sheet.img, 255, 255, 255);
 	SDL_SetTextureAlphaMod(font_sheet.img, 255);
 }
+
+
+void draw_text(int x, int y, double scale, Image& font_sheet, std::string text, SDL_Color col, SDL_Color bg) {
+	const unsigned char_w = 12;
+	const unsigned char_h = 20;
+	const unsigned chars_per_line = font_sheet.w / char_w;
+
+	// Background
+
+	const int p = 0; // padding
+	SDL_Rect r = {
+		x - p, 
+		y - p, 
+		(int)(FONT_CH_W / scale * text.size()) + 2 * p, 
+		(int)(FONT_CH_H / scale + 2 * p)
+	};
+	SDL_SetRenderDrawColor(font_sheet.rend, bg.r, bg.g, bg.b, bg.a);
+	SDL_RenderFillRect(font_sheet.rend, &r);
+	SDL_SetRenderDrawColor(font_sheet.rend, 255, 255, 255, 255);
+
+	// Text
+
+	SDL_SetTextureColorMod(font_sheet.img, col.r, col.g, col.b);
+	SDL_SetTextureAlphaMod(font_sheet.img, col.a);
+	for (unsigned i = 0; i < text.size(); i++) {
+
+		const char c = text[i];
+
+		const int char_x = (c % chars_per_line) * char_w;
+		const int char_y = (c / chars_per_line) * char_h;
+
+		font_sheet.draw(x + i * char_w / scale, y, 1.0 / scale, char_x, char_y, char_w, char_h);	
+	}
+	SDL_SetTextureColorMod(font_sheet.img, 255, 255, 255);
+	SDL_SetTextureAlphaMod(font_sheet.img, 255);
+}

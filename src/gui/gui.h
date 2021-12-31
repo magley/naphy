@@ -2,20 +2,24 @@
 
 #include "rend/image.h"
 #include "utility/input.h"
-
 #include "gui/gui_checkbox.h"
 #include "gui/gui_button.h"
-
 #include <vector>
+
+struct SDL_Window;
 
 struct GUI {
 	Image img_gui;
 	Image img_font;
 
+	double scale;
+
+	SDL_Window* win;
+
 	std::vector<GUICheckBox*> checkbox;
 	std::vector<GUIButton*> button;
 
-	GUI(Image img_gui, Image img_font);
+	GUI(SDL_Window* win, Image img_gui, Image img_font);
 	~GUI();
 
 	GUICheckBox* add(GUICheckBox* cb);

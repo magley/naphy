@@ -52,4 +52,29 @@ struct Image {
 	 * @param subimage_h Height of the slice.
 	 */
 	void draw(int x, int y, int subimage_x, int subimage_y, int subimage_w, int subimage_h) const;
+	/**
+	 * @brief Draws a scaled slice of the image at specified coordinates.
+	 * 
+	 * @param x X position.
+	 * @param y Y position.
+	 * @param w Width of the image.
+	 * @param h Height of the image.
+	 * @param subimage_x X position inside the image where the slice begins.
+	 * @param subimage_y Y position inside the image where the slice begins.
+	 * @param subimage_w Width of the slice.
+	 * @param subimage_h Height of the slice.
+	 */
+	void draw(int x, int y, int w, int h, int subimage_x, int subimage_y, int subimage_w, int subimage_h) const;
+		/**
+	 * @brief Draws a scaled slice of the image at specified coordinates.
+	 * 
+	 * @param x X position.
+	 * @param y Y position.
+	 * @param scale Scale.
+	 * @param subimage_x X position inside the image where the slice begins.
+	 * @param subimage_y Y position inside the image where the slice begins.
+	 * @param subimage_w Width of the slice.
+	 * @param subimage_h Height of the slice.
+	 */
+	void draw(int x, int y, double scale, int subimage_x, int subimage_y, int subimage_w, int subimage_h) const;
 };

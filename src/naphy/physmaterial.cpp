@@ -39,6 +39,6 @@ void PhysMaterial::set_metal() {
 void PhysMaterial::set_jelly() {
 	sfric = 0.4;
 	kfric = 0.3;
-	e = 0.9;
+	e = 0.8;
 	col = {128, 192, 64, 255};
 }
