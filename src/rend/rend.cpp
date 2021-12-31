@@ -144,8 +144,8 @@ void draw_text(int x, int y, double scale, Image& font_sheet, std::string text, 
 	SDL_Rect r = {
 		x - p, 
 		y - p, 
-		(int)(FONT_CH_W / scale * text.size()) + 2 * p, 
-		(int)(FONT_CH_H / scale + 2 * p)
+		(int)(FONT_CH_W * scale * text.size()) + 2 * p, 
+		(int)(FONT_CH_H * scale + 2 * p)
 	};
 	SDL_SetRenderDrawColor(font_sheet.rend, bg.r, bg.g, bg.b, bg.a);
 	SDL_RenderFillRect(font_sheet.rend, &r);
@@ -162,7 +162,7 @@ void draw_text(int x, int y, double scale, Image& font_sheet, std::string text, 
 		const int char_x = (c % chars_per_line) * char_w;
 		const int char_y = (c / chars_per_line) * char_h;
 
-		font_sheet.draw(x + i * char_w / scale, y, 1.0 / scale, char_x, char_y, char_w, char_h);	
+		font_sheet.draw(x + i * char_w * scale, y, scale, char_x, char_y, char_w, char_h);	
 	}
 	SDL_SetTextureColorMod(font_sheet.img, 255, 255, 255);
 	SDL_SetTextureAlphaMod(font_sheet.img, 255);

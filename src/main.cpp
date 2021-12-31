@@ -84,6 +84,7 @@ PhysBody* init_test_scene(Scene* scene) {
 	}
 
 	b = scene->add(new PhysBody({16, 0}, Shape(10)));
+	b->calc_mass(1);
 	return b;
 }
 
@@ -123,14 +124,13 @@ int main(int, char**) {
 	PhysBody* player = init_test_scene(&scene);
 
 
-
 	GUICheckBox* draw_physbody = gui.add(new GUICheckBox(&gui, Vec2(100, 100), "Draw PhysBody"));
 				 draw_physbody->checked = true;
 	GUICheckBox* draw_arbiter = gui.add(new GUICheckBox(&gui, Vec2(124, 100), "Draw Arbiter"));
 	GUICheckBox* draw_quadtree = gui.add(new GUICheckBox(&gui, Vec2(148, 100), "Draw QuadTree"));
-	GUICheckBox* draw_springs = gui.add(new GUICheckBox(&gui, Vec2(170, 100), "Draw Spring"));
+	GUICheckBox* draw_springs = gui.add(new GUICheckBox(&gui, Vec2(172, 100), "Draw Spring"));
 				 draw_springs->checked = true;
-	GUICheckBox* use_quadtree = gui.add(new GUICheckBox(&gui, Vec2(192, 100), "Use QuadTree"));
+	GUICheckBox* use_quadtree = gui.add(new GUICheckBox(&gui, Vec2(196, 100), "Use QuadTree"));
 				 use_quadtree->checked = true;
 
 	GUIButton*	add_poly_btn = gui.add(new GUIButton(&gui, Vec2(100, 140), "Add new polygon"));
@@ -164,13 +164,13 @@ int main(int, char**) {
 		//
 		//Game logic goes here
 
-		player->vel.x += (input.key_down(SDL_SCANCODE_D) - input.key_down(SDL_SCANCODE_A)) * 3;
-		player->vel.y += (input.key_down(SDL_SCANCODE_S) - input.key_down(SDL_SCANCODE_W)) * 10; 
+		player->vel.x += (input.key_down(SDL_SCANCODE_D) - input.key_down(SDL_SCANCODE_A)) * 8;
+		player->vel.y += (input.key_down(SDL_SCANCODE_S) - input.key_down(SDL_SCANCODE_W)) * 15; 
 
-		if (player->vel.y < -500) player->vel.y = -500;
-		if (player->vel.y > +500) player->vel.y = +500;
-		if (player->vel.x < -500) player->vel.x = -500;
-		if (player->vel.x > +500) player->vel.x = +500;
+		if (player->vel.y < -400) player->vel.y = -400;
+		if (player->vel.y > +400) player->vel.y = +400;
+		if (player->vel.x < -400) player->vel.x = -400;
+		if (player->vel.x > +400) player->vel.x = +400;
 
 		//
 		//-----------------------------------------------------------------------------------------
@@ -183,11 +183,11 @@ int main(int, char**) {
 
 		scene.draw(rend);
 		gui.draw(input);
-		draw_text(0, 0, gui.scale, font, "naphy ~ dev.2021.12.31", COL_WHITE, COL_BLUE);
 
+		draw_text(0 * gui.scale, 0 * gui.scale, gui.scale, font, "naphy ~ dev.2021.12.31", COL_WHITE, COL_BLUE);
 		std::stringstream ss;
 		ss << "obj: " << scene.body.size();
-		draw_text(0, FONT_CH_H, gui.scale, font, ss.str(), COL_WHITE, COL_BLUE);
+		draw_text(0 * gui.scale, FONT_CH_H * gui.scale, gui.scale, font, ss.str(), COL_WHITE, COL_BLUE);
 
 		SDL_RenderPresent(rend);
 	}

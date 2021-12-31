@@ -30,13 +30,17 @@ void Input::update() {
 	mouse_y_prev = mouse_y;
 	mouse_curr = SDL_GetMouseState(&mouse_x, &mouse_y);
 
+	// Rescale mouse coordinates to account for viewport scaling.
+
 	int win_w, win_h;
 	int view_w, view_h;
 	SDL_GetWindowSize(win, &win_w, &win_h);
 	SDL_RenderGetLogicalSize(SDL_GetRenderer(win), &view_w, &view_h);
+	const double scale_x = (double)view_w / win_w;
+	const double scale_y = (double)view_w / win_w;
 
-	mouse_x = mouse_x * ((double)view_w / win_w);
-	mouse_y = mouse_y * ((double)view_h / win_h);
+	mouse_x = mouse_x * scale_x;
+	mouse_y = mouse_y * scale_y;
 }
 
 

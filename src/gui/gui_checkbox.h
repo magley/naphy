@@ -7,10 +7,17 @@
 
 struct GUI;
 
+// Clickable GUI checkbox that toggles its state whenever it's pushed. 
 struct GUICheckBox {
+	// Pointer to the owning GUI.
 	GUI* gui;
+	// Native position on screen.
 	Vec2 pos;
+	// Native size.
+	Vec2 size;
+	// true if this checkbox is toggled, false otherwise.
 	bool checked;
+	// Text that shows up under the cursor whenever the component is hovered.
 	std::string hover_text;
 
 	GUICheckBox();
