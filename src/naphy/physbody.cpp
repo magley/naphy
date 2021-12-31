@@ -69,7 +69,7 @@ std::vector<Vec2> PhysBody::get_bbox() const {
 		my_dr = shape.vert[0];
 
 		for (unsigned i = 0; i < shape.vert.size(); i++) {
-			const Vec2 v = rot * shape.vert[i]; // We have to rotate it here.
+			const Vec2 v = rot * shape.vert[i];
 
 			my_ul.x = std::min(my_ul.x, v.x);
 			my_ul.y = std::min(my_ul.y, v.y);
@@ -105,7 +105,7 @@ int PhysBody::bbox_collision(const PhysBody* other) const {
 
 
 void PhysBody::draw(SDL_Renderer* rend) {
-	Vec2 Q; // One point on the shape for a line that shows body orientation.
+	Vec2 Q; // To show rotation, draw a line from the centre of the body to Q.
 
 	if (shape.type == SHAPE_CIRCLE) {
 		draw_circle(rend, pos.x, pos.y, shape.radius);

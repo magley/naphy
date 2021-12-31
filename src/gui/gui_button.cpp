@@ -22,14 +22,10 @@ GUIButton::GUIButton(GUI* gui, Vec2 pos, std::string hover_text) {
 
 void GUIButton::draw(const Image& img_gui) {
 	img_gui.draw(
-		pos.x * gui->scale,
-		pos.y * gui->scale,
-		size.x * gui->scale,
-		size.y * gui->scale,
-		0,
-		24 + 24 * (int)clicked,
-		48,
-		24
+		pos.x * gui->scale, pos.y * gui->scale,
+		size.x * gui->scale, size.y * gui->scale,
+		0, 24 + 24 * (int)clicked,
+		48, 24
 	);
 }
 

@@ -15,6 +15,7 @@ GUI::GUI(SDL_Window* win, Image img_gui, Image img_font) {
 GUI::~GUI() {
 	for (auto o : checkbox)	delete o;	checkbox.clear();
 	for (auto o : button)	delete o;	button.clear();
+	for (auto o : label)	delete o;	label.clear();
 }
 
 GUICheckBox* GUI::add(GUICheckBox* cb) {
@@ -25,6 +26,11 @@ GUICheckBox* GUI::add(GUICheckBox* cb) {
 GUIButton* GUI::add(GUIButton* btn) {
 	button.push_back(btn);
 	return btn;
+}
+
+GUILabel* GUI::add(GUILabel* lbl) {
+	label.push_back(lbl);
+	return lbl;
 }
 
 void GUI::update(const Input& input) {
@@ -67,6 +73,8 @@ void GUI::update(const Input& input) {
 			o->clicked = false;
 		}
 	}
+
+	// Update Label (nothing to do).
 }
 
 void GUI::draw(const Input& input) {
@@ -74,6 +82,10 @@ void GUI::draw(const Input& input) {
 		o->draw(img_gui);
 	for (auto o : button) 
 		o->draw(img_gui);
+	for (auto o : label) 
+		o->draw(img_font);
+
+	// CheckBox hover text.
 
 	for (auto o : checkbox) {
 		const Vec2 opos = o->pos * scale;
@@ -81,30 +93,27 @@ void GUI::draw(const Input& input) {
 		if (input.mouse_in_bounds(opos.x, opos.x + osize.x, opos.y, opos.y + osize.y)) {
 			if (o->hover_text != "") {
 				draw_text(
-					input.mouse_x + 12, 
-					input.mouse_y + 12, 
-					scale, 
+					input.mouse_x + 12, input.mouse_y + 12, scale, 
 					img_font, 
 					o->hover_text, 
-					{255, 255, 0, 255}, 
-					{0, 0, 128, 255}
+					{255, 255, 0, 255}, {0, 0, 128, 255}
 				);
 			}
 		}
 	}
+
+	// Button hover text.
+
 	for (auto o : button) {
 		const Vec2 opos = o->pos * scale;
 		const Vec2 osize = o->size * scale;
 		if (input.mouse_in_bounds(opos.x, opos.x + osize.x, opos.y, opos.y + osize.y)) {
 			if (o->hover_text != "") {
 				draw_text(
-					input.mouse_x + 12, 
-					input.mouse_y + 12,
-					scale, 
+					input.mouse_x + 12, input.mouse_y + 12, scale, 
 					img_font, 
 					o->hover_text, 
-					{255, 255, 0, 255}, 
-					{0, 0, 128, 255}
+					{255, 255, 0, 255}, {0, 0, 128, 255}
 				);
 			}
 		}

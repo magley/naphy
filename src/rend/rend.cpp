@@ -133,7 +133,7 @@ void draw_text(int x, int y, Image& font_sheet, std::string text, SDL_Color col,
 }
 
 
-void draw_text(int x, int y, double scale, Image& font_sheet, std::string text, SDL_Color col, SDL_Color bg) {
+void draw_text(int x, int y, double scale, const Image& font_sheet, std::string text, SDL_Color col, SDL_Color bg) {
 	const unsigned char_w = 12;
 	const unsigned char_h = 20;
 	const unsigned chars_per_line = font_sheet.w / char_w;

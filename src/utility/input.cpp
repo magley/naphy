@@ -19,11 +19,15 @@ Input::Input(SDL_Window* win) {
 
 
 void Input::update() {
+	// Update keyboard.
+
 	const Uint8* state = SDL_GetKeyboardState(NULL);
 	for (unsigned i = 0; i < 256; i++) {
 		kb_prev[i] = kb_curr[i];
 		kb_curr[i] = state[i];
 	}
+
+	// Update mouse.
 
 	mouse_prev = mouse_curr;
 	mouse_x_prev = mouse_x;

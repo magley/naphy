@@ -29,7 +29,7 @@ struct Arbiter {
     // for a collision response.
 	void build();
     // Some edge cases may alter the arbiter parameters for faster convergence.
-	void pre_solve();
+	void pre_solve(const Vec2& grav, double dt);
     // Resolve collision using sequential impulses.
 	void solve();
     // Position correction. This should be called after all the bodies' velocities are integrated.

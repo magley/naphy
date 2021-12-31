@@ -18,13 +18,9 @@ GUICheckBox::GUICheckBox(GUI* gui, Vec2 pos, std::string hover_text) {
 
 void GUICheckBox::draw(const Image& img_gui) {
 	img_gui.draw(
-		pos.x * gui->scale,
-		pos.y * gui->scale,
-		size.x * gui->scale,
-		size.y * gui->scale,
-		24 * (int)checked,
-		0,
-		24,
-		24
+		pos.x * gui->scale, pos.y * gui->scale,
+		size.x * gui->scale, size.y * gui->scale,
+		24 * (int)checked, 0,
+		24, 24
 	);
 }

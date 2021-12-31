@@ -1,37 +1,34 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
-
 #include <string>
-#include <iostream>
 #include <sstream>
-
+#include <iostream>
 #include "utility/input.h"
-
 #include "rend/rend.h"
 #include "rend/image.h"
 #include "naphy/scene.h"
-
 #include "gui/gui.h"
 #include "gui/gui_checkbox.h"
+#include "gui/gui_label.h"
 
 
 #define WIN_W 1280
 #define WIN_H 720
 #define WIN_X ((1920 - WIN_W) / 2)
 #define WIN_Y ((1080 - WIN_H) / 2)
-
 #define VIEW_W 960
 #define VIEW_H 540
 
-#define VIEW_SCALE ((double)((WIN_W / VIEW_W)))
+PhysBody* player;
 
 
-PhysBody* init_test_scene(Scene* scene) {
+void init_test_scene(Scene* scene) {
 	scene->body.clear();
 	scene->arbiter.clear();
 	scene->spring.clear();
 
 	Shape rect = Shape({{-500, 32}, {-500, -32}, {500, -32}, {500, 32}});
+	Shape rect2 = Shape({{-60, 8}, {-60, -8}, {60, -8}, {60, 8}});
 
 	// Floor
 
@@ -85,7 +82,7 @@ PhysBody* init_test_scene(Scene* scene) {
 
 	b = scene->add(new PhysBody({16, 0}, Shape(10)));
 	b->calc_mass(1);
-	return b;
+	player = b;
 }
 
 void add_poly(Scene* scene, GUIButton* btn) {
@@ -112,8 +109,6 @@ int main(int, char**) {
 	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
 	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
 	SDL_RenderSetLogicalSize(rend, VIEW_W, VIEW_H);
-	SDL_Rect viewport = {0, 0, VIEW_W, VIEW_H};
-	SDL_RenderSetViewport(rend, &viewport);
 	Image font(rend, "res/font.png");
 	Image gui_atlas(rend, "res/gui.png");
 	Input input(win);
@@ -121,7 +116,7 @@ int main(int, char**) {
 
 
 	Scene scene = Scene(Vec2(0, 981), 1 / 60.0, VIEW_W, VIEW_H, 16);
-	PhysBody* player = init_test_scene(&scene);
+	init_test_scene(&scene);
 
 
 	GUICheckBox* draw_physbody = gui.add(new GUICheckBox(&gui, Vec2(100, 100), "Draw PhysBody"));
@@ -139,6 +134,9 @@ int main(int, char**) {
 			   	add_circle_btn->reg_click_callback(add_circle, &scene);
 	GUIButton* 	reset_scene_btn = gui.add(new GUIButton(&gui, Vec2(100, 188), "Reset scene"));
 			   	reset_scene_btn->reg_click_callback(reset_scene, &scene);
+
+	GUILabel*	lbl_naphy = gui.add(new GUILabel(&gui, {0, 0}, "naphy ~ dev.2021.12.31", COL_WHITE, COL_BLUE));
+	GUILabel*	lbl_obj = gui.add(new GUILabel(&gui, {0, FONT_CH_H * gui.scale}, "obj:", COL_WHITE, COL_BLUE));
 
 
 	bool running = true;
@@ -176,19 +174,14 @@ int main(int, char**) {
 		//-----------------------------------------------------------------------------------------
 
 		scene.update();
+		lbl_obj->text = "obj:" + std::to_string(scene.body.size());
+
 
 		SDL_SetRenderDrawColor(rend, 29, 18, 37, 255);
 		SDL_RenderClear(rend);
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
-
 		scene.draw(rend);
 		gui.draw(input);
-
-		draw_text(0 * gui.scale, 0 * gui.scale, gui.scale, font, "naphy ~ dev.2021.12.31", COL_WHITE, COL_BLUE);
-		std::stringstream ss;
-		ss << "obj: " << scene.body.size();
-		draw_text(0 * gui.scale, FONT_CH_H * gui.scale, gui.scale, font, ss.str(), COL_WHITE, COL_BLUE);
-
 		SDL_RenderPresent(rend);
 	}
 

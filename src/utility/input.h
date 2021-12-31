@@ -3,26 +3,24 @@
 
 struct SDL_Window;
 
-/**
- * @brief SDL Input wrapper. Supports keyboard and mouse.
- */
+// SDL input wrapper. Supports keyboard and mouse functionality.
 struct Input {
-	// Mouse state in current frame.
+	// Mouse button state in current frame.
 	uint32_t mouse_curr;
-	// Mouse state in previous frame.
+	// Mouse button state in previous frame.
 	uint32_t mouse_prev;
-	// Keyboard state in previous frame.
-	uint8_t kb_prev[256];
-	// Keyboard state in current frame.
-	uint8_t kb_curr[256];
 	// Mouse position in the current frame.
 	int mouse_x, mouse_y;
 	// Mouse position in the previous frame.
 	int mouse_x_prev, mouse_y_prev;
+	// Keyboard state in previous frame.
+	uint8_t kb_prev[256];
+	// Keyboard state in current frame.
+	uint8_t kb_curr[256];
 	// Pointer to an SDL_Window. Scaling the viewport with SDL_RenderSetLogicalSize affects some SDL
 	// events through an event filter. Mouse state is *not* affected, which means we have to adjust
 	// mouse cooridnates manually, by dividing with the view scale. An SDL_Renderer is not enough.
-	// This structure will not modify the window handle. 
+	// This handle will not be modified by Input. 
 	SDL_Window* win;
 
 
@@ -30,7 +28,7 @@ struct Input {
 	Input(SDL_Window* win);
 
 
-	// Update the input. This should be called once per frame, after polling SDL events.
+	// Update the input. This should be called once per frame, AFTER polling SDL events.
 	void update();
 	// Check if a key is held down.
 	// @param scancode SDL_SCANCODE_*

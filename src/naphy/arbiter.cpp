@@ -39,7 +39,7 @@ void Arbiter::build() {
 }
 
 
-void Arbiter::pre_solve() {
+void Arbiter::pre_solve(const Vec2& grav, double dt) {
 	const Vec2 Apos = A->pos;
 	const Vec2 Bpos = B->pos;
 
@@ -47,6 +47,11 @@ void Arbiter::pre_solve() {
 		const Vec2 r1 = contact[i] - Apos;
 		const Vec2 r2 = contact[i] - Bpos;
 		const Vec2 dv = (B->vel + cross(B->angvel, r2)) - (A->vel + cross(A->angvel, r1));
+
+		if (dv.len_sqr() < (dt * grav).len_sqr() + EPSILON) {
+			e = 0;
+			break;
+		}
 	}
 }
 
@@ -55,7 +60,7 @@ void Arbiter::post_solve() {
 	// Bias-slop correction mechanism.
 	// The idea is that sequential impulses may overshoot/undershoot, resulting in bodies clipping.
 	// We can push the body in the opposite direction along the normal by an amount proportional to 
-	// the two bodies' intersection depth . The parameters slop and bias may need fine-tuning.
+	// the two bodies' intersection depth. The parameters slop and bias may need fine-tuning.
 
 	if (A->dynamic_state == PHYSBODY_STATE_STATIC && B->dynamic_state == PHYSBODY_STATE_STATIC)
 		return;
@@ -119,7 +124,7 @@ void Arbiter::solve() {
 		const Vec2 pa = A->pos - r1;
 		const Vec2 pb = B->pos - r2;
 		const double d = dot(pb - pa, normal);
-		const double b = -1.0 / (60.0);
+		const double b = -6.0 / (60.0); // It's not a good idea to bake dt in like this
 
 		const double r1n = cross(r1, normal);
 		const double r2n = cross(r2, normal);

@@ -14,7 +14,8 @@ static void collision_naive(Scene* scene);
 
 
 // Pairs of physics bodies with a '<' operator.
-// Used in ordered sequences to detect duplicates.
+// This is used to avoid duplicates when generating Arbiters during broad-phase collision detection.
+// Order matters, so it's up to you to ensure that A < B (when creating Arbiters and PhysBodyPairs).
 struct PhysBodyPair {
 	PhysBody* A;
 	PhysBody* B;
@@ -37,7 +38,6 @@ Scene::Scene() {
 	size = Vec2(320, 240);
 }
 
-
 Scene::Scene(Vec2 grav, double dt, double w, double h, unsigned quadtree_cap) {
 	timing = Timing(dt);
 	this->grav = grav;
@@ -45,20 +45,17 @@ Scene::Scene(Vec2 grav, double dt, double w, double h, unsigned quadtree_cap) {
 	this->size = Vec2(w, h);
 }
 
-
 Scene::~Scene() {
 	clear();
 }
-
 
 void Scene::pre_update() {
 	timing.tick();
 }
 
-
 void Scene::update() {
 	while (timing.accumulator >= timing.dt) {
-		// Update scene
+		// Update scene.
 
 		scene_update_collision(this);
 		scene_update_force(this);
@@ -68,7 +65,7 @@ void Scene::update() {
 			arbiter[i].post_solve();
 		}
 
-		// Update timestep
+		// Update timing.
 	
 		timing.accumulator -= timing.dt;
 		timing.total += timing.dt / timing.scale;
@@ -78,7 +75,6 @@ void Scene::update() {
 
 	scene_remove_distant_objects(this);
 }
-
 
 void Scene::draw(SDL_Renderer* rend) {
 	if (debug_draw_shapes) 
@@ -141,12 +137,10 @@ void Scene::draw(SDL_Renderer* rend) {
 	SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 }
 
-
 PhysBody* Scene::add(PhysBody* b) {
 	body.push_back(b);
 	return b;
 }
-
 
 void Scene::clear() {
 	for (auto o : body) { 
@@ -169,7 +163,7 @@ static void collision_quadtree(Scene* scene) {
 	std::set<PhysBodyPair> checked_pairs;
 
 	for (unsigned k = 0; k < quad_groups.size(); k++) {
-		// Broad-phase
+		// Broad-phase - check for collision only between bodies in the same quadtree group.
 
 		std::vector<PhysBody*>* body_group = &quad_groups[k]->object;
 
@@ -186,6 +180,7 @@ static void collision_quadtree(Scene* scene) {
 
 				// Avoid duplicate checking.
 				// It's a waste of CPU and duplicate arbiters mess up constraint solvers (why?).
+				// Don't swap A and B if A > B, it doesn't work (why?).
 
 				PhysBodyPair p = { A, B };
 				if (checked_pairs.find(p) != checked_pairs.end())
@@ -241,7 +236,7 @@ static void scene_update_collision(Scene* scene) {
 	scene->arbiter.clear();
 	scene->quadtree.clear();
 
-	if (scene->debug_use_quadtree){
+	if (scene->debug_use_quadtree) {
 		collision_quadtree(scene);
 	} else {
 		collision_naive(scene);
@@ -250,7 +245,7 @@ static void scene_update_collision(Scene* scene) {
 
 static void scene_update_force(Scene* scene) {
 	// Accumulate external forces.
-	// For now, only springs. Gravity is done below, in-place.
+	// For now, we only have springs. Gravity is done below this, when calculating dv.
 
 	for (unsigned j = 0; j < 5; j++) {
 		for (unsigned i = 0; i < scene->spring.size(); i++) {
@@ -269,12 +264,16 @@ static void scene_update_force(Scene* scene) {
 		Vec2 dv = (b->force * b->m_inv + scene->grav) * scene->timing.dt;
 		double dang = (b->torque * b->I_inv) * scene->timing.dt;
 
+		// Wake up sleeping bodes that moved significantly.
+
 		if (b->dynamic_state == PHYSBODY_STATE_SLEEPING) {
-			if (b->m_inv != 0 && dv.len_sqr() + b->vel.len_sqr() > 0.01)
+			if (b->m_inv != 0 && dv.len_sqr() + b->vel.len_sqr() > EPSILON)
 				b->dynamic_state = PHYSBODY_STATE_AWAKE;
-			if (b->I_inv != 0 && std::abs(dang) + std::abs(b->angvel) > 0.01)
+			if (b->I_inv != 0 && std::abs(dang) + std::abs(b->angvel) > EPSILON)
 				b->dynamic_state = PHYSBODY_STATE_AWAKE;
-		}	
+		}
+
+		// Move awoken bodies.
 
 		if (b->dynamic_state == PHYSBODY_STATE_AWAKE) {
 			if (b->m_inv != 0) {
@@ -290,9 +289,10 @@ static void scene_update_force(Scene* scene) {
 
 static void scene_update_constraints(Scene* scene) {
 	for (unsigned i = 0; i < scene->arbiter.size(); i++)
-		scene->arbiter[i].pre_solve();
+		scene->arbiter[i].pre_solve(scene->grav, scene->timing.dt);
 
-	for (unsigned j = 0; j < 10; j++) {
+	const int iterations = 10;
+	for (unsigned j = 0; j < iterations; j++) {
 		for (unsigned i = 0; i < scene->arbiter.size(); i++)
 			scene->arbiter[i].solve();
 	}
@@ -303,17 +303,16 @@ static void scene_update_velocity(Scene* scene) {
 		PhysBody* b = scene->body[i];
 
 		if (b->dynamic_state == PHYSBODY_STATE_AWAKE) {
-			if (b->vel.len_sqr() <= 0.01 && std::abs(b->angvel) <= 0.01) {
+			// If the body didn't move much, put it to sleep.
+
+			if (b->vel.len_sqr() < EPSILON && std::abs(b->angvel) <= EPSILON) {
 				b->dynamic_state = PHYSBODY_STATE_SLEEPING;
 				b->vel = Vec2(0, 0);
 				b->angvel = 0;
 			} else {
 				if (b->m_inv != 0) {
-					if (b->vel.len() > 5000)
-						b->vel = b->vel.normalized() * 5000;
 					b->pos += b->vel * scene->timing.dt;
 				}
-
 				if (b->I_inv != 0) {
 					b->ang += b->angvel * scene->timing.dt;
 					b->set_angle(b->ang);

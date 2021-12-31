@@ -17,9 +17,18 @@ static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbite
 // @param out_dist is the penetration in the resulting axis.
 // @param out_index is the index of the face normal in body A.
 static void best_axis(const PhysBody* A, const PhysBody* B, double* out_dist, unsigned* out_index);
-// 
+// Fetch incident and reference face.
+// @param ref Reference body.
+// @param inc Incident body.
+// @param ref_index Index of the first vertex of the reference face (getting ref verts is trivial).
+// @param ref_vert [out param] The two reference vertices (in world space).
+// @param inc_vert [out param] The two incident vertices (in world space). 
 static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_index, Vec2 ref_vert[2], Vec2 inc_vert[2]);
-//
+// Sutherland-Hodgman clipping.
+// @param normal Normal vector against which we clip.
+// @param c ???
+// @param face Vertices of the face that are clipped.
+// @return All points of face after clipping it to normal.
 static std::vector<Vec2> clip(Vec2 normal, double c, const Vec2* face);
 
 
@@ -268,8 +277,8 @@ static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbite
 
 
 static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_face, Vec2 ref_vert[2], Vec2 inc_vert[2]) {
-	// We know what the reference face is (getting it here is mostly for readabililty).
-	// The incident face is the one that's most parallel to the reference face's normal.
+	// We know what the reference face is (we get it here though because it makes the code nicer).
+	// Our incident face is the one that's most parallel to the reference face's normal.
 
 	Vec2 n = ref->shape.norm[ref_face];
 	n = inc->rot.transpose() * (ref->rot * n);

@@ -20,4 +20,4 @@ void draw_poly(SDL_Renderer* renderer, std::vector<Vec2> verts, Vec2 pos, double
 void draw_arrow(SDL_Renderer* renderer, double x1, double y1, double x2, double y2);
 void draw_text(int x, int y, Image& font_sheet, std::string text);
 void draw_text(int x, int y, Image& font_sheet, std::string text, SDL_Color col, SDL_Color bg);
-void draw_text(int x, int y, double scale, Image& font_sheet, std::string text, SDL_Color col, SDL_Color bg);
+void draw_text(int x, int y, double scale, const Image& font_sheet, std::string text, SDL_Color col, SDL_Color bg);
