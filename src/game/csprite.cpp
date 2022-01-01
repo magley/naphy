@@ -1,6 +1,21 @@
 #include "csprite.h"
 
-Sprite sprites[];
+Sprite spr[10];
+void sprites_init(Image* img_drifter) {
+	spr[SPR_DRIFTER_DOWN_STAND] = Sprite(img_drifter, Vec2(16, 32), Vec2(0, 0), 1);
+	spr[SPR_DRIFTER_DOWN_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 0), 4);
+
+	spr[SPR_DRIFTER_RIGHT_STAND] = Sprite(img_drifter, Vec2(16, 32), Vec2(0, 32), 1);
+	spr[SPR_DRIFTER_RIGHT_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 32), 4);
+
+	spr[SPR_DRIFTER_LEFT_STAND] = Sprite(img_drifter, Vec2(16, 32), Vec2(0, 64), 1);
+	spr[SPR_DRIFTER_LEFT_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 64), 4);
+
+	spr[SPR_DRIFTER_UP_STAND] = Sprite(img_drifter, Vec2(16, 32), Vec2(0, 96), 1);
+	spr[SPR_DRIFTER_UP_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 96), 4);
+}
+
+
 
 
 Sprite::Sprite() {;}
@@ -21,28 +36,32 @@ CSprite::CSprite(unsigned sprite_index, double image_speed) {
 }
 
 
-void CSprite::update(Sprite* spr_array) {
-	// TODO: What if image_speed > spr->frames?
+void CSprite::update() {
+	// TODO: What if image_speed > s->frames?
 
-	const Sprite* spr = &spr_array[sprite_index];
-	if ((unsigned)(image_index + image_speed) > spr->frames) {
+	const Sprite* s = &spr[sprite_index];
+	if ((unsigned)(image_index + image_speed) > s->frames - 1) {
 		image_index = image_speed;
 	} else {
 		image_index += image_speed;
 	}
+
+	//image_index += image_speed;
+	//if (image_index > s->frames - 1)
+	//	image_index = 0.0;
 }
 
 
-void CSprite::draw(Vec2 pos, Sprite* spr_array) {
-	const Sprite* spr = &spr_array[sprite_index];
+void CSprite::draw(Vec2 pos) {
+	Sprite* s = &spr[sprite_index];
 	const unsigned img_index = (unsigned)image_index;
 
-	spr->img->draw(
+	s->img->draw(
 		pos.x, 
 		pos.y,
-		spr->pos.x * spr->size.x * img_index,
-		spr->pos.y,
-		spr->size.x,
-		spr->size.y
+		s->pos.x + s->size.x * img_index,
+		s->pos.y,
+		s->size.x,
+		s->size.y
 	);
 }

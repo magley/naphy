@@ -15,7 +15,22 @@ struct Sprite {
 };
 
 
-extern Sprite sprites[10];
+extern Sprite spr[10];
+void sprites_init(Image* img_drifter);
+enum SpriteNames {
+	SPR_DRIFTER_DOWN_STAND,
+	SPR_DRIFTER_DOWN_WALK,
+
+	SPR_DRIFTER_RIGHT_STAND,
+	SPR_DRIFTER_RIGHT_WALK,
+
+	SPR_DRIFTER_LEFT_STAND,
+	SPR_DRIFTER_LEFT_WALK,
+
+	SPR_DRIFTER_UP_STAND,
+	SPR_DRIFTER_UP_WALK
+};
+
 
 
 struct CSprite {
@@ -25,7 +40,7 @@ struct CSprite {
 
 	CSprite();
 	CSprite(unsigned sprite_index, double image_speed);
-	void update(Sprite* spr_array);
-	void draw(Vec2 pos, Sprite* spr_array);
+	void update();
+	void draw(Vec2 pos);
 };
 

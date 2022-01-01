@@ -8,12 +8,14 @@ CDrifter::CDrifter() {
 	this->body = NULL;
 	this->drift_time = 0;
 	this->drift_combo = 0;
+	this->sprite = CSprite(SPR_DRIFTER_DOWN_STAND, 0.75 / 60.0);
 }
 
 CDrifter::CDrifter(PhysBody* body) {
 	this->body = body;
 	this->drift_time = 0;
 	this->drift_combo = 0;
+	this->sprite = CSprite(SPR_DRIFTER_DOWN_STAND, 0.75 / 60.0);
 }
 
 void CDrifter::update(const Input* input) {
@@ -45,25 +47,41 @@ void CDrifter::update(const Input* input) {
 
 		if (inputy < 0) {
 			body->vel.y -= acc;
-			dir = SPR_DRIFTER_SUBIMG_UP;
+			sprite.sprite_index = SPR_DRIFTER_UP_WALK;
 		} else if (inputy > 0) {
 			body->vel.y += acc;
-			dir = SPR_DRIFTER_SUBIMG_DOWN;
+			sprite.sprite_index = SPR_DRIFTER_DOWN_WALK;
 		} else {
 			if (body->vel.y > 0) body->vel.y -= deacc;
 			if (body->vel.y < 0) body->vel.y += deacc;
-			if (std::abs(body->vel.y) <= deacc) body->vel.y = 0;
+			if (std::abs(body->vel.y) <= deacc) {
+
+				if (body->vel.x == 0) {
+					if (body->vel.y < 0) sprite.sprite_index = SPR_DRIFTER_UP_STAND;
+					else if (body->vel.y > 0) sprite.sprite_index = SPR_DRIFTER_DOWN_STAND;
+				}
+				
+				body->vel.y = 0;
+			}
 		}
 		if (inputx < 0) {
 			body->vel.x -= acc;
-			dir = SPR_DRIFTER_SUBIMG_LEFT;
+			sprite.sprite_index = SPR_DRIFTER_LEFT_WALK;
 		} else if (inputx > 0) {
 			body->vel.x += acc;
-			dir = SPR_DRIFTER_SUBIMG_RIGHT;
+			sprite.sprite_index = SPR_DRIFTER_RIGHT_WALK;
 		} else {
 			if (body->vel.x > 0) body->vel.x -= deacc;
 			if (body->vel.x < 0) body->vel.x += deacc;
-			if (std::abs(body->vel.x) <= deacc) body->vel.x = 0;
+			if (std::abs(body->vel.x) <= deacc) {
+
+				if (body->vel.y == 0) {
+					if (body->vel.x < 0) sprite.sprite_index = SPR_DRIFTER_LEFT_STAND;
+					else if (body->vel.x > 0) sprite.sprite_index = SPR_DRIFTER_RIGHT_STAND;
+				}
+
+				body->vel.x = 0;
+			}
 		}
 		
 		// Limit walk speed
@@ -119,26 +137,17 @@ void CDrifter::update(const Input* input) {
 	}	
 
 
-
-
 	// Sprite
 
-	//sprite.update(NULL);
+	sprite.update();
 }
 
 
 void CDrifter::draw(const Image* img) const {
+	Vec2 spr_pos = Vec2(
+		body->pos.x - spr[sprite.sprite_index].size.x / 2,
+		body->pos.y - spr[sprite.sprite_index].size.y
+	);
 
-	/*body->pos.x - spr_w / 2, body->pos.y - spr_h
-
-	sprite.draw(sprite)
-
-	const int spr_w = 16;
-	const int spr_h = 32;
-
-	const int spr_img_x = spr_w * SPR_DRIFTER_WALK + (spr_w * (unsigned)image_index);
-	const int spr_img_y = spr_h * dir;
-
-	img->draw(body->pos.x - spr_w / 2, body->pos.y - spr_h, spr_img_x, spr_img_y, spr_w, spr_h);
-	*/
+	((CSprite)sprite).draw(spr_pos);
 }

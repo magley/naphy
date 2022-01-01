@@ -136,6 +136,7 @@ int main(int, char**) {
 	Image gui_atlas(rend, "res/gui.png");
 	Image img_drifter(rend, "res/drifter.png");
 	Image img_floor(rend, "res/img_floor.png");
+	sprites_init(&img_drifter);
 	Input input(win);
 	GUI gui(win, gui_atlas, font);
 
