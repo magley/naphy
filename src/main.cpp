@@ -11,15 +11,36 @@
 #include "gui/gui_checkbox.h"
 #include "gui/gui_label.h"
 
+#include "game/cdrifter.h"
 
-#define WIN_W 1280
-#define WIN_H 720
+
+#define WIN_W 960
+#define WIN_H 540
 #define WIN_X ((1920 - WIN_W) / 2)
 #define WIN_Y ((1080 - WIN_H) / 2)
-#define VIEW_W 960
-#define VIEW_H 540
+#define VIEW_W 480
+#define VIEW_H 270
+
 
 PhysBody* player;
+CDrifter drifter;
+
+void init_drifter_scene(Scene* scene) {
+	scene->body.clear();
+	scene->arbiter.clear();
+	scene->spring.clear();
+	scene->grav = {0, 0};
+
+	PhysBody* b;
+
+	b = scene->add(new PhysBody({300, 150}, Shape(70)));
+	b->calc_mass(0);
+	b->material.e = 0;
+
+	player = scene->add(new PhysBody({32, 132}, Shape(2)));
+	player->material.e = 0;
+	drifter = CDrifter(player);
+}
 
 
 void init_test_scene(Scene* scene) {
@@ -100,7 +121,7 @@ void add_circle(Scene* scene, GUIButton* btn) {
 
 void reset_scene(Scene* scene, GUIButton* btn) {
 	scene->clear();
-	init_test_scene(scene);
+	init_drifter_scene(scene);
 }
 
 int main(int, char**) {
@@ -109,14 +130,18 @@ int main(int, char**) {
 	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
 	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
 	SDL_RenderSetLogicalSize(rend, VIEW_W, VIEW_H);
+
+
 	Image font(rend, "res/font.png");
 	Image gui_atlas(rend, "res/gui.png");
+	Image img_drifter(rend, "res/drifter.png");
+	Image img_floor(rend, "res/img_floor.png");
 	Input input(win);
 	GUI gui(win, gui_atlas, font);
 
 
-	Scene scene = Scene(Vec2(0, 981), 1 / 60.0, VIEW_W, VIEW_H, 16);
-	init_test_scene(&scene);
+	Scene scene = Scene({0, 0 * 981}, 1 / 60.0, VIEW_W, VIEW_H, 16);
+	init_drifter_scene(&scene);
 
 
 	GUICheckBox* draw_physbody = gui.add(new GUICheckBox(&gui, Vec2(100, 100), "Draw PhysBody"));
@@ -135,7 +160,7 @@ int main(int, char**) {
 	GUIButton* 	reset_scene_btn = gui.add(new GUIButton(&gui, Vec2(100, 188), "Reset scene"));
 			   	reset_scene_btn->reg_click_callback(reset_scene, &scene);
 
-	GUILabel*	lbl_naphy = gui.add(new GUILabel(&gui, {0, 0}, "naphy ~ dev.2021.12.31", COL_WHITE, COL_BLUE));
+	GUILabel*	lbl_naphy = gui.add(new GUILabel(&gui, {0, 0}, "naphy ~ dev.2022.01.01", COL_WHITE, COL_BLUE));
 	GUILabel*	lbl_obj = gui.add(new GUILabel(&gui, {0, FONT_CH_H * gui.scale}, "obj:", COL_WHITE, COL_BLUE));
 
 
@@ -159,16 +184,10 @@ int main(int, char**) {
 		scene.debug_use_quadtree = use_quadtree->checked;
 
 		//-----------------------------------------------------------------------------------------
-		//
 		//Game logic goes here
+		//
 
-		player->vel.x += (input.key_down(SDL_SCANCODE_D) - input.key_down(SDL_SCANCODE_A)) * 8;
-		player->vel.y += (input.key_down(SDL_SCANCODE_S) - input.key_down(SDL_SCANCODE_W)) * 15; 
-
-		if (player->vel.y < -400) player->vel.y = -400;
-		if (player->vel.y > +400) player->vel.y = +400;
-		if (player->vel.x < -400) player->vel.x = -400;
-		if (player->vel.x > +400) player->vel.x = +400;
+		drifter.update(&input);
 
 		//
 		//-----------------------------------------------------------------------------------------
@@ -180,7 +199,11 @@ int main(int, char**) {
 		SDL_SetRenderDrawColor(rend, 29, 18, 37, 255);
 		SDL_RenderClear(rend);
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
+
+		img_floor.draw(0, 0);
 		scene.draw(rend);
+		drifter.draw(&img_drifter);
+
 		gui.draw(input);
 		SDL_RenderPresent(rend);
 	}
