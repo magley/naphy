@@ -166,6 +166,7 @@ static int collision_cp(const PhysBody* const A, const PhysBody* const B, Arbite
 		if (dist_sqr(center, vertex) > shpA->radius * shpA->radius)
 			return 0;
 		const Vec2 normal = B->rot * (vertex - center).normalized();
+		R->depth = shpA->radius - (A->pos - (B->pos + vertex)).len();
 		R->normal = normal;
 		R->contact.push_back(B->rot * vertex + B->pos);
 	} else {

@@ -20,6 +20,7 @@ void sprites_init(Image* img_drifter);
 enum SpriteNames {
 	SPR_DRIFTER_DOWN_STAND,
 	SPR_DRIFTER_DOWN_WALK,
+	SPR_DRIFTER_DOWN_DRIFT,
 
 	SPR_DRIFTER_RIGHT_STAND,
 	SPR_DRIFTER_RIGHT_WALK,
@@ -28,7 +29,7 @@ enum SpriteNames {
 	SPR_DRIFTER_LEFT_WALK,
 
 	SPR_DRIFTER_UP_STAND,
-	SPR_DRIFTER_UP_WALK
+	SPR_DRIFTER_UP_WALK,
 };
 
 
@@ -37,6 +38,7 @@ struct CSprite {
 	double image_index;
 	double image_speed;
 	unsigned sprite_index; // Index of array of all Sprite objects.
+	unsigned repeat; // 0 - don't repeat when you reach the end, 1 - repeat
 
 	CSprite();
 	CSprite(unsigned sprite_index, double image_speed);

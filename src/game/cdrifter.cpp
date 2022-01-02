@@ -18,7 +18,7 @@ CDrifter::CDrifter(PhysBody* body) {
 	this->body = body;
 	this->drift_time = 0;
 	this->drift_combo = 0;
-	this->sprite = CSprite(SPR_DRIFTER_DOWN_STAND, 1.5 / 60.0);
+	this->sprite = CSprite(SPR_DRIFTER_DOWN_STAND, 1.75 / 60.0);
 	this->trail_i = 0;
 	this->trail_cnt = 0;
 	this->trail = std::vector<Vec2>(10);
@@ -30,11 +30,10 @@ void CDrifter::update(const Input* input) {
 
 	//---------------------------------------------------------------------------------------------
 	//
-	double vel_walk = 150;
-	double vel_drift = 600;
-	double vel_ski = 300;
+	double vel_walk = 100;
+	double vel_drift = 500;
 	double acc = 5;
-	double deacc = 1;
+	double deacc = 1.5;
 	int drift_time_start = 280; 		// How much time does a drift take
 	int drift_time_halt = 200; 			// After this the drifting stops (you slow down to a stop)
 	int drift_time_combo = 150;			// After this you can combo
@@ -96,6 +95,13 @@ void CDrifter::update(const Input* input) {
 		if (body->vel.y <-vel_walk) body->vel.y =-vel_walk;
 		if (body->vel.x > vel_walk) body->vel.x = vel_walk;
 		if (body->vel.x <-vel_walk) body->vel.x =-vel_walk;
+
+		// Make sure to repeat the sprite animation
+
+		if (sprite.repeat == 0) {
+			sprite.repeat = 1;
+			sprite.sprite_index = SPR_DRIFTER_DOWN_STAND;
+		}
 	}
 
 	// Drift start
@@ -119,6 +125,10 @@ void CDrifter::update(const Input* input) {
 			if (can_combo || drift_combo == 0)
 				drift_combo++;
 		}
+
+		sprite.sprite_index = SPR_DRIFTER_DOWN_DRIFT;
+		sprite.image_index = 0;
+		sprite.repeat = 0;
 	}
 
 	// While drifting
@@ -173,7 +183,7 @@ void CDrifter::update(const Input* input) {
 void CDrifter::draw(const Image* img) const {
 	const Vec2 spr_pos_offset = Vec2(
 		spr[sprite.sprite_index].size.x / 2,
-		spr[sprite.sprite_index].size.y
+		spr[sprite.sprite_index].size.y - body->shape.radius
 	);
 
 	// Draw trail

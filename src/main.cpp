@@ -18,8 +18,8 @@
 #define WIN_H 810
 #define WIN_X ((1920 - WIN_W) / 2)
 #define WIN_Y ((1080 - WIN_H) / 2)
-#define VIEW_W 480
-#define VIEW_H 270
+#define VIEW_W (WIN_W/1)
+#define VIEW_H (WIN_H/1)
 
 
 PhysBody* player;
@@ -33,11 +33,13 @@ void init_drifter_scene(Scene* scene) {
 
 	PhysBody* b;
 
+	Shape drifter_shape = Shape({{-4,-1},{4,-1},{4,1},{-4,1}});
+
 	b = scene->add(new PhysBody({300, 150}, Shape(70)));
 	b->calc_mass(0);
 	b->material.e = 0;
 
-	player = scene->add(new PhysBody({32, 132}, Shape(2)));
+	player = scene->add(new PhysBody({32, 132}, drifter_shape));
 	player->material.e = 0;
 	player->I_inv = 0;
 	player->I = 0;
@@ -143,8 +145,9 @@ int main(int, char**) {
 	GUI gui(win, gui_atlas, font);
 
 
-	Scene scene = Scene({0, 0 * 981}, 1 / 60.0, VIEW_W, VIEW_H, 16);
-	init_drifter_scene(&scene);
+	Scene scene = Scene({0, 1 * 981}, 1 / 60.0, VIEW_W, VIEW_H, 16);
+	//init_drifter_scene(&scene);
+	init_test_scene(&scene);
 
 
 	GUICheckBox* draw_physbody = gui.add(new GUICheckBox(&gui, Vec2(100, 100), "Draw PhysBody"));
@@ -190,7 +193,7 @@ int main(int, char**) {
 		//Game logic goes here
 		//
 
-		drifter.update(&input);
+		//drifter.update(&input);
 
 		//
 		//-----------------------------------------------------------------------------------------
@@ -203,9 +206,9 @@ int main(int, char**) {
 		SDL_RenderClear(rend);
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 
-		img_floor.draw(0, 0);
+		//img_floor.draw(0, 0);
 		scene.draw(rend);
-		drifter.draw(&img_drifter);
+		//drifter.draw(&img_drifter);
 
 		gui.draw(input);
 		SDL_RenderPresent(rend);
