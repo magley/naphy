@@ -3,16 +3,16 @@
 Sprite spr[10];
 void sprites_init(Image* img_drifter) {
 	spr[SPR_DRIFTER_DOWN_STAND] = Sprite(img_drifter, Vec2(16, 32), Vec2(0, 0), 1);
-	spr[SPR_DRIFTER_DOWN_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 0), 4);
+	spr[SPR_DRIFTER_DOWN_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 0), 8);
 
 	spr[SPR_DRIFTER_RIGHT_STAND] = Sprite(img_drifter, Vec2(16, 32), Vec2(0, 32), 1);
-	spr[SPR_DRIFTER_RIGHT_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 32), 4);
+	spr[SPR_DRIFTER_RIGHT_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 32), 8);
 
 	spr[SPR_DRIFTER_LEFT_STAND] = Sprite(img_drifter, Vec2(16, 32), Vec2(0, 64), 1);
-	spr[SPR_DRIFTER_LEFT_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 64), 4);
+	spr[SPR_DRIFTER_LEFT_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 64), 8);
 
 	spr[SPR_DRIFTER_UP_STAND] = Sprite(img_drifter, Vec2(16, 32), Vec2(0, 96), 1);
-	spr[SPR_DRIFTER_UP_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 96), 4);
+	spr[SPR_DRIFTER_UP_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 96), 8);
 }
 
 
@@ -45,10 +45,6 @@ void CSprite::update() {
 	} else {
 		image_index += image_speed;
 	}
-
-	//image_index += image_speed;
-	//if (image_index > s->frames - 1)
-	//	image_index = 0.0;
 }
 
 

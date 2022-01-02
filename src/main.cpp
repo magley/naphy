@@ -14,8 +14,8 @@
 #include "game/cdrifter.h"
 
 
-#define WIN_W 960
-#define WIN_H 540
+#define WIN_W 1440
+#define WIN_H 810
 #define WIN_X ((1920 - WIN_W) / 2)
 #define WIN_Y ((1080 - WIN_H) / 2)
 #define VIEW_W 480
@@ -39,6 +39,8 @@ void init_drifter_scene(Scene* scene) {
 
 	player = scene->add(new PhysBody({32, 132}, Shape(2)));
 	player->material.e = 0;
+	player->I_inv = 0;
+	player->I = 0;
 	drifter = CDrifter(player);
 }
 
@@ -161,7 +163,7 @@ int main(int, char**) {
 	GUIButton* 	reset_scene_btn = gui.add(new GUIButton(&gui, Vec2(100, 188), "Reset scene"));
 			   	reset_scene_btn->reg_click_callback(reset_scene, &scene);
 
-	GUILabel*	lbl_naphy = gui.add(new GUILabel(&gui, {0, 0}, "naphy ~ dev.2022.01.01", COL_WHITE, COL_BLUE));
+	GUILabel*	lbl_naphy = gui.add(new GUILabel(&gui, {0, 0}, "naphy ~ dev.2022.01.02", COL_WHITE, COL_BLUE));
 	GUILabel*	lbl_obj = gui.add(new GUILabel(&gui, {0, FONT_CH_H * gui.scale}, "obj:", COL_WHITE, COL_BLUE));
 
 
