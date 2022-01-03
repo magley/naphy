@@ -2,7 +2,6 @@
 
 #include "SDL2/SDL_image.h"
 
-
 // Wrapper structure for SDL_Texture.
 struct Image {	
 	// Pointer to the rendering target. Do not modify manually.
@@ -51,4 +50,7 @@ struct Image {
 	// @param subimage_w Width of the slice.
 	// @param subimage_h Height of the slice.
 	void draw(int x, int y, double scale, int subimage_x, int subimage_y, int subimage_w, int subimage_h) const;
+
+
+	void draw_ex(int x, int y, int subx, int suby, int subw, int subh, int sdl_flip) const;
 };

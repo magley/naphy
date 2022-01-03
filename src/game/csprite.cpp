@@ -8,12 +8,11 @@ void sprites_init(Image* img_drifter) {
 
 	spr[SPR_DRIFTER_RIGHT_STAND] = Sprite(img_drifter, Vec2(16, 32), Vec2(0, 32), 1);
 	spr[SPR_DRIFTER_RIGHT_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 32), 8);
+	spr[SPR_DRIFTER_RIGHT_DRIFT] = Sprite(img_drifter, Vec2(32, 32), Vec2(9*16, 32), 8);
 
-	spr[SPR_DRIFTER_LEFT_STAND] = Sprite(img_drifter, Vec2(16, 32), Vec2(0, 64), 1);
-	spr[SPR_DRIFTER_LEFT_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 64), 8);
-
-	spr[SPR_DRIFTER_UP_STAND] = Sprite(img_drifter, Vec2(16, 32), Vec2(0, 96), 1);
-	spr[SPR_DRIFTER_UP_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 96), 8);
+	spr[SPR_DRIFTER_UP_STAND] = Sprite(img_drifter, Vec2(16, 32), Vec2(0, 64), 1);
+	spr[SPR_DRIFTER_UP_WALK] = Sprite(img_drifter, Vec2(16, 32), Vec2(16, 64), 8);
+	spr[SPR_DRIFTER_UP_DRIFT] = Sprite(img_drifter, Vec2(16, 32), Vec2(9*16, 64), 8);
 }
 
 
@@ -52,17 +51,26 @@ void CSprite::update() {
 	}
 }
 
+void CSprite::set(unsigned spr_index, unsigned reset_if_diff, unsigned reset_if_same) {
+	if (sprite_index == spr_index && reset_if_same)
+		image_index = 0;
+	if (sprite_index != spr_index && reset_if_diff)
+		image_index = 0;
+	sprite_index = spr_index;
+}
+
 
 void CSprite::draw(Vec2 pos) {
 	Sprite* s = &spr[sprite_index];
 	const unsigned img_index = (unsigned)image_index;
 
-	s->img->draw(
+	s->img->draw_ex(
 		pos.x, 
-		pos.y,
+		pos.y, 
 		s->pos.x + s->size.x * img_index,
 		s->pos.y,
 		s->size.x,
-		s->size.y
+		s->size.y,
+		sdl_flip
 	);
 }
