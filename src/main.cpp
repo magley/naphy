@@ -20,8 +20,10 @@
 #define VIEW_W (WIN_W / 1)
 #define VIEW_H (WIN_H / 1)
 
-PhysBody* player;
-CDrifter drifter;
+static PhysBody* player;
+static CDrifter drifter;
+static int running = 1; // When 0, the game loop ends.
+static int resetme = 0; // Set to 1 to signal that the scene should be reset. Check is done manually.
 
 void init_drifter_scene(Scene* scene, GUI* gui);
 void init_test_scene(Scene* scene, GUI* gui);
@@ -67,6 +69,8 @@ void reset_scene(Scene* scene, GUIButton* btn) {
 	scene->clear();
 	gui->clear();
 	init_test_scene(scene, gui);
+
+	resetme = 1;
 }
 
 void init_test_scene(Scene* scene, GUI* gui) {
@@ -75,7 +79,7 @@ void init_test_scene(Scene* scene, GUI* gui) {
 	scene->arbiter.clear();
 	scene->spring.clear();
 
-	Shape rect = Shape({{-500, 32}, {-500, -32}, {500, -32}, {500, 32}});
+	Shape rect = Shape({{-800, 32}, {-800, -32}, {800, -32}, {800, 32}});
 	Shape rect2 = Shape({{-60, 8}, {-60, -8}, {60, -8}, {60, 8}});
 
 	// Floor
@@ -110,7 +114,7 @@ void init_test_scene(Scene* scene, GUI* gui) {
 
 	for (int y = 0; y < bh; y++) {
 		for (int x = 0; x < bw; x++) {
-			curtain[y][x] = new PhysBody(Vec2(600 + 16 * x, 100 + 16 * y), Shape(4));
+			curtain[y][x] = new PhysBody(Vec2(600 + 16 * x, 200 + 16 * y), Shape(4));
 			scene->add(curtain[y][x]);
 
 			if (y == 0) {
@@ -122,37 +126,37 @@ void init_test_scene(Scene* scene, GUI* gui) {
 	for (int y = 0; y < bh; y++) {
 		for (int x = 0; x < bw; x++) {
 			if (y < bh - 1)
-				scene->spring.push_back(Spring(curtain[y][x], curtain[y + 1][x], 0, 4, 1));
+				scene->spring.push_back(Spring(curtain[y][x], curtain[y + 1][x], 0, 6, 3));
 			if (x < bw - 1)
-				scene->spring.push_back(Spring(curtain[y][x], curtain[y][x + 1], 0, 4, 1));
+				scene->spring.push_back(Spring(curtain[y][x], curtain[y][x + 1], 0, 6, 3));
 		}
 	}
 
-	b = scene->add(new PhysBody({16, 0}, Shape(10)));
+	b = scene->add(new PhysBody({106, 0}, Shape(30)));
 	b->calc_mass(1);
 	player = b;
 
 	// GUI
 
-	GUICheckBox* draw_physbody = gui->add(new GUICheckBox(gui, {100, 100}, "Draw PhysBody"));
+	GUICheckBox* draw_physbody = gui->add(new GUICheckBox(gui, {0, 24}, "Draw PhysBody"));
 	draw_physbody->checked = true;
 	draw_physbody->reg_toggle_target(&scene->debug_draw_shapes, true);
-	GUICheckBox* draw_arbiter = gui->add(new GUICheckBox(gui, {124, 100}, "Draw Arbiter"));
+	GUICheckBox* draw_arbiter = gui->add(new GUICheckBox(gui, {24, 24}, "Draw Arbiter"));
 	draw_arbiter->reg_toggle_target(&scene->debug_draw_arbiters, true);
-	GUICheckBox* draw_quadtree = gui->add(new GUICheckBox(gui, {148, 100}, "Draw QuadTree"));
+	GUICheckBox* draw_quadtree = gui->add(new GUICheckBox(gui, {48, 24}, "Draw QuadTree"));
 	draw_quadtree->reg_toggle_target(&scene->debug_draw_quadtree, true);
-	GUICheckBox* draw_springs = gui->add(new GUICheckBox(gui, {172, 100}, "Draw Spring"));
+	GUICheckBox* draw_springs = gui->add(new GUICheckBox(gui, {72, 24}, "Draw Spring"));
 	draw_springs->checked = true;
 	draw_springs->reg_toggle_target(&scene->debug_draw_springs, true);
-	GUICheckBox* use_quadtree = gui->add(new GUICheckBox(gui, {196, 100}, "Use QuadTree"));
+	GUICheckBox* use_quadtree = gui->add(new GUICheckBox(gui, {96, 24}, "Use QuadTree"));
 	use_quadtree->checked = true;
 	use_quadtree->reg_toggle_target(&scene->debug_use_quadtree, true);
 
-	GUIButton* add_poly_btn = gui->add(new GUIButton(gui, {100, 140}, "Add new polygon"));
+	GUIButton* add_poly_btn = gui->add(new GUIButton(gui, {0, 48}, "Add new polygon"));
 	add_poly_btn->reg_click_callback(add_poly, scene);
-	GUIButton* add_circle_btn = gui->add(new GUIButton(gui, {100, 164}, "Add new circle"));
+	GUIButton* add_circle_btn = gui->add(new GUIButton(gui, {48, 48}, "Add new circle"));
 	add_circle_btn->reg_click_callback(add_circle, scene);
-	GUIButton* reset_scene_btn = gui->add(new GUIButton(gui, {100, 188}, "Reset scene"));
+	GUIButton* reset_scene_btn = gui->add(new GUIButton(gui, {96, 48}, "Reset scene"));
 	reset_scene_btn->reg_click_callback(reset_scene, scene);
 
 	GUILabel* lbl_naphy = gui->add(new GUILabel(gui, {0, 0}, "naphy ~ dev.2022.01.04", COL_WHITE, COL_BLUE));
@@ -177,10 +181,8 @@ int main(int, char**) {
 	//init_drifter_scene(&scene, &gui);
 	init_test_scene(&scene, &gui);
 
-	GUILabel* lbl_obj = gui.add(new GUILabel(&gui, {0, FONT_CH_H * gui.scale}, "obj:", COL_WHITE, COL_BLUE));
-
-	bool running = true;
 	while (running) {
+		resetme = 0;
 		scene.pre_update();
 
 		SDL_Event ev;
@@ -192,6 +194,9 @@ int main(int, char**) {
 		input.update();
 		gui.update(input);
 
+		if (resetme)
+			continue;
+
 		//-----------------------------------------------------------------------------------------
 		// Game logic goes here
 		//
@@ -202,7 +207,9 @@ int main(int, char**) {
 		//-----------------------------------------------------------------------------------------
 
 		scene.update();
-		lbl_obj->text = "obj:" + std::to_string(scene.body.size());
+
+		if (resetme)
+			continue;
 
 		SDL_SetRenderDrawColor(rend, 29, 18, 37, 255);
 		SDL_RenderClear(rend);
