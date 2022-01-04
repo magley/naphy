@@ -13,44 +13,38 @@ struct Image {
 	// Height of the image. Do not modify manually.
 	int h;
 	
-	//Construct an empty Image object. Don't use this manually.	
+	//Construct an empty Image object, for unitialized arrays. Don't use this explicitly.	
 	Image();
 	// Construct a new Image object.
 	// @param rend SDL Renderer reference, on which the image will be drawn.
-	// @param Filename of the image.
+	// @param fname Filename of the image.
 	Image(SDL_Renderer* rend, const char* fname);	
 	// Draws the entire image at specified coordinates.
 	// @param x X position.
 	// @param y Y position.	
-	void draw(int x, int y) const;	
+	inline void draw(int x, int y) const {
+		draw(x, y, w, h, 0, 0, w, h, SDL_FLIP_NONE);
+	}	
 	// Draws a slice of the image at specified coordinates.
 	// @param x X position.
 	// @param y Y position.
-	// @param subimage_x X position inside the image where the slice begins.
-	// @param subimage_y Y position inside the image where the slice begins.
-	// @param subimage_w Width of the slice.
-	// @param subimage_h Height of the slice.
-	void draw(int x, int y, int subimage_x, int subimage_y, int subimage_w, int subimage_h) const;
+	// @param subx X position inside the image where the slice begins.
+	// @param suby Y position inside the image where the slice begins.
+	// @param subw Width of the slice.
+	// @param subh Height of the slice.
+	// @param sdl_flip Which axis to flip on, valid value is one of SDL_FLIP* 
+	inline void draw(int x, int y, int subx, int suby, int subw, int subh, int flip = 0) const {
+		draw(x, y, subw, subh, subx, suby, subw, subh, flip);
+	}
 	// Draws a scaled slice of the image at specified coordinates.
 	// @param x X position.
 	// @param y Y position.
 	// @param w Width of the image.
 	// @param h Height of the image.
-	// @param subimage_x X position inside the image where the slice begins.
-	// @param subimage_y Y position inside the image where the slice begins.
-	// @param subimage_w Width of the slice.
-	// @param subimage_h Height of the slice.
-	void draw(int x, int y, int w, int h, int subimage_x, int subimage_y, int subimage_w, int subimage_h) const;
-	// Draws a scaled slice of the image at specified coordinates.
-	// @param x X position.
-	// @param y Y position.
-	// @param scale Scale.
-	// @param subimage_x X position inside the image where the slice begins.
-	// @param subimage_y Y position inside the image where the slice begins.
-	// @param subimage_w Width of the slice.
-	// @param subimage_h Height of the slice.
-	void draw(int x, int y, double scale, int subimage_x, int subimage_y, int subimage_w, int subimage_h) const;
-
-
-	void draw_ex(int x, int y, int subx, int suby, int subw, int subh, int sdl_flip) const;
+	// @param subx X position inside the image where the slice begins.
+	// @param suby Y position inside the image where the slice begins.
+	// @param subw Width of the slice.
+	// @param subh Height of the slice.
+	// @param sdl_flip Which axis to flip on, valid value is one of SDL_FLIP* 
+	void draw(int x, int y, int w, int h, int subx, int suby, int subw, int subh, int flip = 0) const;
 };

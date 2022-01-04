@@ -1,6 +1,6 @@
 #include "cdrifter.h"
-#include <stdio.h>
 
+#include <stdio.h>
 
 CDrifter::CDrifter() {
 	this->body = NULL;
@@ -36,14 +36,14 @@ void CDrifter::update(const Input* input) {
 	double vel_drift = 500;
 	double acc = 5;
 	double deacc = 1.5;
-	int drift_time_start = 280; 		// How much time does a drift take
-	int drift_time_halt = 200; 			// After this the drifting stops (you slow down to a stop)
-	int drift_time_combo = 150;			// After this you can combo
-	int drift_time_combo_end = 40;		// After this you can't combo
+	int drift_time_start = 280;     // How much time does a drift take
+	int drift_time_halt = 200;      // After this the drifting stops (you slow down to a stop)
+	int drift_time_combo = 150;     // After this you can combo
+	int drift_time_combo_end = 40;  // After this you can't combo
 	int drift_punished = 0;
 	//
 	//---------------------------------------------------------------------------------------------
-	
+
 	const int inputx = input->key_down(SDL_SCANCODE_D) - input->key_down(SDL_SCANCODE_A);
 	const int inputy = input->key_down(SDL_SCANCODE_S) - input->key_down(SDL_SCANCODE_W);
 	const int inputdrift = input->key_press(SDL_SCANCODE_SPACE);
@@ -95,13 +95,13 @@ void CDrifter::update(const Input* input) {
 					state = DRIFTER_STATE_STAND;
 			}
 		}
-		
+
 		// Limit walk speed
 
 		if (body->vel.y > vel_walk) body->vel.y = vel_walk;
-		if (body->vel.y <-vel_walk) body->vel.y =-vel_walk;
+		if (body->vel.y < -vel_walk) body->vel.y = -vel_walk;
 		if (body->vel.x > vel_walk) body->vel.x = vel_walk;
-		if (body->vel.x <-vel_walk) body->vel.x =-vel_walk;
+		if (body->vel.x < -vel_walk) body->vel.x = -vel_walk;
 	}
 
 	// Drift start
@@ -117,18 +117,22 @@ void CDrifter::update(const Input* input) {
 
 		if (can_drift || (can_combo && !drift_punished)) {
 			drift_time = drift_time_start;
-			state = DRIFTER_STATE_DRIFT;
+			state = DRIFTER_STATE_DRIFTSTART;
 
 			const Vec2 mousepos = Vec2(input->mouse_x, input->mouse_y);
 			const Vec2 dir = (mousepos - body->pos).normalized();
 			body->vel = vel_drift * dir;
 
 			if (std::abs(body->vel.y) > std::abs(body->vel.x)) {
-				if (body->vel.y > 0) movedir = DRIFTER_DOWN;
-				else movedir = DRIFTER_UP;
+				if (body->vel.y > 0)
+					movedir = DRIFTER_DOWN;
+				else
+					movedir = DRIFTER_UP;
 			} else {
-				if (body->vel.x > 0) movedir = DRIFTER_RIGHT;
-				else movedir = DRIFTER_LEFT;				
+				if (body->vel.x > 0)
+					movedir = DRIFTER_RIGHT;
+				else
+					movedir = DRIFTER_LEFT;
 			}
 
 			if (can_combo || drift_combo == 0)
@@ -139,6 +143,10 @@ void CDrifter::update(const Input* input) {
 	// While drifting
 
 	if (drift_time > 0) {
+		if (drift_time < drift_time_start && state == DRIFTER_STATE_DRIFTSTART) {
+			state = DRIFTER_STATE_DRIFT;
+		}
+
 		if (drift_time <= drift_time_halt) {
 			body->vel *= 0.95;
 
@@ -207,9 +215,9 @@ void CDrifter::update_sprite(const Input* input) {
 	} else if (state == DRIFTER_STATE_WALK || state == DRIFTER_STATE_STOPWALK) {
 		spr_mat_spr = 1;
 		sprite.repeat = 1;
-	} else if (state == DRIFTER_STATE_DRIFT) {
+	} else if (state == DRIFTER_STATE_DRIFTSTART || state == DRIFTER_STATE_DRIFT) {
 		spr_mat_spr = 2;
-		if (inputdrift)
+		if (state == DRIFTER_STATE_DRIFTSTART)
 			reset_if_same = 1;
 		sprite.repeat = 0;
 	}
@@ -223,25 +231,23 @@ void CDrifter::update_sprite(const Input* input) {
 	sprite.update();
 }
 
-
 void CDrifter::draw(const Image* img) const {
 	const Vec2 spr_pos_offset = Vec2(
 		spr[sprite.sprite_index].size.x / 2,
-		spr[sprite.sprite_index].size.y - 2
-	);
+		spr[sprite.sprite_index].size.y - 2);
 
 	// Draw trail
 
-	uint8_t _r, _g, _b, _a;;
+	uint8_t _r, _g, _b, _a;
+	;
 	SDL_GetTextureColorMod(img->img, &_r, &_g, &_b);
 	SDL_GetTextureAlphaMod(img->img, &_a);
 
 	for (unsigned i = 0; i < trail_cnt; i++) {
-		SDL_SetTextureColorMod(img->img, 
-			(50 + i * 70) % 255, 
-			(230 - i * 49) % 255, 
-			(180 + i * 10) % 255
-		);
+		SDL_SetTextureColorMod(img->img,
+							   (50 + i * 70) % 255,
+							   (230 - i * 49) % 255,
+							   (180 + i * 10) % 255);
 		((CSprite)sprite).draw(trail[i] - spr_pos_offset);
 	}
 

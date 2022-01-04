@@ -120,8 +120,10 @@ static int collision_cp(const PhysBody* const A, const PhysBody* const B, Arbite
 		
 		For (2) we do an algorithm for collision between a circle 
 		and a line-segment. It boils down to checking for the 3
-		Voronoi regions of the line segment.
-		https://stackoverflow.com/a/1079478
+		Voronoi regions of the line segment. If the desired region
+		is one of the points, then that point will be the collision
+		point, and depth = radius - dist(circle, point). Otherwise,
+		the contat point is on the circle.
 	*/
 
 	// (1)
@@ -163,12 +165,14 @@ static int collision_cp(const PhysBody* const A, const PhysBody* const B, Arbite
 
 	if (proj1 <= 0 || proj2 <= 0) {
 		const Vec2 vertex = proj1 <= 0 ? v1 : v2;
+		const Vec2 vertex_worldspace = B->rot * vertex + B->pos;
 		if (dist_sqr(center, vertex) > shpA->radius * shpA->radius)
 			return 0;
 		const Vec2 normal = B->rot * (vertex - center).normalized();
-		R->depth = shpA->radius - (A->pos - (B->pos + vertex)).len();
+
+		R->depth = shpA->radius - (A->pos - vertex_worldspace).len();
 		R->normal = normal;
-		R->contact.push_back(B->rot * vertex + B->pos);
+		R->contact.push_back(vertex_worldspace);
 	} else {
 		Vec2 normal = shpB->norm[face];
 		if (dot(center - v1, normal) > shpA->radius)
