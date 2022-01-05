@@ -13,6 +13,18 @@ Shape::Shape(double circle_radius) {
 }
 
 
+Shape::Shape(Vec2 rect_size) {
+	double rw = rect_size.x / 2;
+	double rh = rect_size.y / 2;
+	type = SHAPE_POLYGON;
+	vert.push_back({rw, rh});
+	vert.push_back({-rw, rh});
+	vert.push_back({-rw, -rh});
+	vert.push_back({rw, -rh});
+	compute_normals();
+}
+
+
 Shape::Shape(unsigned regular_poly_vertex_count, double regular_poly_radius) {
 	type = SHAPE_POLYGON;
 	for (unsigned i = 0; i < regular_poly_vertex_count; i++) {

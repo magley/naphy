@@ -2,7 +2,6 @@
 #include "rend/rend.h"
 #include <set>
 
-
 static void scene_update_collision(Scene* scene);
 static void scene_update_force(Scene* scene);
 static void scene_update_constraints(Scene* scene);
@@ -11,7 +10,6 @@ static void scene_remove_distant_objects(Scene* scene);
 
 static void collision_quadtree(Scene* scene);
 static void collision_naive(Scene* scene);
-
 
 // Pairs of physics bodies with a '<' operator.
 // This is used to avoid duplicates when generating Arbiters during broad-phase collision detection.
@@ -29,7 +27,6 @@ struct PhysBodyPair {
 			return false;
 	}
 };
-
 
 Scene::Scene() {
 	timing = Timing(1 / 60.0);
@@ -243,6 +240,17 @@ static void scene_update_collision(Scene* scene) {
 	}
 }
 
+static void scene_update_constraints(Scene* scene) {
+	for (unsigned i = 0; i < scene->arbiter.size(); i++)
+		scene->arbiter[i].pre_solve(scene->grav, scene->timing.dt);
+
+	const int iterations = 10;
+	for (unsigned j = 0; j < iterations; j++) {
+		for (unsigned i = 0; i < scene->arbiter.size(); i++)
+			scene->arbiter[i].solve();
+	}
+}
+
 static void scene_update_force(Scene* scene) {
 	// Accumulate external forces.
 	// For now, we only have springs. Gravity is done below this, when calculating dv.
@@ -260,9 +268,9 @@ static void scene_update_force(Scene* scene) {
 
 		if (b->dynamic_state == PHYSBODY_STATE_STATIC)
 			continue;
-		
-		Vec2 dv = (b->force * b->m_inv + scene->grav) * scene->timing.dt;
-		double dang = (b->torque * b->I_inv) * scene->timing.dt;
+
+		const Vec2 dv = (b->force * b->m_inv + scene->grav) * scene->timing.dt;
+		const double dang = (b->torque * b->I_inv) * scene->timing.dt;
 
 		// Wake up sleeping bodes that moved significantly.
 
@@ -287,17 +295,6 @@ static void scene_update_force(Scene* scene) {
 	}
 }
 
-static void scene_update_constraints(Scene* scene) {
-	for (unsigned i = 0; i < scene->arbiter.size(); i++)
-		scene->arbiter[i].pre_solve(scene->grav, scene->timing.dt);
-
-	const int iterations = 10;
-	for (unsigned j = 0; j < iterations; j++) {
-		for (unsigned i = 0; i < scene->arbiter.size(); i++)
-			scene->arbiter[i].solve();
-	}
-}
-
 static void scene_update_velocity(Scene* scene) {
 	for (unsigned i = 0; i < scene->body.size(); i++) {
 		PhysBody* b = scene->body[i];
@@ -305,10 +302,14 @@ static void scene_update_velocity(Scene* scene) {
 		if (b->dynamic_state == PHYSBODY_STATE_AWAKE) {
 			// If the body didn't move much, put it to sleep.
 
-			if (b->vel.len_sqr() < EPSILON && std::abs(b->angvel) <= EPSILON) {
+			const bool vel_is_0 = b->vel.len() <= EPSILON;
+			const bool angvel_is_0 = std::abs(b->angvel) <= EPSILON;
+
+			if (vel_is_0) b->vel = {0, 0};
+			if (angvel_is_0) b->angvel = 0;
+
+			if (vel_is_0 && angvel_is_0) {
 				b->dynamic_state = PHYSBODY_STATE_SLEEPING;
-				b->vel = Vec2(0, 0);
-				b->angvel = 0;
 			} else {
 				if (b->m_inv != 0) {
 					b->pos += b->vel * scene->timing.dt;
@@ -333,8 +334,7 @@ static void scene_remove_distant_objects(Scene* scene) {
 	for (int i = scene->body.size() - 1; i >= 0; i--) {
 		PhysBody* b = scene->body[i];
 		if (!b->bbox_query(my_ul, my_dr)) {
-			// TODO : finish this
-			// TODO : remove all arbiters and springs that are involved with this body
+			// TODO: finish this and remove all arbiters and springs attached to this body, too
 		}
 	}
 }

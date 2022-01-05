@@ -2,13 +2,11 @@
 #include <cmath>
 #include <float.h>
 
-
 const double PI = 3.1415926535897932384626433832795;
 const double E = 2.7182818284590452353602874713527;
 const double EPSILON = 0.001;
 const double DEG2RAD = PI / 180.0;
 const double RAD2DEG = 180.0 / PI;
-
 
 // 2D vector.
 struct Vec2 {

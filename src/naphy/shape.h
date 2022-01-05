@@ -27,6 +27,9 @@ struct Shape {
     // Construct a new circle.
     // @param circle_radius Radius of the shape.
 	Shape(double circle_radius);
+    // Construct a new rectangle. The rectangle is centered. 
+    // @param rect_size size as a Vec2.
+	Shape(Vec2 rect_size);
     // Construct a new regular poygon.
     // @param regular_poly_vertex_count Number of vertices the reguar polygon will have.
     // @param regular_poly_radius Distance between shape center and any of the vertices.

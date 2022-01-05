@@ -7,9 +7,6 @@ CDrifter::CDrifter() {
 	this->drift_time = 0;
 	this->drift_combo = 0;
 	this->sprite = CSprite(SPR_DRIFTER_DOWN_STAND, 1 / 60.0);
-	this->trail_i = 0;
-	this->trail_cnt = 0;
-	this->trail = {};
 	this->state = DRIFTER_STATE_STAND;
 	this->movedir = DRIFTER_DOWN;
 }
@@ -19,9 +16,6 @@ CDrifter::CDrifter(PhysBody* body) {
 	this->drift_time = 0;
 	this->drift_combo = 0;
 	this->sprite = CSprite(SPR_DRIFTER_DOWN_STAND, 1.75 / 60.0);
-	this->trail_i = 0;
-	this->trail_cnt = 0;
-	this->trail = std::vector<Vec2>(10);
 	this->state = DRIFTER_STATE_STAND;
 	this->movedir = DRIFTER_DOWN;
 }
@@ -164,29 +158,9 @@ void CDrifter::update(const Input* input) {
 			state = DRIFTER_STATE_STAND;
 			drift_punished = 0;
 		}
-
-		// Trail
-
-		if (trail_cnt == 0) {
-			// When we start drifting, move all the trail sprites to the current position.
-			// This will make sure that none of the trail sprites are rogue.
-			for (unsigned i = 0; i < trail.size(); i++)
-				trail[i] = body->pos;
-			trail_i = 0;
-		}
-
-		trail_cnt = trail.size();
 	} else {
 		// Not drifting.
-		trail_cnt = 0;
 	}
-
-	// The trail is always updated
-
-	if (trail_i % 5 == 0)
-		trail[trail_i / 5] = body->pos;
-	if (trail_i++ > trail.size() * 5)
-		trail_i = 0;
 
 	// Sprite
 
@@ -204,6 +178,8 @@ void CDrifter::update_sprite(const Input* input) {
 		{SPR_DRIFTER_UP_STAND, SPR_DRIFTER_UP_WALK, SPR_DRIFTER_UP_DRIFT},
 		{SPR_DRIFTER_RIGHT_STAND, SPR_DRIFTER_RIGHT_WALK, SPR_DRIFTER_RIGHT_DRIFT},
 	};
+
+	// Determine which sprite to display
 
 	unsigned spr_mat_spr;
 	unsigned spr_mat_dir;
@@ -229,6 +205,21 @@ void CDrifter::update_sprite(const Input* input) {
 	sprite.set(sprite_matrix[spr_mat_dir][spr_mat_spr], 1, reset_if_same);
 
 	sprite.update();
+
+	// Trail
+
+	static int cnt = 0;
+
+	if (state == DRIFTER_STATE_DRIFTSTART || state == DRIFTER_STATE_DRIFT) {
+		if (cnt++ % 8 == 0) {
+			trails.push_back(body->pos);
+
+			if (trails.size() > 8)
+				trails.pop_front();
+		}
+	} else {
+		trails.clear();
+	}
 }
 
 void CDrifter::draw(const Image* img) const {
@@ -238,21 +229,23 @@ void CDrifter::draw(const Image* img) const {
 
 	// Draw trail
 
-	uint8_t _r, _g, _b, _a;
-	;
-	SDL_GetTextureColorMod(img->img, &_r, &_g, &_b);
-	SDL_GetTextureAlphaMod(img->img, &_a);
+	uint8_t r_, g_, b_, a_;
+	SDL_GetTextureColorMod(img->img, &r_, &g_, &b_);
+	SDL_GetTextureAlphaMod(img->img, &a_);
+	{
+		auto it = trails.begin();
+		for (unsigned i = 0; it != trails.end(); ++it, ++i) {
+			SDL_SetTextureColorMod(img->img,
+								(3 * i * i + 5 * i + 60) % 255,
+								(2 * i * i + 30 * i + 40) % 255,
+								(3 * i * i + 5 * i + 150) % 255);
 
-	for (unsigned i = 0; i < trail_cnt; i++) {
-		SDL_SetTextureColorMod(img->img,
-							   (50 + i * 70) % 255,
-							   (230 - i * 49) % 255,
-							   (180 + i * 10) % 255);
-		((CSprite)sprite).draw(trail[i] - spr_pos_offset);
+			Vec2 p = *it;
+			((CSprite)sprite).draw(p - spr_pos_offset);
+		}
 	}
-
-	SDL_SetTextureColorMod(img->img, _r, _g, _b);
-	SDL_SetTextureAlphaMod(img->img, _a);
+	SDL_SetTextureAlphaMod(img->img, a_);
+	SDL_SetTextureColorMod(img->img, r_, g_, b_);
 
 	// Draw main sprite
 

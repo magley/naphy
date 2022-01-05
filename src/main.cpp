@@ -17,8 +17,8 @@
 #define WIN_H 810
 #define WIN_X ((1920 - WIN_W) / 2)
 #define WIN_Y ((1080 - WIN_H) / 2)
-#define VIEW_W (WIN_W / 1)
-#define VIEW_H (WIN_H / 1)
+#define VIEW_W (WIN_W / 3)
+#define VIEW_H (WIN_H / 3)
 
 static PhysBody* player;
 static CDrifter drifter;
@@ -39,15 +39,34 @@ void init_drifter_scene(Scene* scene, GUI* gui) {
 
 	Shape drifter_shape = Shape({{-4, -1}, {4, -1}, {4, 1}, {-4, 1}});
 
-	b = scene->add(new PhysBody({300, 150}, Shape(70)));
+	b = scene->add(new PhysBody({0 + 100, 60 + 5}, Shape(Vec2{200, 10})));
 	b->calc_mass(0);
 	b->material.e = 0;
+
+	b = scene->add(new PhysBody({300, 90}, Shape({{63, -22}, {63, 24}, {-44, 24}, {-100, -22}})));
+	b->calc_mass(0);
+	b->material.e = 0;
+
+	b = scene->add(new PhysBody({410, 80}, Shape(Vec2{150, 20})));
+	b->calc_mass(0);
+	b->material.e = 0;
+
 
 	player = scene->add(new PhysBody({32, 132}, drifter_shape));
 	player->material.e = 0;
 	player->I_inv = 0;
 	player->I = 0;
 	drifter = CDrifter(player);
+
+
+	// GUI
+
+	GUICheckBox* draw_physbody = gui->add(new GUICheckBox(gui, {0, 24}, "Draw PhysBody"));
+	draw_physbody->checked = true;
+	draw_physbody->reg_toggle_target(&scene->debug_draw_shapes, true);
+
+	GUICheckBox* draw_arbiter = gui->add(new GUICheckBox(gui, {24, 24}, "Draw Arbiter"));
+	draw_arbiter->reg_toggle_target(&scene->debug_draw_arbiters, true);
 }
 
 void add_poly(Scene* scene, GUIButton* btn) {
@@ -72,6 +91,18 @@ void reset_scene(Scene* scene, GUIButton* btn) {
 
 	resetme = 1;
 }
+
+void add_box(Scene* scene, GUIButton* btn) {
+	static int i = 0;
+
+
+	int vertices = 4;
+	int size = 50;
+	const Shape c = Shape(vertices, size);
+	scene->add(new PhysBody(Vec2(VIEW_W * 0.8 + ((i++ + 5) % 3) * 0, 32), c))->set_angle(45 * DEG2RAD);
+}
+
+
 
 void init_test_scene(Scene* scene, GUI* gui) {
 	scene->grav = {0, 981};
@@ -156,7 +187,9 @@ void init_test_scene(Scene* scene, GUI* gui) {
 	add_poly_btn->reg_click_callback(add_poly, scene);
 	GUIButton* add_circle_btn = gui->add(new GUIButton(gui, {48, 48}, "Add new circle"));
 	add_circle_btn->reg_click_callback(add_circle, scene);
-	GUIButton* reset_scene_btn = gui->add(new GUIButton(gui, {96, 48}, "Reset scene"));
+	GUIButton* add_box_btn = gui->add(new GUIButton(gui, {96, 48}, "Add box"));
+	add_box_btn->reg_click_callback(add_box, scene);
+	GUIButton* reset_scene_btn = gui->add(new GUIButton(gui, {144, 48}, "Reset scene"));
 	reset_scene_btn->reg_click_callback(reset_scene, scene);
 
 	GUILabel* lbl_naphy = gui->add(new GUILabel(gui, {0, 0}, "naphy ~ dev.2022.01.04", COL_WHITE, COL_BLUE));
@@ -178,8 +211,8 @@ int main(int, char**) {
 	GUI gui(win, gui_atlas, font);
 
 	Scene scene = Scene({0, 0}, 1 / 60.0, VIEW_W, VIEW_H, 16);
-	//init_drifter_scene(&scene, &gui);
-	init_test_scene(&scene, &gui);
+	init_drifter_scene(&scene, &gui);
+	//init_test_scene(&scene, &gui);
 
 	while (running) {
 		resetme = 0;
@@ -201,7 +234,7 @@ int main(int, char**) {
 		// Game logic goes here
 		//
 
-		//drifter.update(&input);
+		drifter.update(&input);
 
 		//
 		//-----------------------------------------------------------------------------------------
@@ -215,9 +248,9 @@ int main(int, char**) {
 		SDL_RenderClear(rend);
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 
-		//img_floor.draw(0, 0);
+		img_floor.draw(0, 0);
 		scene.draw(rend);
-		//drifter.draw(&img_drifter);
+		drifter.draw(&img_drifter);
 
 		gui.draw(input);
 		SDL_RenderPresent(rend);

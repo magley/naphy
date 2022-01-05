@@ -6,7 +6,7 @@
 struct Sprite {
 	Image* img;
 	Vec2 size;
-	Vec2 pos;  // Pos of first image, in pixels, relative to main image.
+	Vec2 pos;  // Pos of first sprite frame, in pixels, relative to main image.
 	unsigned frames;
 
 	Sprite();
