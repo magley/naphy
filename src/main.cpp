@@ -37,9 +37,9 @@ void init_drifter_scene(Scene* scene, GUI* gui) {
 
 	PhysBody* b;
 
-	Shape drifter_shape = Shape({{-4, -1}, {4, -1}, {4, 1}, {-4, 1}});
+	printf("TODO: Raycasting for a priori collision.");
 
-	b = scene->add(new PhysBody({0 + 100, 60 + 5}, Shape(Vec2{200, 10})));
+	b = scene->add(new PhysBody({0 + 125, 60 + 5}, Shape(Vec2{250, 10})));
 	b->calc_mass(0);
 	b->material.e = 0;
 
@@ -52,6 +52,7 @@ void init_drifter_scene(Scene* scene, GUI* gui) {
 	b->material.e = 0;
 
 
+	Shape drifter_shape = Shape({{-4, -1}, {4, -1}, {4, 1}, {-4, 1}});
 	player = scene->add(new PhysBody({32, 132}, drifter_shape));
 	player->material.e = 0;
 	player->I_inv = 0;
@@ -198,7 +199,7 @@ void init_test_scene(Scene* scene, GUI* gui) {
 int main(int, char**) {
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_Window* win = SDL_CreateWindow("naphy", WIN_X, WIN_Y, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
-	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
+	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
 	SDL_RenderSetLogicalSize(rend, VIEW_W, VIEW_H);
 

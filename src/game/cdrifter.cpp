@@ -6,7 +6,7 @@ CDrifter::CDrifter() {
 	this->body = NULL;
 	this->drift_time = 0;
 	this->drift_combo = 0;
-	this->sprite = CSprite(SPR_DRIFTER_DOWN_STAND, 1 / 60.0);
+	this->sprite = CSprite(SPR_DRIFTER_DOWN_STAND, 0);
 	this->state = DRIFTER_STATE_STAND;
 	this->movedir = DRIFTER_DOWN;
 }
@@ -15,7 +15,7 @@ CDrifter::CDrifter(PhysBody* body) {
 	this->body = body;
 	this->drift_time = 0;
 	this->drift_combo = 0;
-	this->sprite = CSprite(SPR_DRIFTER_DOWN_STAND, 1.75 / 60.0);
+	this->sprite = CSprite(SPR_DRIFTER_DOWN_STAND, 0.315);
 	this->state = DRIFTER_STATE_STAND;
 	this->movedir = DRIFTER_DOWN;
 }
@@ -28,12 +28,12 @@ void CDrifter::update(const Input* input) {
 	//
 	double vel_walk = 100;
 	double vel_drift = 500;
-	double acc = 5;
-	double deacc = 1.5;
-	int drift_time_start = 280;     // How much time does a drift take
-	int drift_time_halt = 200;      // After this the drifting stops (you slow down to a stop)
-	int drift_time_combo = 150;     // After this you can combo
-	int drift_time_combo_end = 40;  // After this you can't combo
+	double acc = 50;
+	double deacc = 15;
+	int drift_time_start = 28;     // How much time does a drift take
+	int drift_time_halt = 20;      // After this the drifting stops (you slow down to a stop)
+	int drift_time_combo = 15;     // After this you can combo
+	int drift_time_combo_end = 4;  // After this you can't combo
 	int drift_punished = 0;
 	//
 	//---------------------------------------------------------------------------------------------
@@ -142,7 +142,7 @@ void CDrifter::update(const Input* input) {
 		}
 
 		if (drift_time <= drift_time_halt) {
-			body->vel *= 0.95;
+			body->vel *= 0.8;
 
 			int combo_timeout = drift_time_start - drift_time > drift_time_combo;
 
@@ -208,15 +208,11 @@ void CDrifter::update_sprite(const Input* input) {
 
 	// Trail
 
-	static int cnt = 0;
-
 	if (state == DRIFTER_STATE_DRIFTSTART || state == DRIFTER_STATE_DRIFT) {
-		if (cnt++ % 8 == 0) {
-			trails.push_back(body->pos);
+		trails.push_back(body->pos);
 
-			if (trails.size() > 8)
-				trails.pop_front();
-		}
+		if (trails.size() > 8)
+			trails.pop_front();
 	} else {
 		trails.clear();
 	}
@@ -236,9 +232,9 @@ void CDrifter::draw(const Image* img) const {
 		auto it = trails.begin();
 		for (unsigned i = 0; it != trails.end(); ++it, ++i) {
 			SDL_SetTextureColorMod(img->img,
-								(3 * i * i + 5 * i + 60) % 255,
-								(2 * i * i + 30 * i + 40) % 255,
-								(3 * i * i + 5 * i + 150) % 255);
+								(55 + (50 - 5 * i * i) % 200) % 255,
+								(200 - 5 * i * i) % 255,
+								(2 * i * i + 8 * i + 160) % 255);
 
 			Vec2 p = *it;
 			((CSprite)sprite).draw(p - spr_pos_offset);
