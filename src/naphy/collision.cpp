@@ -1,6 +1,8 @@
 #include "collision.h"
 #include "physbody.h"
 #include "arbiter.h"
+#include <stdio.h>
+
 
 // Specialized collision functions, _cc means 'circle-circle', _cp mean 'circle-polygon' etc.
 
@@ -23,7 +25,8 @@ static void best_axis(const PhysBody* A, const PhysBody* B, double* out_dist, un
 // @param ref_index Index of the first vertex of the reference face (getting ref verts is trivial).
 // @param ref_vert [out param] The two reference vertices (in world space).
 // @param inc_vert [out param] The two incident vertices (in world space). 
-static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_index, Vec2 ref_vert[2], Vec2 inc_vert[2]);
+static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_index, 
+								Vec2 ref_vert[2], Vec2 inc_vert[2]);
 // Sutherland-Hodgman clipping.
 // @param normal Normal vector against which we clip.
 // @param c ???
@@ -274,14 +277,27 @@ static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbite
 
 	if (R->contact.size() > 0)
 		R->depth /= R->contact.size();
+
 	return 1;
+}
+
+
+Arbiter raycast(Vec2 raystart, Vec2 rayend, const PhysBody* B) {
+	// TODO: Don't make entire PhysBodies just for this.
+
+	PhysBody A = PhysBody(raystart, Shape({{0, 0}, {rayend - raystart}}));
+
+	Arbiter R(&A, (PhysBody*)B);
+	R.build();
+	return R;
 }
 
 
 //=================================================================================================
 
 
-static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_face, Vec2 ref_vert[2], Vec2 inc_vert[2]) {
+static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_face, 
+								Vec2 ref_vert[2], Vec2 inc_vert[2]) {
 	// We know what the reference face is (we get it here though because it makes the code nicer).
 	// Our incident face is the one that's most parallel to the reference face's normal.
 
@@ -334,8 +350,8 @@ static void best_axis(const PhysBody* A, const PhysBody* B, double* out_dist, un
 		}
 	}
 
-	*out_dist = dist_best;
-	*out_index = index;
+	if (out_dist) *out_dist = dist_best;
+	if (out_index) *out_index = index;
 }
 
 
@@ -356,7 +372,7 @@ static std::vector<Vec2> clip(Vec2 normal, double c, const Vec2* face) {
 		if (side_0 <= 0)
 			out.push_back(p0);
 
-		if (side_0 * side_1 < 0)
+		if (side_0 * side_1 <= 0)
 			out.push_back(intersecting);
 	}
 

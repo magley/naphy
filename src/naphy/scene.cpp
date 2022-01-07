@@ -51,26 +51,14 @@ void Scene::pre_update() {
 }
 
 void Scene::update() {
-	while (timing.accumulator >= timing.dt) {
-		// Update scene.
+	scene_update_collision(this);
+	scene_update_force(this);
+	scene_update_constraints(this);
+	scene_update_velocity(this);
 
-		scene_update_collision(this);
-		scene_update_force(this);
-		scene_update_constraints(this);
-		scene_update_velocity(this);
-		for (unsigned i = 0; i < arbiter.size(); i++) {
-			arbiter[i].post_solve();
-		}
-
-		// Update timing.
-	
-		timing.accumulator -= timing.dt;
-		timing.total += timing.dt / timing.scale;
-		timing.ticks_phys++;
+	for (unsigned i = 0; i < arbiter.size(); i++) {
+		arbiter[i].post_solve();
 	}
-	timing.ticks++;
-
-	scene_remove_distant_objects(this);
 }
 
 void Scene::draw(SDL_Renderer* rend) {
@@ -95,7 +83,7 @@ void Scene::draw(SDL_Renderer* rend) {
 				const Vec2& cp = arbiter[i].contact[j];
 				const Vec2& n = arbiter[i].normal;
 
-				draw_circle_filled(rend, cp.x, cp.y, 5);
+				draw_circle(rend, cp.x, cp.y, 4);
 				draw_arrow(rend, cp.x, cp.y, cp.x + n.x * 30, cp.y + n.y * 30);
 			}
 		}

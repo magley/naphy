@@ -2,7 +2,6 @@
 #include "SDL2/SDL_timer.h"
 #include "utility/mathutil.h"
 
-
 Timing::Timing() {
 	dt = 1 / 60.0;
 	total = 0.0;
@@ -13,7 +12,6 @@ Timing::Timing() {
 	ticks_phys = 0;
 }
 
-
 Timing::Timing(double dt) {
 	this->dt = dt;
 	total = 0.0;
@@ -23,7 +21,6 @@ Timing::Timing(double dt) {
 	ticks = 0;
 	ticks_phys = 0;
 }
-
 
 void Timing::tick() {
 	const double time_new = SDL_GetTicks() / 1000.0 * scale;

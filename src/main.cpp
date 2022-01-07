@@ -28,48 +28,6 @@ static int resetme = 0; // Set to 1 to signal that the scene should be reset. Ch
 void init_drifter_scene(Scene* scene, GUI* gui);
 void init_test_scene(Scene* scene, GUI* gui);
 
-void init_drifter_scene(Scene* scene, GUI* gui) {
-	scene->grav = {0, 0};
-	scene->body.clear();
-	scene->arbiter.clear();
-	scene->spring.clear();
-	scene->grav = {0, 0};
-
-	PhysBody* b;
-
-	printf("TODO: Raycasting for a priori collision.");
-
-	b = scene->add(new PhysBody({0 + 125, 60 + 5}, Shape(Vec2{250, 10})));
-	b->calc_mass(0);
-	b->material.e = 0;
-
-	b = scene->add(new PhysBody({300, 90}, Shape({{63, -22}, {63, 24}, {-44, 24}, {-100, -22}})));
-	b->calc_mass(0);
-	b->material.e = 0;
-
-	b = scene->add(new PhysBody({410, 80}, Shape(Vec2{150, 20})));
-	b->calc_mass(0);
-	b->material.e = 0;
-
-
-	Shape drifter_shape = Shape({{-4, -1}, {4, -1}, {4, 1}, {-4, 1}});
-	player = scene->add(new PhysBody({32, 132}, drifter_shape));
-	player->material.e = 0;
-	player->I_inv = 0;
-	player->I = 0;
-	drifter = CDrifter(player);
-
-
-	// GUI
-
-	GUICheckBox* draw_physbody = gui->add(new GUICheckBox(gui, {0, 24}, "Draw PhysBody"));
-	draw_physbody->checked = true;
-	draw_physbody->reg_toggle_target(&scene->debug_draw_shapes, true);
-
-	GUICheckBox* draw_arbiter = gui->add(new GUICheckBox(gui, {24, 24}, "Draw Arbiter"));
-	draw_arbiter->reg_toggle_target(&scene->debug_draw_arbiters, true);
-}
-
 void add_poly(Scene* scene, GUIButton* btn) {
 	int vertices = 3 + (rand() % 4);
 	int size = 20 + (rand() % 30);
@@ -103,7 +61,57 @@ void add_box(Scene* scene, GUIButton* btn) {
 	scene->add(new PhysBody(Vec2(VIEW_W * 0.8 + ((i++ + 5) % 3) * 0, 32), c))->set_angle(45 * DEG2RAD);
 }
 
+void init_drifter_scene(Scene* scene, GUI* gui) {
+	scene->grav = {0, 0};
+	scene->body.clear();
+	scene->arbiter.clear();
+	scene->spring.clear();
+	scene->grav = {0, 0};
 
+	PhysBody* b;
+
+	printf("TODO: Raycasting for a priori collision.");
+
+	b = scene->add(new PhysBody({31, 52}, Shape(Vec2{62, 38})));
+	b->calc_mass(0);
+	b->material.e = 0;
+
+	b = scene->add(new PhysBody({162, 52}, Shape(Vec2{110, 38})));
+	b->calc_mass(0);
+	b->material.e = 0;
+
+	b = scene->add(new PhysBody({300, 90}, Shape({{63, -28}, {63, 24}, {-44, 24}, {-100, -28}})));
+	b->calc_mass(0);
+	b->material.e = 0;
+
+	b = scene->add(new PhysBody({420, 66}, Shape(Vec2{120, 44})));
+	b->calc_mass(0);
+	b->material.e = 0;
+
+	b = scene->add(new PhysBody({230, 53}, Shape({{-14, -20}, {32, 12}, {-14, 12}})));
+	b->calc_mass(0);
+	b->material.e = 0;
+
+	Shape drifter_shape = Shape({{-4, -2}, {4, -2}, {4, 2}, {-4, 2}});
+	player = scene->add(new PhysBody({32, 132}, drifter_shape));
+	player->material.e = 0;
+	player->I_inv = 0;
+	player->I = 0;
+	drifter = CDrifter(player);
+
+
+	// GUI
+
+	GUICheckBox* draw_physbody = gui->add(new GUICheckBox(gui, {0, 24}, "Draw PhysBody"));
+	draw_physbody->checked = true;
+	draw_physbody->reg_toggle_target(&scene->debug_draw_shapes, true);
+
+	GUICheckBox* draw_arbiter = gui->add(new GUICheckBox(gui, {24, 24}, "Draw Arbiter"));
+	draw_arbiter->reg_toggle_target(&scene->debug_draw_arbiters, true);
+
+	GUIButton* add_circle_btn = gui->add(new GUIButton(gui, {48, 48}, "Add new circle"));
+	add_circle_btn->reg_click_callback(add_circle, scene);
+}
 
 void init_test_scene(Scene* scene, GUI* gui) {
 	scene->grav = {0, 981};
@@ -232,15 +240,21 @@ int main(int, char**) {
 			continue;
 
 		//-----------------------------------------------------------------------------------------
-		// Game logic goes here
 		//
 
-		drifter.update(&input);
+		while (scene.timing.accumulator >= scene.timing.dt) {
+			drifter.update(&input, &scene);
+
+			scene.update();
+
+			scene.timing.accumulator -= scene.timing.dt;
+			scene.timing.total += scene.timing.dt / scene.timing.scale;
+			scene.timing.ticks_phys++;
+		}
+		scene.timing.ticks++;
 
 		//
 		//-----------------------------------------------------------------------------------------
-
-		scene.update();
 
 		if (resetme)
 			continue;

@@ -5,7 +5,8 @@
 #include "quadtree.h"
 #include "spring.h"
 #include "utility/timing.h"
-
+#include "game/cdrifter.h"
+#include "utility/input.h"
 
 struct Scene {
 	// All PhysBody instances registered in the scene.

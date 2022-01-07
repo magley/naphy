@@ -1,14 +1,11 @@
 #include "cdrifter.h"
+#include "naphy/collision.h"
+#include "naphy/scene.h"
+
 
 #include <stdio.h>
 
 CDrifter::CDrifter() {
-	this->body = NULL;
-	this->drift_time = 0;
-	this->drift_combo = 0;
-	this->sprite = CSprite(SPR_DRIFTER_DOWN_STAND, 0);
-	this->state = DRIFTER_STATE_STAND;
-	this->movedir = DRIFTER_DOWN;
 }
 
 CDrifter::CDrifter(PhysBody* body) {
@@ -20,7 +17,7 @@ CDrifter::CDrifter(PhysBody* body) {
 	this->movedir = DRIFTER_DOWN;
 }
 
-void CDrifter::update(const Input* input) {
+void CDrifter::update(const Input* input, Scene* scene) {
 	if (body == NULL)
 		return;
 
@@ -115,7 +112,34 @@ void CDrifter::update(const Input* input) {
 
 			const Vec2 mousepos = Vec2(input->mouse_x, input->mouse_y);
 			const Vec2 dir = (mousepos - body->pos).normalized();
-			body->vel = vel_drift * dir;
+			Vec2 driftvec = vel_drift * dir;
+
+			// Prevent clipping by raycasting
+			for (const PhysBody* b : scene->body) {
+				if (b->dynamic_state == PHYSBODY_STATE_STATIC) {
+					const Vec2 ray_A = body->pos;
+					const Vec2 ray_B = ray_A + driftvec * scene->timing.dt; // TODO: Ugly dt
+					const Arbiter R = raycast(ray_A, ray_B, b);
+
+					if (R.depth > 0) {
+						// Move in the axis which dir and R.normal are less parallel in.
+
+						Vec2 delta, vec_dir;
+						delta = dir - R.normal;
+						delta.x = abs(delta.x);
+						delta.y = abs(delta.y);
+
+						if (delta.x > delta.y) vec_dir = {dir.x * 0.95, dir.y * 0.05};
+						else vec_dir = {dir.x * 0.05, dir.y * 0.95};
+						vec_dir.normalize();
+
+						driftvec = (R.depth + 1.0) * vec_dir / scene->timing.dt; // TODO: Ugly dt
+						break;
+					}
+				}
+			}
+
+			body->vel = driftvec;
 
 			if (std::abs(body->vel.y) > std::abs(body->vel.x)) {
 				if (body->vel.y > 0)
@@ -152,14 +176,12 @@ void CDrifter::update(const Input* input) {
 
 		drift_time--;
 
-		// End of drifting
+		// Finish drifting 
 
 		if (drift_time == 0) {
 			state = DRIFTER_STATE_STAND;
 			drift_punished = 0;
 		}
-	} else {
-		// Not drifting.
 	}
 
 	// Sprite
@@ -172,11 +194,11 @@ void CDrifter::update_sprite(const Input* input) {
 	const int inputy = input->key_down(SDL_SCANCODE_S) - input->key_down(SDL_SCANCODE_W);
 	const int inputdrift = input->key_press(SDL_SCANCODE_SPACE);
 
-	unsigned sprite_matrix[4][3] = {
-		{SPR_DRIFTER_DOWN_STAND, SPR_DRIFTER_DOWN_WALK, SPR_DRIFTER_DOWN_DRIFT},
-		{SPR_DRIFTER_RIGHT_STAND, SPR_DRIFTER_RIGHT_WALK, SPR_DRIFTER_RIGHT_DRIFT},
-		{SPR_DRIFTER_UP_STAND, SPR_DRIFTER_UP_WALK, SPR_DRIFTER_UP_DRIFT},
-		{SPR_DRIFTER_RIGHT_STAND, SPR_DRIFTER_RIGHT_WALK, SPR_DRIFTER_RIGHT_DRIFT},
+	const unsigned spr_mat[4][3] = {
+		{SPR_DRIFTER_DOWN_STAND, 	SPR_DRIFTER_DOWN_WALK, 	SPR_DRIFTER_DOWN_DRIFT},
+		{SPR_DRIFTER_RIGHT_STAND, 	SPR_DRIFTER_RIGHT_WALK, SPR_DRIFTER_RIGHT_DRIFT},
+		{SPR_DRIFTER_UP_STAND, 		SPR_DRIFTER_UP_WALK, 	SPR_DRIFTER_UP_DRIFT},
+		{SPR_DRIFTER_RIGHT_STAND, 	SPR_DRIFTER_RIGHT_WALK, SPR_DRIFTER_RIGHT_DRIFT},
 	};
 
 	// Determine which sprite to display
@@ -197,13 +219,15 @@ void CDrifter::update_sprite(const Input* input) {
 			reset_if_same = 1;
 		sprite.repeat = 0;
 	}
+
 	spr_mat_dir = movedir;
 
-	if (movedir == DRIFTER_LEFT) sprite.sdl_flip = SDL_FLIP_HORIZONTAL;
-	if (movedir == DRIFTER_RIGHT) sprite.sdl_flip = SDL_FLIP_NONE;
+	if (movedir == DRIFTER_LEFT)
+		sprite.sdl_flip = SDL_FLIP_HORIZONTAL;
+	else 
+		sprite.sdl_flip = SDL_FLIP_NONE;
 
-	sprite.set(sprite_matrix[spr_mat_dir][spr_mat_spr], 1, reset_if_same);
-
+	sprite.set(spr_mat[spr_mat_dir][spr_mat_spr], 1, reset_if_same);
 	sprite.update();
 
 	// Trail
