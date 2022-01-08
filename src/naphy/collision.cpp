@@ -283,8 +283,6 @@ static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbite
 
 
 Arbiter raycast(Vec2 raystart, Vec2 rayend, const PhysBody* B) {
-	// TODO: Don't make entire PhysBodies just for this.
-
 	PhysBody A = PhysBody(raystart, Shape({{0, 0}, {rayend - raystart}}));
 
 	Arbiter R(&A, (PhysBody*)B);
@@ -293,16 +291,44 @@ Arbiter raycast(Vec2 raystart, Vec2 rayend, const PhysBody* B) {
 }
 
 
+int sweep(Arbiter* R, double dt, int iterations) {
+	PhysBody Acopy = *(R->A);
+	PhysBody Bcopy = *(R->B);
+
+	const Vec2 vA_dir = Acopy.vel.normalized();
+	const Vec2 vB_dir = Bcopy.vel.normalized();
+	const double vA_len = Acopy.vel.len();
+	const double vB_len = Bcopy.vel.len();
+	const double step = 1.0 / iterations;
+	
+	for (double d = 0.0; d <= 1.0; d += step) {
+		Acopy.pos = R->A->pos + vA_dir * vA_len * step * dt;
+		Bcopy.pos = R->B->pos + vB_dir * vB_len * step * dt;
+
+		Arbiter Rcopy{&Acopy, &Bcopy};
+		Rcopy.build();
+		if (Rcopy.depth > 0) {
+			printf("%f\n", d);
+			*R = Rcopy;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+
 //=================================================================================================
 
 
 static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_face, 
 								Vec2 ref_vert[2], Vec2 inc_vert[2]) {
-	// We know what the reference face is (we get it here though because it makes the code nicer).
-	// Our incident face is the one that's most parallel to the reference face's normal.
+	// Incident face is the one that's most parallel to the reference face's normal.
 
-	Vec2 n = ref->shape.norm[ref_face];
-	n = inc->rot.transpose() * (ref->rot * n);
+	ref_vert[0] = ref->shape.vert[ref_face];
+	ref_vert[1] = ref->shape.vert[(ref_face + 1) % ref->shape.vert.size()];
+
+	const Vec2 n = inc->rot.transpose() * (ref->rot * ref->shape.norm[ref_face]);
 
 	unsigned inc_face = 0;
 	double d = FLT_MAX;
@@ -313,9 +339,6 @@ static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsig
 			inc_face = i;
 		}
 	}
-
-	ref_vert[0] = ref->shape.vert[ref_face];
-	ref_vert[1] = ref->shape.vert[(ref_face + 1) % ref->shape.vert.size()];
 
 	inc_vert[0] = inc->shape.vert[inc_face];
 	inc_vert[1] = inc->shape.vert[(inc_face + 1) % inc->shape.vert.size()];

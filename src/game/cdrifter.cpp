@@ -114,31 +114,44 @@ void CDrifter::update(const Input* input, Scene* scene) {
 			const Vec2 dir = (mousepos - body->pos).normalized();
 			Vec2 driftvec = vel_drift * dir;
 
-			// Prevent clipping by raycasting
+			// Prevent tunnelling by doing raycasts
 			for (const PhysBody* b : scene->body) {
 				if (b->dynamic_state == PHYSBODY_STATE_STATIC) {
+					// Cast two rays: left-middle and right-middle (according to bbox).
+
+					const double bbox_w = abs(body->get_bbox()[0].x - body->get_bbox()[1].x);
+					const Vec2 half_extents = Vec2(bbox_w / 2, 0);
 					const Vec2 ray_A = body->pos;
 					const Vec2 ray_B = ray_A + driftvec * scene->timing.dt; // TODO: Ugly dt
-					const Arbiter R = raycast(ray_A, ray_B, b);
 
-					if (R.depth > 0) {
-						// Move in the axis which dir and R.normal are less parallel in.
+					const Arbiter Rarr[] = {
+						raycast(ray_A - half_extents, ray_B, b),
+						raycast(ray_A + half_extents, ray_B, b),
+					};
+
+					for (unsigned i = 0; i < 2; i++) {
+						const Arbiter* const R = &Rarr[i];
+
+						if (R->depth <= 0)
+							continue;
+
+						// Move in axis where dir and R.normal are less parallel in.
 
 						Vec2 delta, vec_dir;
-						delta = dir - R.normal;
+						delta = dir - R->normal;
 						delta.x = abs(delta.x);
 						delta.y = abs(delta.y);
 
-						if (delta.x > delta.y) vec_dir = {dir.x * 0.95, dir.y * 0.05};
-						else vec_dir = {dir.x * 0.05, dir.y * 0.95};
+						if (delta.x > delta.y) vec_dir = {dir.x * 0.9, dir.y * 0.1};
+						else vec_dir = {dir.x * 0.1, dir.y * 0.9};
 						vec_dir.normalize();
 
-						driftvec = (R.depth + 1.0) * vec_dir / scene->timing.dt; // TODO: Ugly dt
-						break;
+						driftvec = (R->depth + 1.0) * vec_dir / scene->timing.dt; // TODO: Ugly dt
+						goto finish_raycasts;
 					}
 				}
 			}
-
+finish_raycasts:;
 			body->vel = driftvec;
 
 			if (std::abs(body->vel.y) > std::abs(body->vel.x)) {

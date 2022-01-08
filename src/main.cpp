@@ -54,7 +54,6 @@ void reset_scene(Scene* scene, GUIButton* btn) {
 void add_box(Scene* scene, GUIButton* btn) {
 	static int i = 0;
 
-
 	int vertices = 4;
 	int size = 50;
 	const Shape c = Shape(vertices, size);
@@ -70,30 +69,28 @@ void init_drifter_scene(Scene* scene, GUI* gui) {
 
 	PhysBody* b;
 
-	printf("TODO: Raycasting for a priori collision.");
-
-	b = scene->add(new PhysBody({31, 52}, Shape(Vec2{62, 38})));
+	b = scene->add(new PhysBody({31, 137}, Shape(Vec2{62, 38})));
 	b->calc_mass(0);
 	b->material.e = 0;
 
-	b = scene->add(new PhysBody({162, 52}, Shape(Vec2{110, 38})));
+	b = scene->add(new PhysBody({162, 137}, Shape(Vec2{110, 38})));
 	b->calc_mass(0);
 	b->material.e = 0;
 
-	b = scene->add(new PhysBody({300, 90}, Shape({{63, -28}, {63, 24}, {-44, 24}, {-100, -28}})));
+	b = scene->add(new PhysBody({300, 175}, Shape({{63, -28}, {63, 24}, {-44, 24}, {-100, -28}})));
 	b->calc_mass(0);
 	b->material.e = 0;
 
-	b = scene->add(new PhysBody({420, 66}, Shape(Vec2{120, 44})));
+	b = scene->add(new PhysBody({420, 151}, Shape(Vec2{120, 44})));
 	b->calc_mass(0);
 	b->material.e = 0;
 
-	b = scene->add(new PhysBody({230, 53}, Shape({{-14, -20}, {32, 12}, {-14, 12}})));
+	b = scene->add(new PhysBody({230, 137.75}, Shape({{-14, -20}, {32, 12}, {-14, 12}})));
 	b->calc_mass(0);
 	b->material.e = 0;
 
-	Shape drifter_shape = Shape({{-4, -2}, {4, -2}, {4, 2}, {-4, 2}});
-	player = scene->add(new PhysBody({32, 132}, drifter_shape));
+	Shape drifter_shape = Shape({{-3.5, -2}, {3.5, -2}, {3.5, 2}, {-3.5, 2}});
+	player = scene->add(new PhysBody({32, 112}, drifter_shape));
 	player->material.e = 0;
 	player->I_inv = 0;
 	player->I = 0;
@@ -201,12 +198,12 @@ void init_test_scene(Scene* scene, GUI* gui) {
 	GUIButton* reset_scene_btn = gui->add(new GUIButton(gui, {144, 48}, "Reset scene"));
 	reset_scene_btn->reg_click_callback(reset_scene, scene);
 
-	GUILabel* lbl_naphy = gui->add(new GUILabel(gui, {0, 0}, "naphy ~ dev.2022.01.04", COL_WHITE, COL_BLUE));
+	GUILabel* lbl_naphy = gui->add(new GUILabel(gui, {0, 0}, "naphy test", COL_WHITE, COL_BLUE));
 }
 
 int main(int, char**) {
 	SDL_Init(SDL_INIT_VIDEO);
-	SDL_Window* win = SDL_CreateWindow("naphy", WIN_X, WIN_Y, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
+	SDL_Window* win = SDL_CreateWindow("naphy ~ dev.2022.01.08", WIN_X, WIN_Y, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
 	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
 	SDL_RenderSetLogicalSize(rend, VIEW_W, VIEW_H);
