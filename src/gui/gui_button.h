@@ -38,9 +38,8 @@ struct GUIButton {
 	// Callbacks
 
 
-	// Callback that gets invoked every time the button is clicked.
-	// NULL is a valid value, in which case nothing will happen when the button is clicked.
+	// Callback that gets invoked every time the button is clicked. NULL is a valid value.
 	GUIButtonCallback click_callback;
-	// Assign a new click callback to this button.
+	// Assign a new click callback to this component.
 	void reg_click_callback(GUIButtonCallback func, Scene* scene);
 };

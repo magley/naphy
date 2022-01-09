@@ -41,4 +41,6 @@ struct GUI {
 	void update(const Input& input);
 	// Draw all GUI components on screen. If some components handle hovering, that happens here.
 	void draw(const Input& input);
+	// Remove all components and free memory.
+	void clear();
 };

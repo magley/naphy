@@ -1,6 +1,8 @@
 #include "collision.h"
 #include "physbody.h"
 #include "arbiter.h"
+#include <stdio.h>
+
 
 // Specialized collision functions, _cc means 'circle-circle', _cp mean 'circle-polygon' etc.
 
@@ -23,7 +25,8 @@ static void best_axis(const PhysBody* A, const PhysBody* B, double* out_dist, un
 // @param ref_index Index of the first vertex of the reference face (getting ref verts is trivial).
 // @param ref_vert [out param] The two reference vertices (in world space).
 // @param inc_vert [out param] The two incident vertices (in world space). 
-static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_index, Vec2 ref_vert[2], Vec2 inc_vert[2]);
+static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_index, 
+								Vec2 ref_vert[2], Vec2 inc_vert[2]);
 // Sutherland-Hodgman clipping.
 // @param normal Normal vector against which we clip.
 // @param c ???
@@ -120,8 +123,10 @@ static int collision_cp(const PhysBody* const A, const PhysBody* const B, Arbite
 		
 		For (2) we do an algorithm for collision between a circle 
 		and a line-segment. It boils down to checking for the 3
-		Voronoi regions of the line segment.
-		https://stackoverflow.com/a/1079478
+		Voronoi regions of the line segment. If the desired region
+		is one of the points, then that point will be the collision
+		point, and depth = radius - dist(circle, point). Otherwise,
+		the contat point is on the circle.
 	*/
 
 	// (1)
@@ -163,11 +168,14 @@ static int collision_cp(const PhysBody* const A, const PhysBody* const B, Arbite
 
 	if (proj1 <= 0 || proj2 <= 0) {
 		const Vec2 vertex = proj1 <= 0 ? v1 : v2;
+		const Vec2 vertex_worldspace = B->rot * vertex + B->pos;
 		if (dist_sqr(center, vertex) > shpA->radius * shpA->radius)
 			return 0;
 		const Vec2 normal = B->rot * (vertex - center).normalized();
+
+		R->depth = shpA->radius - (A->pos - vertex_worldspace).len();
 		R->normal = normal;
-		R->contact.push_back(B->rot * vertex + B->pos);
+		R->contact.push_back(vertex_worldspace);
 	} else {
 		Vec2 normal = shpB->norm[face];
 		if (dot(center - v1, normal) > shpA->radius)
@@ -269,19 +277,58 @@ static int collision_pp(const PhysBody* const A, const PhysBody* const B, Arbite
 
 	if (R->contact.size() > 0)
 		R->depth /= R->contact.size();
+
 	return 1;
+}
+
+
+Arbiter raycast(Vec2 raystart, Vec2 rayend, const PhysBody* B) {
+	PhysBody A = PhysBody(raystart, Shape({{0, 0}, {rayend - raystart}}));
+
+	Arbiter R(&A, (PhysBody*)B);
+	R.build();
+	return R;
+}
+
+
+int sweep(Arbiter* R, double dt, int iterations) {
+	PhysBody Acopy = *(R->A);
+	PhysBody Bcopy = *(R->B);
+
+	const Vec2 vA_dir = Acopy.vel.normalized();
+	const Vec2 vB_dir = Bcopy.vel.normalized();
+	const double vA_len = Acopy.vel.len();
+	const double vB_len = Bcopy.vel.len();
+	const double step = 1.0 / iterations;
+	
+	for (double d = 0.0; d <= 1.0; d += step) {
+		Acopy.pos = R->A->pos + vA_dir * vA_len * step * dt;
+		Bcopy.pos = R->B->pos + vB_dir * vB_len * step * dt;
+
+		Arbiter Rcopy{&Acopy, &Bcopy};
+		Rcopy.build();
+		if (Rcopy.depth > 0) {
+			printf("%f\n", d);
+			*R = Rcopy;
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 
 //=================================================================================================
 
 
-static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_face, Vec2 ref_vert[2], Vec2 inc_vert[2]) {
-	// We know what the reference face is (we get it here though because it makes the code nicer).
-	// Our incident face is the one that's most parallel to the reference face's normal.
+static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsigned ref_face, 
+								Vec2 ref_vert[2], Vec2 inc_vert[2]) {
+	// Incident face is the one that's most parallel to the reference face's normal.
 
-	Vec2 n = ref->shape.norm[ref_face];
-	n = inc->rot.transpose() * (ref->rot * n);
+	ref_vert[0] = ref->shape.vert[ref_face];
+	ref_vert[1] = ref->shape.vert[(ref_face + 1) % ref->shape.vert.size()];
+
+	const Vec2 n = inc->rot.transpose() * (ref->rot * ref->shape.norm[ref_face]);
 
 	unsigned inc_face = 0;
 	double d = FLT_MAX;
@@ -292,9 +339,6 @@ static void get_inc_and_ref_face(const PhysBody* ref, const PhysBody* inc, unsig
 			inc_face = i;
 		}
 	}
-
-	ref_vert[0] = ref->shape.vert[ref_face];
-	ref_vert[1] = ref->shape.vert[(ref_face + 1) % ref->shape.vert.size()];
 
 	inc_vert[0] = inc->shape.vert[inc_face];
 	inc_vert[1] = inc->shape.vert[(inc_face + 1) % inc->shape.vert.size()];
@@ -329,8 +373,8 @@ static void best_axis(const PhysBody* A, const PhysBody* B, double* out_dist, un
 		}
 	}
 
-	*out_dist = dist_best;
-	*out_index = index;
+	if (out_dist) *out_dist = dist_best;
+	if (out_index) *out_index = index;
 }
 
 
@@ -351,7 +395,7 @@ static std::vector<Vec2> clip(Vec2 normal, double c, const Vec2* face) {
 		if (side_0 <= 0)
 			out.push_back(p0);
 
-		if (side_0 * side_1 < 0)
+		if (side_0 * side_1 <= 0)
 			out.push_back(intersecting);
 	}
 

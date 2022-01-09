@@ -3,9 +3,6 @@
 #include "collision.h"
 #include <iostream>
 
-
-
-
 // Apply impulse on a body. Static bodies are ignored.
 // @param body The target body.
 // @param impulse Vector of impulse.
@@ -18,7 +15,6 @@ static void apply_impulse(PhysBody* body, const Vec2& impulse, const Vec2& r) {
 	body->angvel += body->I_inv * cross(r, impulse);
 }
 
-
 Arbiter::Arbiter(PhysBody* A, PhysBody* B) {
 	this->A = A;
 	this->B = B;
@@ -30,14 +26,12 @@ Arbiter::Arbiter(PhysBody* A, PhysBody* B) {
 	sfric = 0;
 }
 
-
 void Arbiter::build() {
 	collision(this);
 	e = std::max(A->material.e, B->material.e);
 	sfric = std::sqrt(A->material.sfric * B->material.sfric);
 	kfric = std::sqrt(A->material.kfric * B->material.kfric);
 }
-
 
 void Arbiter::pre_solve(const Vec2& grav, double dt) {
 	const Vec2 Apos = A->pos;
@@ -54,7 +48,6 @@ void Arbiter::pre_solve(const Vec2& grav, double dt) {
 		}
 	}
 }
-
 
 void Arbiter::post_solve() {
 	// Bias-slop correction mechanism.

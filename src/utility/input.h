@@ -1,5 +1,7 @@
 #pragma once
 #include <stdint.h>
+#include "SDL2/SDL_keyboard.h"
+#include "SDL2/SDL_mouse.h"
 
 struct SDL_Window;
 

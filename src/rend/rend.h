@@ -6,8 +6,8 @@
 #include "image.h"
 
 
-#define FONT_CH_W 12
-#define FONT_CH_H 20
+#define FONT_CH_W 18
+#define FONT_CH_H 24
 
 #define COL_BLACK {0,0,0,0}
 #define COL_WHITE {255,255,255,255}
