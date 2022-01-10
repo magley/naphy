@@ -15,4 +15,4 @@ int collision(Arbiter* const R);
 Arbiter raycast(Vec2 raystart, Vec2 rayend, const PhysBody* B);
 
 // Sweep-based continuous collsion.
-int sweep(Arbiter* R, double dt, int iterations);
+int sweep(Arbiter* R, double dt, int iterations, Vec2 A_vel_priv, Vec2 B_vel_priv);

@@ -25,8 +25,8 @@ void CDrifter::update(const Input* input, Scene* scene) {
 	//
 	double vel_walk = 100;
 	double vel_drift = 500;
-	double acc = 50;
-	double deacc = 15;
+	double acc = 20;
+	double deacc = 10;
 	int drift_time_start = 28;     // How much time does a drift take
 	int drift_time_halt = 20;      // After this the drifting stops (you slow down to a stop)
 	int drift_time_combo = 15;     // After this you can combo
@@ -39,7 +39,9 @@ void CDrifter::update(const Input* input, Scene* scene) {
 	const int inputy = input->key_down(SDL_SCANCODE_S) - input->key_down(SDL_SCANCODE_W);
 	const int inputdrift = input->key_press(SDL_SCANCODE_SPACE);
 
-	if (drift_time == 0) {
+	const int can_walk = (drift_time == 0) && (state != DRIFTER_STATE_FALLDIE);
+
+	if (can_walk) {
 		// Walking
 
 		if (inputy < 0) {
@@ -97,7 +99,9 @@ void CDrifter::update(const Input* input, Scene* scene) {
 
 	// Drift start
 
-	if (inputdrift) {
+	const int may_drift = (inputdrift) && (state != DRIFTER_STATE_FALLDIE);
+
+	if (may_drift) {
 		int can_drift = drift_time == 0;
 		int should_punish = drift_time > drift_time_combo;
 		int can_combo = drift_time <= drift_time_combo && drift_time >= drift_time_combo_end;
@@ -112,46 +116,9 @@ void CDrifter::update(const Input* input, Scene* scene) {
 
 			const Vec2 mousepos = Vec2(input->mouse_x, input->mouse_y);
 			const Vec2 dir = (mousepos - body->pos).normalized();
-			Vec2 driftvec = vel_drift * dir;
+			const Vec2 driftvec_initial = vel_drift * dir;
+			Vec2 driftvec = driftvec_initial;
 
-			// Prevent tunnelling by doing raycasts
-			for (const PhysBody* b : scene->body) {
-				if (b->dynamic_state == PHYSBODY_STATE_STATIC) {
-					// Cast two rays: left-middle and right-middle (according to bbox).
-
-					const double bbox_w = abs(body->get_bbox()[0].x - body->get_bbox()[1].x);
-					const Vec2 half_extents = Vec2(bbox_w / 2, 0);
-					const Vec2 ray_A = body->pos;
-					const Vec2 ray_B = ray_A + driftvec * scene->timing.dt; // TODO: Ugly dt
-
-					const Arbiter Rarr[] = {
-						raycast(ray_A - half_extents, ray_B, b),
-						raycast(ray_A + half_extents, ray_B, b),
-					};
-
-					for (unsigned i = 0; i < 2; i++) {
-						const Arbiter* const R = &Rarr[i];
-
-						if (R->depth <= 0)
-							continue;
-
-						// Move in axis where dir and R.normal are less parallel in.
-
-						Vec2 delta, vec_dir;
-						delta = dir - R->normal;
-						delta.x = abs(delta.x);
-						delta.y = abs(delta.y);
-
-						if (delta.x > delta.y) vec_dir = {dir.x * 0.9, dir.y * 0.1};
-						else vec_dir = {dir.x * 0.1, dir.y * 0.9};
-						vec_dir.normalize();
-
-						driftvec = (R->depth + 1.0) * vec_dir / scene->timing.dt; // TODO: Ugly dt
-						goto finish_raycasts;
-					}
-				}
-			}
-finish_raycasts:;
 			body->vel = driftvec;
 
 			if (std::abs(body->vel.y) > std::abs(body->vel.x)) {
@@ -197,6 +164,27 @@ finish_raycasts:;
 		}
 	}
 
+	// Falling (death)
+
+	if (state == DRIFTER_STATE_FALLDIE) {
+		body->vel.x *= 0.9;
+		body->vel.y += 12;
+	}
+
+	//// Additional collision
+
+	for (unsigned i = 0; i < body->cld.size(); i++) {
+		PhysBody* other = body->cld[i];
+
+		if (other->layer == LAYER_PIT && drift_time == 0) {
+			state = DRIFTER_STATE_FALLDIE;
+		}
+	}
+
+
+
+
+
 	// Sprite
 
 	update_sprite(input);
@@ -216,9 +204,10 @@ void CDrifter::update_sprite(const Input* input) {
 
 	// Determine which sprite to display
 
-	unsigned spr_mat_spr;
-	unsigned spr_mat_dir;
+	unsigned spr_mat_spr = 0;
+	unsigned spr_mat_dir = 0;
 	unsigned reset_if_same = 0;
+	int img_index = -1; // -1 if not fixed
 
 	if (state == DRIFTER_STATE_STAND) {
 		spr_mat_spr = 0;
@@ -231,6 +220,9 @@ void CDrifter::update_sprite(const Input* input) {
 		if (state == DRIFTER_STATE_DRIFTSTART)
 			reset_if_same = 1;
 		sprite.repeat = 0;
+	} else if (state == DRIFTER_STATE_FALLDIE) {
+		spr_mat_spr = 2;
+		img_index = 6;
 	}
 
 	spr_mat_dir = movedir;
@@ -242,6 +234,9 @@ void CDrifter::update_sprite(const Input* input) {
 
 	sprite.set(spr_mat[spr_mat_dir][spr_mat_spr], 1, reset_if_same);
 	sprite.update();
+
+	if (img_index != -1)
+		sprite.image_index = img_index;
 
 	// Trail
 
