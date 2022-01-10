@@ -291,24 +291,21 @@ Arbiter raycast(Vec2 raystart, Vec2 rayend, const PhysBody* B) {
 }
 
 
-int sweep(Arbiter* R, double dt, int iterations) {
+int sweep(Arbiter* R, double dt, int iterations, Vec2 A_vel_priv, Vec2 B_vel_priv) {
 	PhysBody Acopy = *(R->A);
 	PhysBody Bcopy = *(R->B);
 
-	const Vec2 vA_dir = Acopy.vel.normalized();
-	const Vec2 vB_dir = Bcopy.vel.normalized();
-	const double vA_len = Acopy.vel.len();
-	const double vB_len = Bcopy.vel.len();
 	const double step = 1.0 / iterations;
 	
-	for (double d = 0.0; d <= 1.0; d += step) {
-		Acopy.pos = R->A->pos + vA_dir * vA_len * step * dt;
-		Bcopy.pos = R->B->pos + vB_dir * vB_len * step * dt;
+	for (double d = 1.0; d > 0.0; d -= step) {
+		Acopy.pos = R->A->pos + (R->A->vel + A_vel_priv) * d * dt;
+		Bcopy.pos = R->B->pos + (R->B->vel + B_vel_priv) * d * dt;
+
+		//printf("%f %f\n", d, Acopy.pos.x);
 
 		Arbiter Rcopy{&Acopy, &Bcopy};
 		Rcopy.build();
 		if (Rcopy.depth > 0) {
-			printf("%f\n", d);
 			*R = Rcopy;
 			return 1;
 		}

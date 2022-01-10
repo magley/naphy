@@ -8,21 +8,28 @@
 
 struct Scene;
 
-enum {
+enum DrifterLayersPhysBody{ // Use for PhysBody::layer.
+	LAYER_DRIFTER,
+	LAYER_SOLID,
+	LAYER_PIT,
+};
+
+enum DrifterState{
 	DRIFTER_STATE_STAND,		// Standing
 	DRIFTER_STATE_WALK,			// Walking
 	DRIFTER_STATE_STOPWALK,		// Walkting to a stop (no move key held but not standing)
 	DRIFTER_STATE_DRIFTSTART,	// First frame of a drift (combo drift included)
-	DRIFTER_STATE_DRIFT			// All frames of a drift EXCEPT the first one
+	DRIFTER_STATE_DRIFT,		// All frames of a drift EXCEPT the first one
+	DRIFTER_STATE_FALLDIE		// When you fall in a bottomless pit
 	// TODO: Use multiple bits for state. STATE_DRIFT and STATE_DRIFTSTART should not be exclusive.
-} DrifterState;
+};
 
-enum {
+enum DrifterDir{
 	DRIFTER_DOWN,
 	DRIFTER_RIGHT,
 	DRIFTER_UP,
-	DRIFTER_LEFT
-} DrifterDir;
+	DRIFTER_LEFT,
+};
 
 struct CDrifter {
 	int drift_time;

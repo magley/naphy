@@ -221,10 +221,21 @@ static void scene_update_collision(Scene* scene) {
 	scene->arbiter.clear();
 	scene->quadtree.clear();
 
+	for (unsigned i = 0; i < scene->body.size(); i++) {
+		PhysBody* b = scene->body[i];
+		b->cld.clear();
+	}
+
 	if (scene->debug_use_quadtree) {
 		collision_quadtree(scene);
 	} else {
 		collision_naive(scene);
+	}
+
+	for (unsigned i = 0; i < scene->arbiter.size(); i++) {
+		Arbiter* R = &scene->arbiter[i];
+		R->A->cld.push_back(R->B);
+		R->B->cld.push_back(R->A);
 	}
 }
 

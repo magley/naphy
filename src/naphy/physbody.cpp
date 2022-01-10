@@ -5,6 +5,8 @@
 PhysBody::PhysBody() {
     shape = Shape();
     dynamic_state = PHYSBODY_STATE_STATIC;
+	aggregate_state = PHYSBODY_SOLID;
+	layer = 0;
     pos = vel = force = Vec2(0, 0);
     ang = angvel = torque = 0.0;
     m = m_inv = I = I_inv = 0;
@@ -18,6 +20,8 @@ PhysBody::PhysBody() {
 PhysBody::PhysBody(Vec2 position, Shape shape) {
 	this->shape = shape;
 	dynamic_state = PHYSBODY_STATE_AWAKE;
+	aggregate_state = PHYSBODY_SOLID;
+	layer = 0;
 	pos = position;
 	vel = force = Vec2(0, 0);
     ang = angvel = torque = 0.0;

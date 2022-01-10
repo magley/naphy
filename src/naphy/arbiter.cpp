@@ -34,6 +34,9 @@ void Arbiter::build() {
 }
 
 void Arbiter::pre_solve(const Vec2& grav, double dt) {
+	if (A->aggregate_state != PHYSBODY_SOLID || B->aggregate_state != PHYSBODY_SOLID)
+		return;
+
 	const Vec2 Apos = A->pos;
 	const Vec2 Bpos = B->pos;
 
@@ -57,6 +60,8 @@ void Arbiter::post_solve() {
 
 	if (A->dynamic_state == PHYSBODY_STATE_STATIC && B->dynamic_state == PHYSBODY_STATE_STATIC)
 		return;
+	if (A->aggregate_state != PHYSBODY_SOLID || B->aggregate_state != PHYSBODY_SOLID)
+		return;
 
 	const double slop = 0.01f;	// How much clipping is allowed
 	const double bias = 0.6f;	// How much to push the body backwards
@@ -71,6 +76,8 @@ void Arbiter::solve() {
 	if (A->m_inv == 0 && B->m_inv == 0)
 		return;
 	if (A->dynamic_state == PHYSBODY_STATE_STATIC && B->dynamic_state == PHYSBODY_STATE_STATIC)
+		return;
+	if (A->aggregate_state != PHYSBODY_SOLID || B->aggregate_state != PHYSBODY_SOLID)
 		return;
 	if (depth < EPSILON)
 		return;

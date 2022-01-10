@@ -15,6 +15,11 @@ enum PhysBodyDynamicState {
 	PHYSBODY_STATE_SLEEPING,    // Sleeping state, entered when a body does not move for a period of time.
 };
 
+enum PhysBodyAggregateState {
+	PHYSBODY_SOLID,				// Can push other solids and be pushed by other solids.
+	PHYSBODY_PASSIVE,			// Cannot push or be pushed when colliding with other bodies.
+};
+
 
 // Physics body.
 struct PhysBody {
@@ -35,7 +40,12 @@ struct PhysBody {
 	// DON'T CHANGE DIRECTLY! Use set_angle().
 	Mat2x2 rot;
 	// See PhysBodyDynamicState for more info.
-	PhysBodyDynamicState dynamic_state;
+	unsigned dynamic_state;
+	// See PhysBodyAggregateState for more info.
+	unsigned aggregate_state;
+	// Bodies can be grouped into layers that can be used for specialized collision detection.
+	// Default is 0.
+	unsigned layer;
 	// Moment of intertia. We also store the inverse value because of how commonly it's used.
 	// If moment of inertia of 0, then inverse moment of inertia is 0 (body cannot rotate).
 	double I, I_inv;
@@ -46,6 +56,9 @@ struct PhysBody {
 	Shape shape;
 	// Material of this body. Determiens friction, bounciness, ...
 	PhysMaterial material;
+	// Pointers to non-solid physbodies this body collided with.
+	// Resets every frame.
+	std::vector<PhysBody*> cld;
 
 
 	// Construct a new static PhysBody object with a default Shape.
