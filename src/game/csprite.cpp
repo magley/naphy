@@ -64,7 +64,7 @@ void CSprite::set(unsigned spr_index, unsigned reset_if_diff, unsigned reset_if_
 	sprite_index = spr_index;
 }
 
-void CSprite::draw(Vec2 pos) {
+void CSprite::draw(Vec2 pos) const {
 	Sprite* s = &spr[sprite_index];
 	const unsigned img_index = (unsigned)image_index;
 

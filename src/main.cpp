@@ -1,29 +1,115 @@
-#include <iostream>
-#include <sstream>
-#include <string>
+#include "test/test.h"
 
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_image.h"
-#include "game/cdrifter.h"
-#include "gui/gui.h"
-#include "gui/gui_checkbox.h"
-#include "gui/gui_label.h"
-#include "naphy/scene.h"
-#include "rend/image.h"
-#include "rend/rend.h"
-#include "utility/input.h"
+#define globalvar static
 
-#define WIN_W 1440
-#define WIN_H 810
-#define WIN_X ((1920 - WIN_W) / 2)
-#define WIN_Y ((1080 - WIN_H) / 2)
+globalvar SDL_Window* win;
+globalvar SDL_Renderer* rend;
+globalvar SDL_Event ev;
+globalvar unsigned running = 1;
+const globalvar unsigned WIN_W = 1440;
+const globalvar unsigned WIN_H = 810;
+const globalvar unsigned WIN_X = ((1920 - WIN_W) / 2);
+const globalvar unsigned WIN_Y = ((1080 - WIN_H) / 2);
 
-double VIEW_W = (WIN_W);
-double VIEW_H = (WIN_H);
 
-static SDL_Window* win;
-static SDL_Renderer* rend;
+#include <set>
 
+
+struct SpriteWithDepth {
+	CSprite spr;
+	int depth;
+};
+
+bool operator <(const SpriteWithDepth& a, const SpriteWithDepth& b) {
+	return a.depth < b.depth;
+}
+
+int main(int, char**) {
+	SDL_Init(SDL_INIT_VIDEO);
+	win = SDL_CreateWindow("naphy dev.2022.01.11", WIN_X, WIN_Y, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
+	rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
+	SDL_RenderSetLogicalSize(rend, VIEW_W, VIEW_H);
+
+	Image font(rend, "res/font.png");
+	Image gui_atlas(rend, "res/gui.png");
+	Image img_drifter(rend, "res/drifter.png");
+	Image img_floor(rend, "res/img_floor.png");
+
+	Input input(win);
+	Scene scene = Scene(rend, 1.0/60.0, Vec2(WIN_W,WIN_H), Vec2(WIN_W,WIN_H), Vec2(0,981), 16);
+	GUI gui(win, gui_atlas, font);
+
+	GameScene gs = GameScene{&scene, &gui};
+
+	start_scene(&gs);
+	sprites_init(&img_drifter);
+
+
+	//std::multiset<SpriteWithDepth> q;
+	//q.insert({CSprite(SPR_DRIFTER_DOWN_WALK, 2), 2});
+	//q.insert({CSprite(SPR_DRIFTER_DOWN_DRIFT, 2), 15});
+
+	while (running) {
+		// Pre-update
+
+		scene.pre_update();
+
+		do {
+			if (ev.type == SDL_QUIT)
+				running = false;
+		} while (SDL_PollEvent(&ev));
+
+		input.update();
+		gui.update(input);
+
+		// Update
+
+		while (scene.timing.accumulator >= scene.timing.dt) {
+			scene.update();
+			scene.timing.accumulator -= scene.timing.dt;
+			scene.timing.total += scene.timing.dt / scene.timing.scale;
+			scene.timing.ticks_phys++;
+		}
+		scene.timing.ticks++;
+
+		// Draw
+
+		SDL_SetRenderDrawColor(rend, 29, 18, 37, 255);
+		SDL_RenderClear(rend);
+		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
+
+		scene.draw();
+
+		//int i = 0;
+		//for (auto it = q.begin(); it != q.end(); it++) {
+		//	it->spr.draw(Vec2(8 * i++, 128));
+		//}
+
+		gui.draw(input);
+		SDL_RenderPresent(rend);
+	}
+
+	SDL_DestroyRenderer(rend);
+	SDL_DestroyWindow(win);
+	SDL_Quit();
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 // Resize view and fix scene quadtree to match the new size.
 // scale is how many times the view is smaller than the screen.
 static void set_scale(Scene* scene, unsigned scale) {
@@ -318,7 +404,7 @@ static void init_stacking_scene(Scene* scene, GUI* gui) {
 
 int main(int, char**) {
 	SDL_Init(SDL_INIT_VIDEO);
-	win = SDL_CreateWindow("naphy ~ dev.2022.01.09", WIN_X, WIN_Y, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
+	win = SDL_CreateWindow("naphy ~ dev.2022.01.10", WIN_X, WIN_Y, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
 	rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
 	SDL_RenderSetLogicalSize(rend, VIEW_W, VIEW_H);
@@ -351,7 +437,7 @@ int main(int, char**) {
 			continue;
 
 		//-----------------------------------------------------------------------------------------
-		//
+		//// Update
 
 		while (scene.timing.accumulator >= scene.timing.dt) {
 			if (test_index == TEST_INDEX_DRIFTER) drifter.update(&input, &scene);
@@ -370,6 +456,9 @@ int main(int, char**) {
 		if (resetme)
 			continue;
 
+		//-----------------------------------------------------------------------------------------
+		//// Draw
+
 		SDL_SetRenderDrawColor(rend, 29, 18, 37, 255);
 		SDL_RenderClear(rend);
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
@@ -380,6 +469,9 @@ int main(int, char**) {
 
 		gui.draw(input);
 		SDL_RenderPresent(rend);
+
+		//
+		//-----------------------------------------------------------------------------------------
 	}
 
 	SDL_DestroyRenderer(rend);
@@ -387,3 +479,4 @@ int main(int, char**) {
 	SDL_Quit();
 	return 0;
 }
+*/

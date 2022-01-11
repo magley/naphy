@@ -35,14 +35,19 @@ struct CSprite {
 	unsigned sprite_index;  // Index of array of all Sprite objects.
 	unsigned repeat;        // 0 :: don't repeat animation, 1 :: repeat animation.
 	int sdl_flip;           // Can be any of SDL_FLIP_HORIZONTAL, SDL_FLIP_VERTICAL, SDL_FLIP_NONE.
+	int depth;
 
 	CSprite();
 	CSprite(unsigned sprite_index, double image_speed);
 
 	void update();
-	void draw(Vec2 pos);
+	void draw(Vec2 pos) const;
 	// @param spr_index Index of the sprite. See the SpriteNames enum.
 	// @param reset_if_diff Reset the animation if the sprite is different? (1 = yes, 0 = no)
 	// @param reset_if_same Reset the animation if the sprite is the same? (1 = yes, 0 = no)
 	void set(unsigned spr_index, unsigned reset_if_diff, unsigned reset_if_same);
 };
+
+inline bool operator <(const CSprite& a, const CSprite& b) {
+	return a.depth < b.depth;
+}
