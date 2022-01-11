@@ -30,16 +30,20 @@ struct PhysBodyPair {
 
 Scene::Scene() {
 	timing = Timing(1 / 60.0);
+	rend = NULL;
 	grav = Vec2(0, 400);
 	quadtree = QuadNode(Vec2(0, 0), Vec2(320, 240), 0);
-	size = Vec2(320, 240);
+	win_size = Vec2(320, 240);
+	view_size = Vec2(320, 240);
 }
 
-Scene::Scene(Vec2 grav, double dt, double w, double h, unsigned quadtree_cap) {
+Scene::Scene(SDL_Renderer* rend, double dt, Vec2 win_size, Vec2 view_size, Vec2 grav, unsigned quadtree_cap) {
 	timing = Timing(dt);
 	this->grav = grav;
-	this->quadtree = QuadNode(Vec2(0, 0), Vec2(w, h), quadtree_cap);
-	this->size = Vec2(w, h);
+	this->rend = rend;
+	this->quadtree = QuadNode(Vec2(0, 0), view_size, quadtree_cap);
+	this->win_size = win_size;
+	this->view_size = view_size;
 }
 
 Scene::~Scene() {
@@ -61,7 +65,7 @@ void Scene::update() {
 	}
 }
 
-void Scene::draw(SDL_Renderer* rend) {
+void Scene::draw() {
 	if (debug_draw_shapes) 
 	{
 		for (unsigned i = 0; i < body.size(); i++) {
@@ -328,7 +332,7 @@ static void scene_update_velocity(Scene* scene) {
 static void scene_remove_distant_objects(Scene* scene) {
 	const double padding = 32;
 	const Vec2 my_ul = Vec2(0, 0) - Vec2(padding, padding);
-	const Vec2 my_dr = my_ul + scene->size + 2 * Vec2(padding, padding);
+	const Vec2 my_dr = my_ul + scene->view_size + 2 * Vec2(padding, padding);
 
 	for (int i = scene->body.size() - 1; i >= 0; i--) {
 		PhysBody* b = scene->body[i];
