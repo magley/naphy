@@ -37,12 +37,13 @@ int main(int, char**) {
 	Image img_floor(rend, "res/img_floor.png");
 
 	Input input(win);
-	Scene scene = Scene(rend, 1.0/60.0, Vec2(WIN_W,WIN_H), Vec2(WIN_W,WIN_H), Vec2(0,981), 16);
-	GUI gui(win, gui_atlas, font);
 
-	GameScene gs = GameScene{&scene, &gui};
+	GameScene scene = GameScene(
+		new PhysScene(rend, 1.0/60.0, Vec2(WIN_W,WIN_H), Vec2(WIN_W,WIN_H), Vec2(0,981), 16),
+		new GUI(win, gui_atlas, font)
+	);
 
-	start_scene(&gs);
+	start_scene(&scene);
 	sprites_init(&img_drifter);
 
 
@@ -51,9 +52,12 @@ int main(int, char**) {
 	//q.insert({CSprite(SPR_DRIFTER_DOWN_DRIFT, 2), 15});
 
 	while (running) {
+		PhysScene* const physscene = scene.physscene;
+		GUI* const gui  = scene.gui;
+
 		// Pre-update
 
-		scene.pre_update();
+		physscene->pre_update();
 
 		do {
 			if (ev.type == SDL_QUIT)
@@ -61,17 +65,17 @@ int main(int, char**) {
 		} while (SDL_PollEvent(&ev));
 
 		input.update();
-		gui.update(input);
+		gui->update(input);
 
 		// Update
 
-		while (scene.timing.accumulator >= scene.timing.dt) {
-			scene.update();
-			scene.timing.accumulator -= scene.timing.dt;
-			scene.timing.total += scene.timing.dt / scene.timing.scale;
-			scene.timing.ticks_phys++;
+		while (physscene->timing.accumulator >= physscene->timing.dt) {
+			physscene->update();
+			physscene->timing.accumulator -= physscene->timing.dt;
+			physscene->timing.total += physscene->timing.dt / physscene->timing.scale;
+			physscene->timing.ticks_phys++;
 		}
-		scene.timing.ticks++;
+		physscene->timing.ticks++;
 
 		// Draw
 
@@ -79,14 +83,14 @@ int main(int, char**) {
 		SDL_RenderClear(rend);
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 
-		scene.draw();
+		physscene->draw();
 
 		//int i = 0;
 		//for (auto it = q.begin(); it != q.end(); it++) {
 		//	it->spr.draw(Vec2(8 * i++, 128));
 		//}
 
-		gui.draw(input);
+		gui->draw(input);
 		SDL_RenderPresent(rend);
 	}
 
@@ -410,7 +414,7 @@ int main(int, char**) {
 	SDL_RenderSetLogicalSize(rend, VIEW_W, VIEW_H);
 
 	Image font(rend, "res/font.png");
-	Image gui_atlas(rend, "res/gui.png");
+	Image gui_atlas(rend, "res/gui->png");
 	Image img_drifter(rend, "res/drifter.png");
 	Image img_floor(rend, "res/img_floor.png");
 	sprites_init(&img_drifter);
@@ -431,7 +435,7 @@ int main(int, char**) {
 		} while (SDL_PollEvent(&ev));
 
 		input.update();
-		gui.update(input);
+		gui->update(input);
 
 		if (resetme)
 			continue;
@@ -467,7 +471,7 @@ int main(int, char**) {
 		scene.draw(rend);
 		if (test_index == TEST_INDEX_DRIFTER) drifter.draw(&img_drifter);
 
-		gui.draw(input);
+		gui->draw(input);
 		SDL_RenderPresent(rend);
 
 		//

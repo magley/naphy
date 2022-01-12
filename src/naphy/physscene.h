@@ -8,7 +8,7 @@
 #include "game/cdrifter.h"
 #include "utility/input.h"
 
-struct Scene {
+struct PhysScene {
 	// All PhysBody instances registered in the scene.
 	std::vector<PhysBody*> body;
 	// All Arbiter instances registered in the scene.
@@ -28,7 +28,7 @@ struct Scene {
 	// Renderer.
 	SDL_Renderer* rend;
 
-	~Scene();
+	~PhysScene();
 
 
 
@@ -40,9 +40,9 @@ struct Scene {
 
 
 	// Construct a new Scene object.
-	Scene();
+	PhysScene();
 	// Construct a new Scene object
-	Scene(SDL_Renderer* rend, double dt, Vec2 win_size, Vec2 view_size, Vec2 grav, unsigned quadtree_cap);
+	PhysScene(SDL_Renderer* rend, double dt, Vec2 win_size, Vec2 view_size, Vec2 grav, unsigned quadtree_cap);
 
 	// Update clock.
 	// Nothing physics-related happens here.
