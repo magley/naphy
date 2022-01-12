@@ -6,7 +6,7 @@
 #include "utility/input.h"
 #include <list>
 
-struct Scene;
+struct PhysScene;
 
 enum DrifterLayersPhysBody{ // Use for PhysBody::layer.
 	LAYER_DRIFTER,
@@ -44,7 +44,7 @@ struct CDrifter {
 	CDrifter();
 	CDrifter(PhysBody* body);
 
-	void update(const Input* input, Scene* scene);
+	void update(const Input* input, PhysScene* scene);
 	void update_sprite(const Input* input);
 	void draw(const Image* img) const; 
 

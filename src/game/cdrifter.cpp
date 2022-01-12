@@ -1,6 +1,6 @@
 #include "cdrifter.h"
 #include "naphy/collision.h"
-#include "naphy/scene.h"
+#include "naphy/physscene.h"
 
 
 #include <stdio.h>
@@ -17,7 +17,7 @@ CDrifter::CDrifter(PhysBody* body) {
 	this->movedir = DRIFTER_DOWN;
 }
 
-void CDrifter::update(const Input* input, Scene* scene) {
+void CDrifter::update(const Input* input, PhysScene* scene) {
 	if (body == NULL)
 		return;
 

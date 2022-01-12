@@ -10,7 +10,7 @@
 #include "gui/gui.h"
 #include "gui/gui_checkbox.h"
 #include "gui/gui_label.h"
-#include "naphy/scene.h"
+#include "naphy/physscene.h"
 #include "rend/image.h"
 #include "rend/rend.h"
 #include "utility/input.h"

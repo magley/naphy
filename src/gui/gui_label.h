@@ -9,7 +9,7 @@ struct GUI;
 
 // Single line of text. Scales automatically. This is more or less draw_text() with extra steps.
 struct GUILabel {
-	// Poitner to the owning GUI.
+	// GUI::add() is in charge of setting this value.
 	GUI* gui;
 	// Native position on screen.
 	Vec2 pos;
@@ -21,8 +21,9 @@ struct GUILabel {
 	SDL_Color col_bg;
 
 	GUILabel();
-	GUILabel(GUI* gui, Vec2 pos, std::string text);
-	GUILabel(GUI* gui, Vec2 pos, std::string text, SDL_Color col_text, SDL_Color col_bg);
+	GUILabel(Vec2 pos, std::string text);
+	GUILabel(Vec2 pos, std::string text, SDL_Color col_text, SDL_Color col_bg);
 
+	// This should be called by the GUI.
 	void draw(Image& img_font);
 };

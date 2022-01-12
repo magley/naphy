@@ -4,12 +4,12 @@
 
 internal unsigned scene_index;
 
-internal void reset_scene(Scene* scene, GUIButton* btn) {
+internal void reset_scene(GUIButton* btn) {
 	GUI* gui = btn->gui;
-	start_scene(scene, gui);
+	start_scene(gui->scene);
 }
 
-internal void set_scale(Scene* scene, unsigned scale) {
+internal void set_scale(PhysScene* scene, unsigned scale) {
 	VIEW_W = scene->win_size.x / scale;
 	VIEW_H = scene->win_size.y / scale;
 	SDL_RenderSetLogicalSize(scene->rend, VIEW_W, VIEW_H);
@@ -17,7 +17,7 @@ internal void set_scale(Scene* scene, unsigned scale) {
 	scene->quadtree = QuadNode({0, 0}, Vec2(VIEW_W, VIEW_H), scene->quadtree.capacity);
 }
 
-internal void scene_clear_ext(Scene* scene, Vec2 grav, unsigned scale) {
+internal void scene_clear_ext(PhysScene* scene, Vec2 grav, unsigned scale) {
     scene->grav = grav;
 	scene->body.clear();
 	scene->arbiter.clear();
@@ -25,25 +25,33 @@ internal void scene_clear_ext(Scene* scene, Vec2 grav, unsigned scale) {
 	set_scale(scene, scale);
 }
 
-internal void add_poly(Scene* scene, GUIButton* btn) {
+internal void add_poly(GUIButton* btn) {
+	PhysScene* scene = btn->gui->scene->physscene;
+
 	int vertices = 3 + (rand() % 4);
 	int size = 20 + (rand() % 30);
 	const Shape c = Shape(vertices, size);
 	scene->add(new PhysBody(Vec2(400, 32), c));
 }
 
-internal void add_circle(Scene* scene, GUIButton* btn) {
+internal void add_circle(GUIButton* btn) {
+	PhysScene* scene = btn->gui->scene->physscene;
+
 	double radius = 10 + rand() % 20;
 	const Shape c = Shape(radius);
 	scene->add(new PhysBody(Vec2(400, 32), c));
 }
 
-internal void next_scene(Scene* scene, GUIButton* btn) {
+internal void next_scene(GUIButton* btn) {
+	PhysScene* scene = btn->gui->scene->physscene;
+
 	scene_index++; // range check for scene_index goes in start_scene().
-	reset_scene(scene, btn);
+	reset_scene(btn);
 }
 
-internal void add_box(Scene* scene, GUIButton* btn) {
+internal void add_box(GUIButton* btn) {
+	PhysScene* scene = btn->gui->scene->physscene;
+
 	static int i = 0;
 
 	int vertices = 4;
@@ -56,7 +64,7 @@ internal void add_box(Scene* scene, GUIButton* btn) {
 //-------------------------------------------------------------------------------------------------
 
 
-internal void init_test_basic(Scene* scene, GUI* gui) {
+internal void init_test_basic(PhysScene* scene, GUI* gui) {
     scene_clear_ext(scene, {0, 981}, 1);
     PhysBody* b;
 
@@ -132,25 +140,25 @@ internal void init_test_basic(Scene* scene, GUI* gui) {
 	GUIButton* btn;
 
 	btn = gui->add(new GUIButton(gui, {0, 48}, "Add new polygon"));
-		btn->reg_click_callback(add_poly, scene);
+		btn->reg_click_callback(add_poly);
 	btn = gui->add(new GUIButton(gui, {144, 48}, "Reset scene"));
-		btn->reg_click_callback(reset_scene, scene);
+		btn->reg_click_callback(reset_scene);
 	btn = gui->add(new GUIButton(gui, {48, 48}, "Add new circle"));
-		btn->reg_click_callback(add_circle, scene);
+		btn->reg_click_callback(add_circle);
 	btn = gui->add(new GUIButton(gui, {96, 48}, "Add box"));
-		btn->reg_click_callback(add_box, scene);
+		btn->reg_click_callback(add_box);
 	btn = gui->add(new GUIButton(gui, {144, 48}, "Reset scene"));
-		btn->reg_click_callback(reset_scene, scene);
+		btn->reg_click_callback(reset_scene);
 	btn = gui->add(new GUIButton(gui, {192, 48}, "Next test"));
-		btn->reg_click_callback(next_scene, scene);
+		btn->reg_click_callback(next_scene);
 
 	// GUI - label
 
 	GUILabel* lbl;
-	lbl = gui->add(new GUILabel(gui, {0, 0}, "naphy test :: shapes", COL_WHITE, COL_BLUE));
+	lbl = gui->add(new GUILabel({0, 0}, "naphy test :: shapes", COL_WHITE, COL_BLUE));
 }
 
-internal void init_stacking_scene(Scene* scene, GUI* gui) {
+internal void init_stacking_scene(PhysScene* scene, GUI* gui) {
 	scene_clear_ext(scene, {0, 981}, 1);
 
 	Shape rect = Shape(Vec2{1600, 64});
@@ -205,25 +213,25 @@ internal void init_stacking_scene(Scene* scene, GUI* gui) {
 	GUIButton* btn;
 
 	btn = gui->add(new GUIButton(gui, {0, 48}, "Add new polygon"));
-		btn->reg_click_callback(add_poly, scene);
+		btn->reg_click_callback(add_poly);
 	btn = gui->add(new GUIButton(gui, {144, 48}, "Reset scene"));
-		btn->reg_click_callback(reset_scene, scene);
+		btn->reg_click_callback(reset_scene);
 	btn = gui->add(new GUIButton(gui, {48, 48}, "Add new circle"));
-		btn->reg_click_callback(add_circle, scene);
+		btn->reg_click_callback(add_circle);
 	btn = gui->add(new GUIButton(gui, {96, 48}, "Add box"));
-		btn->reg_click_callback(add_box, scene);
+		btn->reg_click_callback(add_box);
 	btn = gui->add(new GUIButton(gui, {144, 48}, "Reset scene"));
-		btn->reg_click_callback(reset_scene, scene);
+		btn->reg_click_callback(reset_scene);
 	btn = gui->add(new GUIButton(gui, {192, 48}, "Next test"));
-		btn->reg_click_callback(next_scene, scene);
+		btn->reg_click_callback(next_scene);
 
 	// GUI - label
 
 	GUILabel* lbl;
-	lbl = gui->add(new GUILabel(gui, {0, 0}, "naphy test :: stacking", COL_WHITE, COL_BLUE));
+	lbl = gui->add(new GUILabel({0, 0}, "naphy test :: stacking", COL_WHITE, COL_BLUE));
 }
 
-internal void init_drifter_scene(Scene* scene, GUI* gui) {
+internal void init_drifter_scene(PhysScene* scene, GUI* gui) {
 	scene_clear_ext(scene, {0, 0}, 3);
 
 	PhysBody* b;
@@ -282,13 +290,13 @@ internal void init_drifter_scene(Scene* scene, GUI* gui) {
 	GUIButton* btn;
 
 	btn = gui->add(new GUIButton(gui, {48, 48}, "Reset scene"));
-		btn->reg_click_callback(reset_scene, scene);
+		btn->reg_click_callback(reset_scene);
 	btn = gui->add(new GUIButton(gui, {96, 48}, "Next test"));
-		btn->reg_click_callback(next_scene, scene);
+		btn->reg_click_callback(next_scene);
 
 	GUILabel* lbl;
 
-	lbl = gui->add(new GUILabel(gui, {0, 0}, "naphy test :: drifter (WASD, mouse, space)", COL_WHITE, COL_BLUE));
+	lbl = gui->add(new GUILabel({0, 0}, "naphy test :: drifter (WASD, mouse, space)", COL_WHITE, COL_BLUE));
 }
 
 
@@ -296,10 +304,10 @@ internal void init_drifter_scene(Scene* scene, GUI* gui) {
 
 
 void start_scene(GameScene* gamescene) {
-	gamescene->scene->clear();
+	gamescene->physscene->clear();
 	gamescene->gui->clear();
 
-	const std::vector<void (*)(Scene*, GUI*)> init_func_arr = {
+	const std::vector<void (*)(PhysScene*, GUI*)> init_func_arr = {
 		init_test_basic,
 		init_stacking_scene,
 		init_drifter_scene
@@ -307,5 +315,5 @@ void start_scene(GameScene* gamescene) {
 
 	if (scene_index >= init_func_arr.size())
 		scene_index = 0;
-	init_func_arr[scene_index](gamescene->scene, gamescene->gui);
+	init_func_arr[scene_index](gamescene->physscene, gamescene->gui);
 }

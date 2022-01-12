@@ -1,7 +1,12 @@
 #include "gamescene.h"
 
-
-GameScene::GameScene(Scene* scene, GUI* gui) {
-    this->scene = scene;
+GameScene::GameScene(PhysScene* physscene, GUI* gui) {
+    this->physscene = physscene;
     this->gui = gui;
+    this->gui->scene = this;
+}
+
+GameScene::~GameScene() {
+    delete physscene;
+    delete gui;
 }

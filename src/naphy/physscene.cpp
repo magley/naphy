@@ -1,15 +1,15 @@
-#include "scene.h"
+#include "physscene.h"
 #include "rend/rend.h"
 #include <set>
 
-static void scene_update_collision(Scene* scene);
-static void scene_update_force(Scene* scene);
-static void scene_update_constraints(Scene* scene);
-static void scene_update_velocity(Scene* scene);
-static void scene_remove_distant_objects(Scene* scene);
+static void scene_update_collision(PhysScene* scene);
+static void scene_update_force(PhysScene* scene);
+static void scene_update_constraints(PhysScene* scene);
+static void scene_update_velocity(PhysScene* scene);
+static void scene_remove_distant_objects(PhysScene* scene);
 
-static void collision_quadtree(Scene* scene);
-static void collision_naive(Scene* scene);
+static void collision_quadtree(PhysScene* scene);
+static void collision_naive(PhysScene* scene);
 
 // Pairs of physics bodies with a '<' operator.
 // This is used to avoid duplicates when generating Arbiters during broad-phase collision detection.
@@ -28,7 +28,7 @@ struct PhysBodyPair {
 	}
 };
 
-Scene::Scene() {
+PhysScene::PhysScene() {
 	timing = Timing(1 / 60.0);
 	rend = NULL;
 	grav = Vec2(0, 400);
@@ -37,7 +37,7 @@ Scene::Scene() {
 	view_size = Vec2(320, 240);
 }
 
-Scene::Scene(SDL_Renderer* rend, double dt, Vec2 win_size, Vec2 view_size, Vec2 grav, unsigned quadtree_cap) {
+PhysScene::PhysScene(SDL_Renderer* rend, double dt, Vec2 win_size, Vec2 view_size, Vec2 grav, unsigned quadtree_cap) {
 	timing = Timing(dt);
 	this->grav = grav;
 	this->rend = rend;
@@ -46,15 +46,15 @@ Scene::Scene(SDL_Renderer* rend, double dt, Vec2 win_size, Vec2 view_size, Vec2 
 	this->view_size = view_size;
 }
 
-Scene::~Scene() {
+PhysScene::~PhysScene() {
 	clear();
 }
 
-void Scene::pre_update() {
+void PhysScene::pre_update() {
 	timing.tick();
 }
 
-void Scene::update() {
+void PhysScene::update() {
 	scene_update_collision(this);
 	scene_update_force(this);
 	scene_update_constraints(this);
@@ -65,7 +65,7 @@ void Scene::update() {
 	}
 }
 
-void Scene::draw() {
+void PhysScene::draw() {
 	if (debug_draw_shapes) 
 	{
 		for (unsigned i = 0; i < body.size(); i++) {
@@ -126,12 +126,12 @@ void Scene::draw() {
 	SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 }
 
-PhysBody* Scene::add(PhysBody* b) {
+PhysBody* PhysScene::add(PhysBody* b) {
 	body.push_back(b);
 	return b;
 }
 
-void Scene::clear() {
+void PhysScene::clear() {
 	for (auto o : body) { 
 		delete o; 
 		o = NULL; 
@@ -146,7 +146,7 @@ void Scene::clear() {
 // Helper functions
 
 
-static void collision_quadtree(Scene* scene) {
+static void collision_quadtree(PhysScene* scene) {
 	scene->quadtree.build(&scene->body);
 	const std::vector<QuadNode*> quad_groups = scene->quadtree.get_leaves();
 	std::set<PhysBodyPair> checked_pairs;
@@ -193,7 +193,7 @@ static void collision_quadtree(Scene* scene) {
 	}
 }
 
-static void collision_naive(Scene* scene) {
+static void collision_naive(PhysScene* scene) {
 	for (unsigned i = 0; i < scene->body.size(); i++) {
 		PhysBody* A = (scene->body[i]);
 		for (unsigned j = i + 1; j < scene->body.size(); j++) {
@@ -221,7 +221,7 @@ static void collision_naive(Scene* scene) {
 	}
 }
 
-static void scene_update_collision(Scene* scene) {
+static void scene_update_collision(PhysScene* scene) {
 	scene->arbiter.clear();
 	scene->quadtree.clear();
 
@@ -243,7 +243,7 @@ static void scene_update_collision(Scene* scene) {
 	}
 }
 
-static void scene_update_constraints(Scene* scene) {
+static void scene_update_constraints(PhysScene* scene) {
 	for (unsigned i = 0; i < scene->arbiter.size(); i++)
 		scene->arbiter[i].pre_solve(scene->grav, scene->timing.dt);
 
@@ -254,7 +254,7 @@ static void scene_update_constraints(Scene* scene) {
 	}
 }
 
-static void scene_update_force(Scene* scene) {
+static void scene_update_force(PhysScene* scene) {
 	// Accumulate external forces.
 	// For now, we only have springs. Gravity is done below this, when calculating dv.
 
@@ -298,7 +298,7 @@ static void scene_update_force(Scene* scene) {
 	}
 }
 
-static void scene_update_velocity(Scene* scene) {
+static void scene_update_velocity(PhysScene* scene) {
 	for (unsigned i = 0; i < scene->body.size(); i++) {
 		PhysBody* b = scene->body[i];
 
@@ -329,7 +329,7 @@ static void scene_update_velocity(Scene* scene) {
 	}
 }
 
-static void scene_remove_distant_objects(Scene* scene) {
+static void scene_remove_distant_objects(PhysScene* scene) {
 	const double padding = 32;
 	const Vec2 my_ul = Vec2(0, 0) - Vec2(padding, padding);
 	const Vec2 my_dr = my_ul + scene->view_size + 2 * Vec2(padding, padding);

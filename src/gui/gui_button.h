@@ -5,18 +5,16 @@
 #include "utility/mathutil.h"
 #include <string>
 
-struct Scene;
+struct PhysScene;
 struct GUI;
 struct GUIButton; // forward decl for the callback.
 
-typedef void (*GUIButtonCallback)(Scene* scene, GUIButton* btn);
+typedef void (*GUIButtonCallback)(GUIButton* btn);
 
 // Clickable GUI button that fires a callback whenever it's pushed. 
 struct GUIButton {
-	// Pointer to the owning GUI.
+	// GUI::add() is in charge of setting this value.
 	GUI* gui;
-	// Pointer to the scene, used for callbacks.
-	Scene* scene;
 	// Native position on screen.
 	Vec2 pos;
 	// Native size.
@@ -41,5 +39,5 @@ struct GUIButton {
 	// Callback that gets invoked every time the button is clicked. NULL is a valid value.
 	GUIButtonCallback click_callback;
 	// Assign a new click callback to this component.
-	void reg_click_callback(GUIButtonCallback func, Scene* scene);
+	void reg_click_callback(GUIButtonCallback func);
 };
