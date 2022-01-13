@@ -1,6 +1,6 @@
 #include "cdrifter.h"
 #include "naphy/collision.h"
-#include "naphy/physscene.h"
+#include "gamescene.h"
 
 
 #include <stdio.h>
@@ -17,7 +17,7 @@ CDrifter::CDrifter(PhysBody* body) {
 	this->movedir = DRIFTER_DOWN;
 }
 
-void CDrifter::update(const Input* input, PhysScene* scene) {
+void CDrifter::update(const Input* input, GameScene* scene) {
 	if (body == NULL)
 		return;
 
@@ -177,7 +177,10 @@ void CDrifter::update(const Input* input, PhysScene* scene) {
 		PhysBody* other = body->cld[i];
 
 		if (other->layer == LAYER_PIT && drift_time == 0) {
-			state = DRIFTER_STATE_FALLDIE;
+			if (state != DRIFTER_STATE_FALLDIE) {
+				body->vel.y = 0;
+				state = DRIFTER_STATE_FALLDIE;
+			}
 		}
 	}
 

@@ -17,12 +17,14 @@ internal void set_scale(PhysScene* scene, unsigned scale) {
 	scene->quadtree = QuadNode({0, 0}, Vec2(VIEW_W, VIEW_H), scene->quadtree.capacity);
 }
 
-internal void scene_clear_ext(PhysScene* scene, Vec2 grav, unsigned scale) {
-    scene->grav = grav;
-	scene->body.clear();
-	scene->arbiter.clear();
-	scene->spring.clear();
-	set_scale(scene, scale);
+internal void scene_clear_ext(GameScene* scene, Vec2 grav, unsigned scale) {
+	scene->drifter.clear();
+
+    scene->physscene->grav = grav;
+	scene->physscene->body.clear();
+	scene->physscene->arbiter.clear();
+	scene->physscene->spring.clear();
+	set_scale(scene->physscene, scale);
 }
 
 internal void add_poly(GUIButton* btn) {
@@ -64,8 +66,11 @@ internal void add_box(GUIButton* btn) {
 //-------------------------------------------------------------------------------------------------
 
 
-internal void init_test_basic(PhysScene* scene, GUI* gui) {
-    scene_clear_ext(scene, {0, 981}, 1);
+internal void init_test_basic(GameScene* scn) {
+	PhysScene* scene = scn->physscene;
+	GUI* gui = scn->gui;
+
+    scene_clear_ext(scn, {0, 981}, 1);
     PhysBody* b;
 
     const Shape rect = Shape(Vec2(scene->win_size.x, 64));
@@ -158,8 +163,11 @@ internal void init_test_basic(PhysScene* scene, GUI* gui) {
 	lbl = gui->add(new GUILabel({0, 0}, "naphy test :: shapes", COL_WHITE, COL_BLUE));
 }
 
-internal void init_stacking_scene(PhysScene* scene, GUI* gui) {
-	scene_clear_ext(scene, {0, 981}, 1);
+internal void init_stacking_scene(GameScene* scn) {
+	PhysScene* scene = scn->physscene;
+	GUI* gui = scn->gui;
+
+	scene_clear_ext(scn, {0, 981}, 1);
 
 	Shape rect = Shape(Vec2{1600, 64});
 	Shape rect2 = Shape(Vec2{120, 12});
@@ -167,28 +175,28 @@ internal void init_stacking_scene(PhysScene* scene, GUI* gui) {
 	// Floor
 
 	PhysBody* b;
-	b = scene->add(new PhysBody({VIEW_W / 2, VIEW_H - 48}, rect));
+	b = scene->add(new PhysBody(Vec2(VIEW_W / 2, VIEW_H - 48), rect));
 	b->calc_mass(0);
 
 	// Tower thingy
 
-	b = scene->add(new PhysBody({400, VIEW_H - 48 - 32 - 60}, rect2));
+	b = scene->add(new PhysBody(Vec2(400, VIEW_H - 48 - 32 - 60), rect2));
 	b->set_angle(90 * DEG2RAD);
-	b = scene->add(new PhysBody({520, VIEW_H - 48 - 32 - 60}, rect2));
+	b = scene->add(new PhysBody(Vec2(520, VIEW_H - 48 - 32 - 60), rect2));
 	b->set_angle(90 * DEG2RAD);
-	b = scene->add(new PhysBody({460, VIEW_H - 48 - 32 - 120 - 8}, rect2));
+	b = scene->add(new PhysBody(Vec2(460, VIEW_H - 48 - 32 - 120 - 8), rect2));
 
-	b = scene->add(new PhysBody({540, VIEW_H - 48 - 32 - 60}, rect2));
+	b = scene->add(new PhysBody(Vec2(540, VIEW_H - 48 - 32 - 60), rect2));
 	b->set_angle(90 * DEG2RAD);
-	b = scene->add(new PhysBody({660, VIEW_H - 48 - 32 - 60}, rect2));
+	b = scene->add(new PhysBody(Vec2(660, VIEW_H - 48 - 32 - 60), rect2));
 	b->set_angle(90 * DEG2RAD);
-	b = scene->add(new PhysBody({600, VIEW_H - 48 - 32 - 120 - 8}, rect2));
+	b = scene->add(new PhysBody(Vec2(600, VIEW_H - 48 - 32 - 120 - 8), rect2));
 
-	b = scene->add(new PhysBody({468, VIEW_H - 48 - 32 - 120 - 8 - 60}, rect2));
+	b = scene->add(new PhysBody(Vec2(468, VIEW_H - 48 - 32 - 120 - 8 - 60), rect2));
 	b->set_angle(90 * DEG2RAD);
-	b = scene->add(new PhysBody({592, VIEW_H - 48 - 32 - 120 - 8 - 60}, rect2));
+	b = scene->add(new PhysBody(Vec2(592, VIEW_H - 48 - 32 - 120 - 8 - 60), rect2));
 	b->set_angle(90 * DEG2RAD);
-	b = scene->add(new PhysBody({530, VIEW_H - 48 - 32 - 120 - 8 - 120 - 8}, rect2));
+	b = scene->add(new PhysBody(Vec2(530, VIEW_H - 48 - 32 - 120 - 8 - 120 - 8), rect2));
 
 	// GUI - checkbox
 
@@ -231,8 +239,11 @@ internal void init_stacking_scene(PhysScene* scene, GUI* gui) {
 	lbl = gui->add(new GUILabel({0, 0}, "naphy test :: stacking", COL_WHITE, COL_BLUE));
 }
 
-internal void init_drifter_scene(PhysScene* scene, GUI* gui) {
-	scene_clear_ext(scene, {0, 0}, 3);
+internal void init_drifter_scene(GameScene* scn) {
+	PhysScene* scene = scn->physscene;
+	GUI* gui = scn->gui;
+
+	scene_clear_ext(scn, {0, 0}, 3);
 
 	PhysBody* b;
 
@@ -267,7 +278,7 @@ internal void init_drifter_scene(PhysScene* scene, GUI* gui) {
 	b->I_inv = 0;
 	b->I = 0;
 	b->layer = LAYER_DRIFTER;
-	//drifter = CDrifter(b);
+	scn->drifter.push_back(CDrifter(b));
 
 	b = scene->add(new PhysBody({328, 235}, Shape(Vec2{29, 70})));
 	b->calc_mass(0);
@@ -281,7 +292,6 @@ internal void init_drifter_scene(PhysScene* scene, GUI* gui) {
 	GUICheckBox* cb;
 
 	cb = gui->add(new GUICheckBox(gui, {0, 24}, "Draw PhysBody"));
-		cb->checked = true;
 		cb->reg_toggle_target(&scene->debug_draw_shapes, true);
 
 	cb = gui->add(new GUICheckBox(gui, {24, 24}, "Draw Arbiter"));
@@ -307,7 +317,7 @@ void start_scene(GameScene* gamescene) {
 	gamescene->physscene->clear();
 	gamescene->gui->clear();
 
-	const std::vector<void (*)(PhysScene*, GUI*)> init_func_arr = {
+	const std::vector<void (*)(GameScene*)> init_func_arr = {
 		init_test_basic,
 		init_stacking_scene,
 		init_drifter_scene
@@ -315,5 +325,5 @@ void start_scene(GameScene* gamescene) {
 
 	if (scene_index >= init_func_arr.size())
 		scene_index = 0;
-	init_func_arr[scene_index](gamescene->physscene, gamescene->gui);
+	init_func_arr[scene_index](gamescene);
 }
