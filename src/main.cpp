@@ -11,22 +11,11 @@ const globalvar unsigned WIN_H = 810;
 const globalvar unsigned WIN_X = ((1920 - WIN_W) / 2);
 const globalvar unsigned WIN_Y = ((1080 - WIN_H) / 2);
 
-
 #include <set>
-
-
-struct SpriteWithDepth {
-	CSprite spr;
-	int depth;
-};
-
-bool operator <(const SpriteWithDepth& a, const SpriteWithDepth& b) {
-	return a.depth < b.depth;
-}
 
 int main(int, char**) {
 	SDL_Init(SDL_INIT_VIDEO);
-	win = SDL_CreateWindow("naphy dev.2022.01.11", WIN_X, WIN_Y, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
+	win = SDL_CreateWindow("naphy dev.2022.01.13", WIN_X, WIN_Y, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
 	rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
 	SDL_RenderSetLogicalSize(rend, VIEW_W, VIEW_H);
@@ -35,21 +24,16 @@ int main(int, char**) {
 	Image gui_atlas(rend, "res/gui.png");
 	Image img_drifter(rend, "res/drifter.png");
 	Image img_floor(rend, "res/img_floor.png");
+	sprites_init(&img_drifter);
 
 	Input input(win);
 
 	GameScene scene = GameScene(
-		new PhysScene(rend, 1.0/60.0, Vec2(WIN_W,WIN_H), Vec2(WIN_W,WIN_H), Vec2(0,981), 16),
+		new PhysScene(rend, 1.0 / 60.0, Vec2(WIN_W, WIN_H), Vec2(WIN_W, WIN_H), Vec2(0, 981), 16),
 		new GUI(win, gui_atlas, font)
 	);
-
 	start_scene(&scene);
-	sprites_init(&img_drifter);
-
-
-	//std::multiset<SpriteWithDepth> q;
-	//q.insert({CSprite(SPR_DRIFTER_DOWN_WALK, 2), 2});
-	//q.insert({CSprite(SPR_DRIFTER_DOWN_DRIFT, 2), 15});
+	scene.background = &img_floor;
 
 	while (running) {
 		PhysScene* const physscene = scene.physscene;
@@ -70,6 +54,10 @@ int main(int, char**) {
 		// Update
 
 		while (physscene->timing.accumulator >= physscene->timing.dt) {
+			for (CDrifter& drf : scene.drifter) {
+				drf.update(&input, &scene);
+			}
+
 			physscene->update();
 			physscene->timing.accumulator -= physscene->timing.dt;
 			physscene->timing.total += physscene->timing.dt / physscene->timing.scale;
@@ -79,16 +67,23 @@ int main(int, char**) {
 
 		// Draw
 
-		SDL_SetRenderDrawColor(rend, 29, 18, 37, 255);
+		SDL_SetRenderDrawColor(rend, 19, 18, 37, 255);
 		SDL_RenderClear(rend);
 		SDL_SetRenderDrawColor(rend, 255, 255, 255, 255);
 
-		physscene->draw();
+		if (scene.background != NULL) {
+			scene.background->draw(0, 0);
+		}
 
-		//int i = 0;
-		//for (auto it = q.begin(); it != q.end(); it++) {
-		//	it->spr.draw(Vec2(8 * i++, 128));
-		//}
+		for (const CDrifter& drf : scene.drifter) {
+			drf.draw(&img_drifter);
+		}
+
+		for (const CSprite& spr : scene.spr_queue) {
+			spr.draw(Vec2(0, 0));
+		}
+			
+		physscene->draw();
 
 		gui->draw(input);
 		SDL_RenderPresent(rend);
