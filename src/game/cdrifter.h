@@ -1,7 +1,7 @@
 #pragma once
 
+#include "cphys.h"
 #include "csprite.h"
-#include "naphy/physbody.h"
 #include "rend/image.h"
 #include "utility/input.h"
 #include <list>
@@ -18,10 +18,8 @@ enum DrifterState{
 	DRIFTER_STATE_STAND,		// Standing
 	DRIFTER_STATE_WALK,			// Walking
 	DRIFTER_STATE_STOPWALK,		// Walkting to a stop (no move key held but not standing)
-	DRIFTER_STATE_DRIFTSTART,	// First frame of a drift (combo drift included)
-	DRIFTER_STATE_DRIFT,		// All frames of a drift EXCEPT the first one
+	DRIFTER_STATE_DRIFT,		// All frames of a drift
 	DRIFTER_STATE_FALLDIE		// When you fall in a bottomless pit
-	// TODO: Use multiple bits for state. STATE_DRIFT and STATE_DRIFTSTART should not be exclusive.
 };
 
 enum DrifterDir{
@@ -32,22 +30,14 @@ enum DrifterDir{
 };
 
 struct CDrifter {
-	int drift_time;
-	int drift_combo;  // How many combos you're on.
-
-	CSprite sprite;
-
+	unsigned state;   		// DrifterState
+	unsigned movedir; 		// DrifterDir
+	unsigned drift_time;
 	std::list<Vec2> trails;
-
-	PhysBody* body;  // Physbody instance I'm attached to.
-
 	CDrifter();
-	CDrifter(PhysBody* body);
-
-	void update(const Input* input, GameScene* scene);
-	void update_sprite(const Input* input);
-	void draw(const Image* img) const; 
-
-	int state;    // DrifterState enum
-	int movedir;  // DrifterDir enum
+	
+	void move_and_drift(CPhys* phys, const Input* input);
+	void fall_in_pits(CPhys* phys);
+	void update_sprite(const CPhys* phys, CSprite* spr, const Input* input);
+	void draw(const CPhys* phys, const CSprite* spr, const Image* image, GameScene* scene) const;
 };

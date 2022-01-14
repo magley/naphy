@@ -8,6 +8,8 @@
 #include "gui/gui.h"
 #include "rend/image.h"
 
+#include "entity.h"
+
 #include <vector>
 #include <set>
 
@@ -16,10 +18,10 @@ struct GameScene {
     GUI* gui;
     Image* background; // Static bg at (0, 0).
 
-    std::vector<CDrifter> drifter;
-    std::multiset<CSprite> spr_queue; // Larger depth goes in front
+    std::vector<Entity> entity;
 
     // All should be on heap.
     GameScene(PhysScene* physscene, GUI* gui);
     ~GameScene();
+
 };
