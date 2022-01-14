@@ -18,7 +18,7 @@ internal void set_scale(PhysScene* scene, unsigned scale) {
 }
 
 internal void scene_clear_ext(GameScene* scene, Vec2 grav, unsigned scale) {
-	scene->drifter.clear();
+	scene->entity.clear();
 
     scene->physscene->grav = grav;
 	scene->physscene->body.clear();
@@ -278,7 +278,12 @@ internal void init_drifter_scene(GameScene* scn) {
 	b->I_inv = 0;
 	b->I = 0;
 	b->layer = LAYER_DRIFTER;
-	scn->drifter.push_back(CDrifter(b));
+
+	Entity player{C_DRIFTER | C_SPRITE | C_PHYS};
+	player.cdrifter = CDrifter();
+	player.cphys = CPhys(b);
+	player.csprite = CSprite(SPR_DRIFTER_DOWN_STAND, 0);
+	scn->entity.push_back(player); // pass by copy
 
 	b = scene->add(new PhysBody({328, 235}, Shape(Vec2{29, 70})));
 	b->calc_mass(0);
