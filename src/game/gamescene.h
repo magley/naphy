@@ -16,12 +16,14 @@
 struct GameScene {
     PhysScene* physscene;
     GUI* gui;
-    Image* background; // Static bg at (0, 0).
 
     std::vector<Entity> entity;
+    std::multiset<SpriteDrawContext> spr_ctx;
 
     // All should be on heap.
     GameScene(PhysScene* physscene, GUI* gui);
     ~GameScene();
 
+    void draw_sprite(const SpriteDrawContext& ctx);
+    void flush_sprites();
 };

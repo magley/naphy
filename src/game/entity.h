@@ -29,5 +29,5 @@ struct Entity {
     Entity(unsigned flag);
 
     void update(const Input* input);
-    void draw(GameScene* scene, Image* img_drifter);
+    void draw(GameScene* scene, Image* img_atlas);
 };

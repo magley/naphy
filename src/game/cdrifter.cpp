@@ -223,25 +223,18 @@ void CDrifter::draw(const CPhys* phys, const CSprite* sprite, const Image* image
 
 	// Draw trail
 
-	uint8_t r_, g_, b_, a_;
-	SDL_GetTextureColorMod(image->img, &r_, &g_, &b_);
-	SDL_GetTextureAlphaMod(image->img, &a_);
 	{
 		auto it = trails.begin();
 		for (unsigned i = 0; it != trails.end(); ++it, ++i) {
-			SDL_SetTextureColorMod(image->img,
-								(55 + (50 - 5 * i * i) % 200) % 255,
-								(200 - 5 * i * i) % 255,
-								(2 * i * i + 8 * i + 160) % 255);
-
-			Vec2 p = *it;
-			sprite->draw(p - spr_pos_offset);
+			const uint8_t r = (55 + (50 - 5 * i * i) % 200) % 255;
+			const uint8_t g = (200 - 5 * i * i) % 255;
+			const uint8_t b = (2 * i * i + 8 * i + 160) % 255;
+			const Vec2 p = *it;
+			scene->draw_sprite(sprite->make_ctx(p - spr_pos_offset, r, g, b));
 		}
 	}
-	SDL_SetTextureAlphaMod(image->img, a_);
-	SDL_SetTextureColorMod(image->img, r_, g_, b_);
 
 	// Draw main sprite
 
-	sprite->draw(body->pos - spr_pos_offset);
+	scene->draw_sprite(sprite->make_ctx(body->pos - spr_pos_offset));
 }
