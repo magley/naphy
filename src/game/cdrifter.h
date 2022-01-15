@@ -8,11 +8,7 @@
 
 struct GameScene;
 
-enum DrifterLayersPhysBody{ // Use for PhysBody::layer.
-	LAYER_DRIFTER,
-	LAYER_SOLID,
-	LAYER_PIT,
-};
+
 
 enum DrifterState{
 	DRIFTER_STATE_STAND,		// Standing

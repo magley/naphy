@@ -282,7 +282,8 @@ internal void init_drifter_scene(GameScene* scn) {
 	Entity player{C_DRIFTER | C_SPRITE | C_PHYS};
 	player.cdrifter = CDrifter();
 	player.cphys = CPhys(b);
-	player.csprite = CSprite(SPR_DRIFTER_DOWN_STAND, 0);
+	player.csprite = CSprite(SPR_DRIFTER_DOWN_STAND, 0.5);
+	player.csprite.depth = 0;
 	scn->entity.push_back(player); // pass by copy
 
 	b = scene->add(new PhysBody({328, 235}, Shape(Vec2{29, 70})));
@@ -290,6 +291,12 @@ internal void init_drifter_scene(GameScene* scn) {
 	b->aggregate_state = PHYSBODY_PASSIVE;
 	b->layer = LAYER_PIT;
 	b->material.e = 0;
+
+
+	Entity background{C_SPRITE};
+	background.csprite = CSprite(SPR_BG_FLOOR, 0);
+	background.csprite.depth = -100;
+	scn->entity.push_back(background); // pass by copy
 
 
 	// GUI

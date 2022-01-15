@@ -19,8 +19,10 @@ void Entity::update(const Input* input) {
     }
 }
 
-void Entity::draw(GameScene* scene, Image* img_drifter) {
+void Entity::draw(GameScene* scene, Image* img_atlas) {
     if (flag_c(C_DRIFTER)) {
-        cdrifter.draw(&cphys, &csprite, img_drifter, scene);
+        cdrifter.draw(&cphys, &csprite, img_atlas, scene);
+    } else if (flag_c(C_SPRITE)) {
+        scene->draw_sprite(csprite.make_ctx(Vec2(0, 0)));
     }
 }
