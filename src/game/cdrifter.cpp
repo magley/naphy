@@ -218,17 +218,22 @@ void CDrifter::draw(const CPhys* phys, const CSprite* sprite, const Image* image
 	PhysBody* const body = phys->body;
 
 	const Vec2 spr_pos_offset = Vec2(
-		spr[sprite->sprite_index].size.x / 2,
-		spr[sprite->sprite_index].size.y - 2);
+		spr[sprite->sprite_index].w / 2,
+		spr[sprite->sprite_index].h - 2);
 
 	// Draw trail
 
 	{
+		const uint8_t lookup_r[] = {40, 60, 40, 60, 40, 80, 60, 40};
+		const uint8_t lookup_g[] = {150, 120, 140, 120, 100, 80, 40, 20};
+		const uint8_t lookup_b[] = {80, 100, 120, 140, 160, 180, 200, 220};
+
 		auto it = trails.begin();
 		for (unsigned i = 0; it != trails.end(); ++it, ++i) {
-			const uint8_t r = (55 + (50 - 5 * i * i) % 200) % 255;
-			const uint8_t g = (200 - 5 * i * i) % 255;
-			const uint8_t b = (2 * i * i + 8 * i + 160) % 255;
+			const uint8_t r = lookup_r[i % 8];
+			const uint8_t g = lookup_g[i % 8];
+			const uint8_t b = lookup_b[i % 8];
+
 			const Vec2 p = *it;
 			scene->draw_sprite(sprite->make_ctx(p - spr_pos_offset, r, g, b));
 		}

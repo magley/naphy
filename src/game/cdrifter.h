@@ -8,8 +8,6 @@
 
 struct GameScene;
 
-
-
 enum DrifterState{
 	DRIFTER_STATE_STAND,		// Standing
 	DRIFTER_STATE_WALK,			// Walking

@@ -11,7 +11,7 @@ GameScene::~GameScene() {
     delete gui;
 }
 
-void GameScene::draw_sprite(const SpriteDrawContext& ctx) {
+void GameScene::draw_sprite(const SpriteContext& ctx) {
     spr_ctx.insert(ctx);
 }
 
@@ -19,17 +19,28 @@ void GameScene::flush_sprites() {
     if (spr_ctx.size() == 0)
         return;
 
-    Image* img = spr[0].img; // TODO: don't assume that sprites share the same Image
-    SDL_Texture* tex = img->img; // it's assumed now because it makes resetting color/alpha mod easy
+    // TODO: don't assume sprites share the same Image (it's assumed now for easy color/alpha reset)
+    SDL_Texture* tex = spr[0].img->tex;
 
     uint8_t r_, g_, b_, a_;
 	SDL_GetTextureColorMod(tex, &r_, &g_, &b_);
 	SDL_GetTextureAlphaMod(tex, &a_);
 
-    for (const SpriteDrawContext& ctx : spr_ctx) {
+    for (const SpriteContext& ctx : spr_ctx) {
+        const Sprite* s = &spr[ctx.sprite_index];
+        const Image* img = s->img;
+
         SDL_SetTextureColorMod(tex, ctx.r, ctx.g, ctx.b);
         SDL_SetTextureAlphaMod(tex, ctx.a);
-        img->draw(ctx.pos.x, ctx.pos.y, ctx.subx, ctx.suby, ctx.subw, ctx.subh, ctx.flip);
+        img->draw(
+            ctx.x,
+            ctx.y,
+            s->x + ctx.image_index * s->w,
+            s->y,
+            s->w,
+            s->h,
+            ctx.flip
+        );
     }
     spr_ctx.clear();
     

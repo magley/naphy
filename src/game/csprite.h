@@ -2,54 +2,9 @@
 
 #include "rend/image.h"
 #include "utility/mathutil.h"
+#include "resources.h"
 
-struct Sprite {
-	Image* img;
-	Vec2 size;
-	Vec2 pos;  // Pos of first sprite frame, in pixels, relative to main image.
-	unsigned frames;
 
-	Sprite();
-	Sprite(Image* img, Vec2 size, Vec2 pos, unsigned frames);
-};
-
-struct SpriteDrawContext {
-	unsigned sprite_index;
-	unsigned image_index;
-	int flip;
-	int depth;
-	
-	Vec2 pos;
-	
-	int subx;
-	int suby;
-	int subw;
-	int subh;
-
-	uint8_t r, g, b, a;
-};
-
-inline bool operator < (const SpriteDrawContext& a, const SpriteDrawContext& b) {
-	return a.depth < b.depth;
-}
-
-extern Sprite spr[10];
-void sprites_init(Image* img_atlas);
-enum SpriteNames {
-	SPR_DRIFTER_DOWN_STAND,
-	SPR_DRIFTER_DOWN_WALK,
-	SPR_DRIFTER_DOWN_DRIFT,
-
-	SPR_DRIFTER_RIGHT_STAND,
-	SPR_DRIFTER_RIGHT_WALK,
-	SPR_DRIFTER_RIGHT_DRIFT,
-
-	SPR_DRIFTER_UP_STAND,
-	SPR_DRIFTER_UP_WALK,
-	SPR_DRIFTER_UP_DRIFT,
-
-	SPR_BG_FLOOR,
-};
 
 struct CSprite {
 	double image_index;
@@ -69,7 +24,7 @@ struct CSprite {
 	// HOW: Create a SpriteDrawContext using make_ctx. When you're ready to draw, obtain data from
 	// the context.
 	void draw(Vec2 pos) const;
-	SpriteDrawContext make_ctx(Vec2 pos, 
+	SpriteContext make_ctx(Vec2 pos, 
 								uint8_t r = 255, 
 								uint8_t g = 255, 
 								uint8_t b = 255, 
