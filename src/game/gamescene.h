@@ -1,14 +1,11 @@
 #pragma once
 
-#include "csprite.h"
-#include "cdrifter.h"
+#include "entity.h"
 
 #include "utility/input.h"
 #include "naphy/physscene.h"
 #include "gui/gui.h"
 #include "rend/image.h"
-
-#include "entity.h"
 
 #include <vector>
 #include <set>
@@ -16,14 +13,14 @@
 struct GameScene {
     PhysScene* physscene;
     GUI* gui;
-
     std::vector<Entity> entity;
-    std::multiset<SpriteDrawContext> spr_ctx;
+    std::multiset<SpriteContext> spr_ctx;
 
-    // All should be on heap.
     GameScene(PhysScene* physscene, GUI* gui);
     ~GameScene();
 
-    void draw_sprite(const SpriteDrawContext& ctx);
+    // This doesn't actually draw anything. To preview changes, use flush_sprites().
+    void draw_sprite(const SpriteContext& ctx);
+    // This should be called once per game update.
     void flush_sprites();
 };
