@@ -27,6 +27,7 @@ struct PhysBody {
 	Vec2 pos;
 	// Velocity
 	Vec2 vel;
+	Vec2 vel_prev;
 	// Force
 	Vec2 force;
 	// Angular velocity.

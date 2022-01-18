@@ -315,7 +315,12 @@ static void scene_update_velocity(PhysScene* scene) {
 				b->dynamic_state = PHYSBODY_STATE_SLEEPING;
 			} else {
 				if (b->m_inv != 0) {
-					b->pos += b->vel * scene->timing.dt;
+					// Euler-Cromer (symplectic Euler)
+					//b->pos = b->pos + b->vel * scene->timing.dt;
+
+					// Adams-Bashforth (2-step)
+					b->pos = b->pos + (3 * b->vel - b->vel_prev) / 2.0 * scene->timing.dt;
+					b->vel_prev = b->vel;
 				}
 				if (b->I_inv != 0) {
 					b->ang += b->angvel * scene->timing.dt;

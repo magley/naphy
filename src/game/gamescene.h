@@ -19,8 +19,10 @@ struct GameScene {
     GameScene(PhysScene* physscene, GUI* gui);
     ~GameScene();
 
-    // This doesn't actually draw anything. To preview changes, use flush_sprites().
+    // This doesn't actually draw anything on the screen, but it's what you call when you want a
+    // sprite to be drawn. To actualy display the sprite(s), flush_sprites() is invoked.
     void draw_sprite(const SpriteContext& ctx);
+    // Draw all sprites onto the screen and clear the sprites from the container.
     // This should be called once per game update.
     void flush_sprites();
 };

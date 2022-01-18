@@ -12,7 +12,7 @@ CSprite::CSprite(unsigned sprite_index, double image_speed) {
 	this->sdl_flip = SDL_FLIP_NONE;
 }
 
-void CSprite::update() {
+void CSprite::update_animation() {
 	const Sprite* s = &spr[sprite_index];
 
 	if ((unsigned)(image_index + image_speed) > s->frames - 1) {
