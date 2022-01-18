@@ -115,11 +115,11 @@ void draw_text(int x, int y, double scale, const Image& font_sheet, std::string 
 
 	// Text
 
-	SDL_GetTextureColorMod(font_sheet.tex, &col.r, &col.g, &col.b);
-	SDL_GetTextureAlphaMod(font_sheet.tex, &col.a);
+	SDL_GetTextureColorMod(font_sheet.img, &col.r, &col.g, &col.b);
+	SDL_GetTextureAlphaMod(font_sheet.img, &col.a);
 
-	SDL_SetTextureColorMod(font_sheet.tex, col.r, col.g, col.b);
-	SDL_SetTextureAlphaMod(font_sheet.tex, col.a);
+	SDL_SetTextureColorMod(font_sheet.img, col.r, col.g, col.b);
+	SDL_SetTextureAlphaMod(font_sheet.img, col.a);
 
 	for (unsigned i = 0; i < text.size(); i++) {
 
@@ -140,6 +140,6 @@ void draw_text(int x, int y, double scale, const Image& font_sheet, std::string 
 		);
 	}
 
-	SDL_SetTextureColorMod(font_sheet.tex, r, g, b);
-	SDL_SetTextureAlphaMod(font_sheet.tex, a);
+	SDL_SetTextureColorMod(font_sheet.img, r, g, b);
+	SDL_SetTextureAlphaMod(font_sheet.img, a);
 }

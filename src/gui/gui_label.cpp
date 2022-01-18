@@ -10,7 +10,7 @@ GUILabel::GUILabel() {
 	col_bg = {0, 0, 0, 0};
 }
 
-GUILabel::GUILabel(Vec2 pos, std::string text) {
+GUILabel::GUILabel(GUI* gui, Vec2 pos, std::string text) {
 	this->gui = gui;
 	this->pos = pos;
 	this->text = text;
@@ -18,7 +18,7 @@ GUILabel::GUILabel(Vec2 pos, std::string text) {
 	this->col_bg = {0, 0, 0, 0};
 }
 
-GUILabel::GUILabel(Vec2 pos, std::string text, SDL_Color col_text, SDL_Color col_bg) {
+GUILabel::GUILabel(GUI* gui, Vec2 pos, std::string text, SDL_Color col_text, SDL_Color col_bg) {
 	this->gui = gui;
 	this->pos = pos;
 	this->text = text;

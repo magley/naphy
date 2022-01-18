@@ -6,15 +6,17 @@
 #include <string>
 
 struct GUI;
-struct PhysScene;
+struct Scene;
 struct GUICheckBox;
 
-typedef void (*GUICheckBoxCallback)(GUICheckBox* btn);
+typedef void (*GUICheckBoxCallback)(Scene* scene, GUICheckBox* btn);
 
 // Clickable GUI checkbox that toggles its state whenever it's pushed. 
 struct GUICheckBox {
-	// GUI::add() is in charge of setting this value.
+	// Pointer to the owning GUI.
 	GUI* gui;
+	// Pointer to the scene, used for callbacks.
+	Scene* scene;
 	// Native position on screen.
 	Vec2 pos;
 	// Native size.
@@ -40,5 +42,5 @@ struct GUICheckBox {
 	// Callback that gets invoked every time the checkbox is toggled. NULL is a valid value.
 	GUICheckBoxCallback click_callback;
 	// Assign a new click callback to this component.
-	void reg_click_callback(GUICheckBoxCallback func);
+	void reg_click_callback(GUICheckBoxCallback func, Scene* scene);
 };

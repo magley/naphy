@@ -8,7 +8,7 @@
 #include "game/cdrifter.h"
 #include "utility/input.h"
 
-struct PhysScene {
+struct Scene {
 	// All PhysBody instances registered in the scene.
 	std::vector<PhysBody*> body;
 	// All Arbiter instances registered in the scene.
@@ -17,19 +17,14 @@ struct PhysScene {
 	std::vector<Spring> spring;
 	// Quad tree spatial indexing data structure for this scene.
 	QuadNode quadtree;
+	// Size of the scene. Everything outside the bounds + padding is safe to remove.
+	Vec2 size;
 	// Stores time, frame count etc. Used to maintain a fixed framerate.
 	Timing timing;
 	// Gravity vector. Fine-tuning may be required because of scaling.
 	Vec2 grav;
-	// This is just for reference. Changing this won't change the window size.
-	Vec2 win_size;
-	// Also used for the quad tree.
-	Vec2 view_size;
-	// Renderer.
-	SDL_Renderer* rend;
 
-	~PhysScene();
-
+	~Scene();
 
 
 	bool debug_draw_shapes;
@@ -40,17 +35,22 @@ struct PhysScene {
 
 
 	// Construct a new Scene object.
-	PhysScene();
+	Scene();
 	// Construct a new Scene object
-	PhysScene(SDL_Renderer* rend, double dt, Vec2 win_size, Vec2 view_size, Vec2 grav, unsigned quadtree_cap);
+	// @param grav Gravity.
+	// @param dt Change in time.
+	// @param w Maximum width of the scene. Used for the quad tree.
+	// @param h Maximum height of the scene. Used for the quad tree.
+	// @param quadtree_capacity Capacity of a quadtree node.
+	Scene(Vec2 grav, double dt, double w, double h, unsigned quadtree_capacity);
 
-	// Update clock.
 	// Nothing physics-related happens here.
 	void pre_update();
 	// Updates the whole scene.
 	void update();
 	// Renders the whole scene.
-	void draw();
+	// @param rend Pointer to the SDL_Renderer where everything will be drawn.
+	void draw(SDL_Renderer* rend);
 	// @brief Add a new PhysBody to the scene.
 	// @param b The body to add.
 	// @return The pointer to the body.

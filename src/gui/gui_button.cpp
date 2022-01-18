@@ -2,20 +2,22 @@
 #include "gui.h"
 
 GUIButton::GUIButton() {
+	gui = NULL;
 	pos = Vec2(0, 0);
 	size = Vec2(48, 24);
 	clicked = false;
 	click_callback = NULL;
-	gui = NULL;
+	scene = NULL;
 }
 
 GUIButton::GUIButton(GUI* gui, Vec2 pos, std::string hover_text) {
+	this->gui = gui;
 	this->pos = pos;
 	this->size = Vec2(48, 24);
 	this->hover_text = hover_text;
 	this->clicked = false;
 	this->click_callback = NULL;
-	this->gui = NULL;
+	this->scene = NULL;
 }
 
 void GUIButton::draw(const Image& img_gui) {
@@ -27,6 +29,7 @@ void GUIButton::draw(const Image& img_gui) {
 	);
 }
 
-void GUIButton::reg_click_callback(GUIButtonCallback func) {
+void GUIButton::reg_click_callback(GUIButtonCallback func, Scene* scene) {
 	this->click_callback = func;
+	this->scene = scene;
 }
