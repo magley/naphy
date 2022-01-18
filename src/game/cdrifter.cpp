@@ -15,7 +15,7 @@ static const double vel_drift = 500;
 static const double acc = 20;
 static const double deacc = 10;
 static const int drift_time_start = 28;     // How much time does a drift take
-static const int drift_time_halt = 20;      // After this the drifting stops (you slow down to a stop)
+static const int drift_time_halt = 20;      // After this the drifting stops
 static const int drift_time_combo = 15;     // After this you can combo
 static const int drift_time_combo_end = 4;  // After this you can't combo
 
@@ -197,7 +197,6 @@ void CDrifter::update_sprite(const CPhys* phys, CSprite* spr, const Input* input
 	else spr->sdl_flip = SDL_FLIP_NONE;
 
 	spr->set(spr_mat[spr_mat_dir][spr_mat_spr], 1, reset_if_same);
-	spr->update();
 
 	if (img_index != -1)
 		spr->image_index = img_index;

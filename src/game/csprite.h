@@ -17,7 +17,7 @@ struct CSprite {
 	CSprite();
 	CSprite(unsigned sprite_index, double image_speed);
 
-	void update();
+	void update_animation();
 
 	// You shouldn't use this method.
 	// WHY: Delegate the drawing to someone else, like a GameScene.
