@@ -7,7 +7,7 @@ struct Image {
 	// Pointer to the rendering target. Do not modify manually.
 	SDL_Renderer* rend;
 	// Pointer to the texture data. Do not modify manually.
-	SDL_Texture* img;
+	SDL_Texture* tex;
 	// Width of the image. Do not modify manually.	
 	int w;
 	// Height of the image. Do not modify manually.

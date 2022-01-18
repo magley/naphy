@@ -5,9 +5,8 @@ GUICheckBox::GUICheckBox() {
 	pos = Vec2(0, 0);
 	size = Vec2(24, 24);
 	checked = false;
-	gui = NULL;
 	click_callback = NULL;
-	scene = NULL;
+	gui = NULL;
 	toggle_target = NULL;
 }
 
@@ -16,9 +15,8 @@ GUICheckBox::GUICheckBox(GUI* gui, Vec2 pos, std::string hover_text) {
 	this->size = Vec2(24, 24);
 	this->hover_text = hover_text;
 	this->checked = false;
-	this->gui = gui;
 	this->click_callback = NULL;
-	this->scene = NULL;
+	this->gui = NULL;
 	this->toggle_target = NULL;
 }
 
@@ -31,9 +29,8 @@ void GUICheckBox::draw(const Image& img_gui) {
 	);
 }
 
-void GUICheckBox::reg_click_callback(GUICheckBoxCallback func, Scene* scene) {
+void GUICheckBox::reg_click_callback(GUICheckBoxCallback func) {
 	this->click_callback = func;
-	this->scene = scene;
 }
 
 void GUICheckBox::reg_toggle_target(bool* target, bool match_initially) {

@@ -8,6 +8,7 @@
 GUI::GUI(SDL_Window* win, Image img_gui, Image img_font) {
 	assert(SDL_GetRenderer(win) == img_gui.rend && img_gui.rend == img_font.rend);
 
+	this->scene = NULL;
 	this->img_font = img_font;
 	this->img_gui = img_gui;
 	this->win = win;
@@ -29,16 +30,19 @@ void GUI::clear() {
 
 GUICheckBox* GUI::add(GUICheckBox* cb) {
 	checkbox.push_back(cb);
+	cb->gui = this;
 	return cb;
 }
 
 GUIButton* GUI::add(GUIButton* btn) {
 	button.push_back(btn);
+	btn->gui = this;
 	return btn;
 }
 
 GUILabel* GUI::add(GUILabel* lbl) {
 	label.push_back(lbl);
+	lbl->gui = this;
 	return lbl;
 }
 
@@ -61,7 +65,7 @@ void GUI::update(const Input& input) {
 			o->checked = !o->checked;
 
 			if (o->click_callback)
-				o->click_callback(o->scene, o);
+				o->click_callback(o);
 
 			if (o->toggle_target)
 				*(o->toggle_target) = !*(o->toggle_target);
@@ -76,7 +80,7 @@ void GUI::update(const Input& input) {
 		if (input.mouse_in_bounds(opos.x, opos.x + osize.x, opos.y, opos.y + osize.y)) {
 			if (o->clicked && input.mouse_up(SDL_BUTTON_LMASK)) {
 				if (o->click_callback) 
-					o->click_callback(o->scene, o);
+					o->click_callback(o);
 			}
 
 			if (o->clicked)
