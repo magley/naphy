@@ -118,7 +118,7 @@ void Arbiter::solve() {
 		Vec2 dv = (B->vel + cross(B->angvel, r2)) - (A->vel + cross(A->angvel, r1));
 		const double dvn = dot(dv, normal);
 
-		if (dvn > 0)
+		if (dvn >= 0) // C' = dv * n >= 0, if >= then it's satisfied already.
 			break;
 
 		const Vec2 pa = A->pos - r1;

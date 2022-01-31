@@ -8,7 +8,7 @@ PhysBody::PhysBody() {
 	aggregate_state = PHYSBODY_SOLID;
 	layer = 0;
     pos = vel = vel_prev = force = Vec2(0, 0);
-    ang = angvel = torque = 0.0;
+    ang = angvel = angvel_prev = torque = 0.0;
     m = m_inv = I = I_inv = 0;
 	material = PhysMaterial();
 
@@ -24,7 +24,7 @@ PhysBody::PhysBody(Vec2 position, Shape shape) {
 	layer = 0;
 	pos = position;
 	vel = vel_prev = force = Vec2(0, 0);
-    ang = angvel = torque = 0.0;
+    ang = angvel = angvel_prev = torque = 0.0;
 	m = m_inv = I = I_inv = 0;
 	material = PhysMaterial();
 

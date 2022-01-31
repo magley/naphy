@@ -32,6 +32,7 @@ struct PhysBody {
 	Vec2 force;
 	// Angular velocity.
 	double angvel;
+	double angvel_prev;
 	// Torque.
 	double torque;
 	// Angle (in radians). 
