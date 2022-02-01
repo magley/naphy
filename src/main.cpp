@@ -12,7 +12,7 @@ int main(int, char**) {
 	unsigned running = 1;
 
 	SDL_Init(SDL_INIT_VIDEO);
-	win = SDL_CreateWindow("naphy dev.2022.01.16", WIN_X, WIN_Y, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
+	win = SDL_CreateWindow("naphy dev.2022.02.01", WIN_X, WIN_Y, WIN_W, WIN_H, SDL_WINDOW_OPENGL);
 	rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
 	SDL_RenderSetLogicalSize(rend, VIEW_W, VIEW_H);

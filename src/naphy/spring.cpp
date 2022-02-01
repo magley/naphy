@@ -17,7 +17,6 @@ void Spring::solve() {
 
 	const Vec2 dp = B->pos - A->pos;
 	const Vec2 dv = B->vel - A->vel;
-	const Vec2 v = dv.len() * dp.normalized();
 	const double x = dp.len() - rest_length;
 	const Vec2 F = (-k * x) * dp - (c * dv);
 
