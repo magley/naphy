@@ -31,7 +31,7 @@ struct GUICheckBox {
 
 	// If clicking just toggles some value, you can pass that directly.
 	bool* toggle_target;
-	// Register a pointer to an integer whose value will be toggled on click.
+	// Register a pointer to an boolean whose value will be toggled on click.
 	// You can use both this and a callback for the same or seperate logic.
 	// @param target The integer that will be toggled based on 'checked'.
 	// @param match_initially If true, set target's value to match 'checked'.
