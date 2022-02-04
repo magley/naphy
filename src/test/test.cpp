@@ -84,14 +84,14 @@ internal void init_test_basic(GameScene* scn) {
 	// Three shapes, one dynamic, one static, one half-static, connected with springs
 
 	PhysBody *b0, *b1, *b2;
-	b0 = scene->add(new PhysBody(Vec2(400, 360), Shape(10, 60)));
+	b0 = scene->add(new PhysBody(Vec2(400, 360), Shape(10, 40)));
 	b0->m_inv = 0;
 	b0->m = 0;
 	b0->material.set_jelly();
-	b1 = scene->add(new PhysBody(Vec2(100, 300), Shape(40)));
+	b1 = scene->add(new PhysBody(Vec2(100, 300), Shape(30)));
 	b1->calc_mass(0);
 	b1->material.set_jelly();
-	b2 = scene->add(new PhysBody(Vec2(200, 500), Shape(6, 30)));
+	b2 = scene->add(new PhysBody(Vec2(200, 500), Shape(6, 20)));
 	b2->material.set_jelly();
 
 	scene->spring.push_back(Spring(b0, b2, 50, 2, 4));
@@ -99,13 +99,13 @@ internal void init_test_basic(GameScene* scn) {
 
 	// Curtain: grid of small bodies connected with springs
 
-	const unsigned bw = 18;
-	const unsigned bh = 12;
+	const unsigned bw = 15;
+	const unsigned bh = 10;
 	std::vector<std::vector<PhysBody*>> curtain(bh, std::vector<PhysBody*>(bw, NULL));
 
 	for (unsigned y = 0; y < bh; y++) {
 		for (unsigned x = 0; x < bw; x++) {
-			curtain[y][x] = new PhysBody(Vec2(600 + (8 + x) * x, 200 + 16 * y - x * 2), Shape(4));
+			curtain[y][x] = new PhysBody(Vec2(600 + (8 + x) * x, 160 + 16 * y - x * 2), Shape(4));
 			scene->add(curtain[y][x]);
 
 			if (y == 0) {
@@ -116,9 +116,9 @@ internal void init_test_basic(GameScene* scn) {
 	for (unsigned y = 0; y < bh; y++) {
 		for (unsigned x = 0; x < bw; x++) {
 			if (y + 1 < bh)
-				scene->spring.push_back(Spring(curtain[y][x], curtain[y + 1][x], 0, 6, 3));
+				scene->spring.push_back(Spring(curtain[y][x], curtain[y + 1][x], 0, 6, 4));
 			if (x + 1 < bw)
-				scene->spring.push_back(Spring(curtain[y][x], curtain[y][x + 1], 0, 6, 3));
+				scene->spring.push_back(Spring(curtain[y][x], curtain[y][x + 1], 0, 6, 4));
 		}
 	}
 
@@ -258,7 +258,7 @@ internal void init_bridge_test(GameScene* scn) {
 
 	std::vector<PhysBody*> bridge;
 
-	unsigned bridge_cnt = 20 + 2;
+	unsigned bridge_cnt = 14 + 2;
 	for (unsigned x = 0; x < bridge_cnt; x++) {
 		double gap = (VIEW_W - 200) / bridge_cnt;
 		double w = gap * 0.9;
@@ -339,27 +339,27 @@ internal void init_drifter_scene(GameScene* scn) {
 
 	PhysBody* b;
 
-	b = scene->add(new PhysBody({31, 137}, Shape(Vec2{62, 38})));
+	b = scene->add(new PhysBody({10, 136}, Shape(Vec2{20, 37})));
 	b->calc_mass(0);
 	b->layer = LAYER_SOLID;
 	b->material.e = 0;
 
-	b = scene->add(new PhysBody({162, 137}, Shape(Vec2{110, 38})));
+	b = scene->add(new PhysBody({113, 136}, Shape(Vec2{105, 35})));
 	b->calc_mass(0);
 	b->layer = LAYER_SOLID;
 	b->material.e = 0;
 
-	b = scene->add(new PhysBody({300, 175}, Shape({{63, -28}, {63, 24}, {-44, 24}, {-100, -28}})));
+	b = scene->add(new PhysBody({183, 153}, Shape({{36, -8}, {26, 46}, {-28, 0}, {-18, -34}})));
 	b->calc_mass(0);
 	b->layer = LAYER_SOLID;
 	b->material.e = 0;
 
-	b = scene->add(new PhysBody({420, 151}, Shape(Vec2{120, 44})));
+	b = scene->add(new PhysBody({259, 170}, Shape(Vec2{101, 56})));
 	b->calc_mass(0);
 	b->layer = LAYER_SOLID;
 	b->material.e = 0;
 
-	b = scene->add(new PhysBody({230, 137.75}, Shape({{-14, -20}, {32, 12}, {-14, 12}})));
+	b = scene->add(new PhysBody({323, 150}, Shape(Vec2{34, 42})));
 	b->calc_mass(0);
 	b->layer = LAYER_SOLID;
 	b->material.e = 0;
@@ -378,7 +378,7 @@ internal void init_drifter_scene(GameScene* scn) {
 	player.csprite.depth = 0;
 	scn->entity.push_back(player); // pass by copy
 
-	b = scene->add(new PhysBody({328, 235}, Shape(Vec2{29, 70})));
+	b = scene->add(new PhysBody({275, 235}, Shape(Vec2{29, 70})));
 	b->calc_mass(0);
 	b->aggregate_state = PHYSBODY_PASSIVE;
 	b->layer = LAYER_PIT;

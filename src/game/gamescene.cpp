@@ -1,4 +1,5 @@
 #include "gamescene.h"
+#include "stdio.h"
 
 GameScene::GameScene(PhysScene* physscene, GUI* gui) {
     this->physscene = physscene;

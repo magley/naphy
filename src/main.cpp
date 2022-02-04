@@ -1,6 +1,6 @@
 #include "test/test.h"
 
-static const unsigned WIN_W = 1440;
+static const unsigned WIN_W = 1002;
 static const unsigned WIN_H = 810;
 static const unsigned WIN_X = ((1920 - WIN_W) / 2);
 static const unsigned WIN_Y = ((1080 - WIN_H) / 2);

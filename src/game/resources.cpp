@@ -15,5 +15,5 @@ void sprites_init(Image* img_atlas) {
 	spr[SPR_DRIFTER_UP_WALK] 		= Sprite(img_atlas, 1 * 16, 64, 16, 32, 8);
 	spr[SPR_DRIFTER_UP_DRIFT] 		= Sprite(img_atlas, 9 * 16, 64, 16, 32, 8);
 
-	spr[SPR_BG_FLOOR]				= Sprite(img_atlas, 0, 96, 480, 270, 	1);
+	spr[SPR_BG_FLOOR]				= Sprite(img_atlas, 0, 96, 334, 270, 	1);
 }
