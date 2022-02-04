@@ -17,6 +17,9 @@ void Entity::update(const Input* input) {
         cdrifter.fall_in_pits(&cphys);
         cdrifter.update_sprite(&cphys, &csprite, input);
     }
+    if (flag_c(C_JUMPNRUN)) {
+        cjumpnrun.jump_n_run(&cphys, input);
+    }
     if (flag_c(C_SPRITE)) {
         csprite.update_animation();
     }

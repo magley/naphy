@@ -105,7 +105,7 @@ internal void init_test_basic(GameScene* scn) {
 
 	for (unsigned y = 0; y < bh; y++) {
 		for (unsigned x = 0; x < bw; x++) {
-			curtain[y][x] = new PhysBody(Vec2(600 + (8 + x) * x, 200 + 16 * y), Shape(4));
+			curtain[y][x] = new PhysBody(Vec2(600 + (8 + x) * x, 200 + 16 * y - x * 2), Shape(4));
 			scene->add(curtain[y][x]);
 
 			if (y == 0) {
@@ -239,6 +239,98 @@ internal void init_stacking_scene(GameScene* scn) {
 	lbl = gui->add(new GUILabel({0, 0}, "naphy test :: stacking", COL_WHITE, COL_BLUE));
 }
 
+internal void init_bridge_test(GameScene* scn) {
+	PhysScene* scene = scn->physscene;
+	GUI* gui = scn->gui;
+
+    scene_clear_ext(scn, {0, 981}, 1);
+    PhysBody* b;
+
+    const Shape rect = Shape(Vec2(100, 500));
+
+	b = scene->add(new PhysBody(Vec2(100 / 2, VIEW_H - 500 / 2), rect));
+	b->calc_mass(0);
+
+	b = scene->add(new PhysBody(Vec2(VIEW_W - 100 / 2, VIEW_H - 500 / 2), rect));
+	b->calc_mass(0);
+
+	// Bridge
+
+	std::vector<PhysBody*> bridge;
+
+	unsigned bridge_cnt = 20 + 2;
+	for (unsigned x = 0; x < bridge_cnt; x++) {
+		double gap = (VIEW_W - 200) / bridge_cnt;
+		double w = gap * 0.9;
+		bridge.push_back(new PhysBody(Vec2(80 + w + gap * x, 324), Shape(Vec2(w, 16))));
+		scene->add(bridge[x]);
+
+		
+		if (x == 0 || x == bridge_cnt - 1) {
+			bridge[x]->calc_mass(0);
+		} else {
+			bridge[x]->calc_mass(10);
+		}
+		bridge[x]->I_inv = 0;
+		bridge[x]->I = 0;
+	}
+	for (unsigned x = 0; x < bridge_cnt - 1; x++) {
+		scene->spring.push_back(Spring(bridge[x], bridge[x + 1], 10, 30000, 20000));
+	}
+
+	// Player
+
+	b = scene->add(new PhysBody({32, 0}, Shape(Vec2(32, 120))));
+	b->calc_mass(1);
+	b->material.e = 0;
+	b->I_inv = 0;
+	b->I = 0;
+	Entity player{C_JUMPNRUN | C_PHYS};
+	player.cjumpnrun = CJumpNRun();
+	player.cphys = CPhys(b);
+	scn->entity.push_back(player); // pass by copy
+
+	// GUI - checkbox
+
+	GUICheckBox* cb;
+
+	cb = gui->add(new GUICheckBox(gui, {0, 24}, "Draw PhysBody"));
+		cb->checked = true;
+		cb->reg_toggle_target(&scene->debug_draw_shapes, true);
+	cb = gui->add(new GUICheckBox(gui, {24, 24}, "Draw Arbiter"));
+		cb->reg_toggle_target(&scene->debug_draw_arbiters, true);
+	cb = gui->add(new GUICheckBox(gui, {48, 24}, "Draw QuadTree"));
+		cb->reg_toggle_target(&scene->debug_draw_quadtree, true);
+	cb = gui->add(new GUICheckBox(gui, {72, 24}, "Draw Spring"));
+		cb->checked = true;
+		cb->reg_toggle_target(&scene->debug_draw_springs, true);
+	cb = gui->add(new GUICheckBox(gui, {96, 24}, "Use QuadTree"));
+		cb->checked = true;
+		cb->reg_toggle_target(&scene->debug_use_quadtree, true);
+
+	// GUI - button
+
+	GUIButton* btn;
+
+	btn = gui->add(new GUIButton(gui, {0, 48}, "Add new polygon"));
+		btn->reg_click_callback(add_poly);
+	btn = gui->add(new GUIButton(gui, {144, 48}, "Reset scene"));
+		btn->reg_click_callback(reset_scene);
+	btn = gui->add(new GUIButton(gui, {48, 48}, "Add new circle"));
+		btn->reg_click_callback(add_circle);
+	btn = gui->add(new GUIButton(gui, {96, 48}, "Add box"));
+		btn->reg_click_callback(add_box);
+	btn = gui->add(new GUIButton(gui, {144, 48}, "Reset scene"));
+		btn->reg_click_callback(reset_scene);
+	btn = gui->add(new GUIButton(gui, {192, 48}, "Next test"));
+		btn->reg_click_callback(next_scene);
+
+	// GUI - label
+
+	GUILabel* lbl;
+	lbl = gui->add(new GUILabel({0, 0}, "naphy test :: bridge (arrow keys, space)", COL_WHITE, COL_BLUE));
+}
+
 internal void init_drifter_scene(GameScene* scn) {
 	PhysScene* scene = scn->physscene;
 	GUI* gui = scn->gui;
@@ -332,6 +424,7 @@ void start_scene(GameScene* gamescene) {
 	const std::vector<void (*)(GameScene*)> init_func_arr = {
 		init_test_basic,
 		init_stacking_scene,
+		init_bridge_test,
 		init_drifter_scene
 	};
 

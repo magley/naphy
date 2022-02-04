@@ -3,6 +3,7 @@
 #include "cdrifter.h"
 #include "csprite.h"
 #include "cphys.h"
+#include "cjumpnrun.h"
 
 struct Input;
 struct GameScene;
@@ -13,12 +14,14 @@ enum {
     C_DRIFTER   = 1 << 0,
     C_SPRITE    = 1 << 1,
     C_PHYS      = 1 << 2,
+    C_JUMPNRUN  = 1 << 3,
 };
 
 struct Entity {
     CDrifter cdrifter;
     CSprite csprite;
     CPhys cphys;
+    CJumpNRun cjumpnrun;
 
     unsigned flag; // use flag_a() and flag_c()
 
