@@ -160,7 +160,7 @@ internal void init_test_basic(GameScene* scn) {
 	// GUI - label
 
 	GUILabel* lbl;
-	lbl = gui->add(new GUILabel({0, 0}, "naphy test :: shapes", COL_WHITE, COL_BLUE));
+	lbl = gui->add(new GUILabel({0, 0}, "shapes", COL_WHITE, COL_BLUE));
 }
 
 internal void init_stacking_scene(GameScene* scn) {
@@ -236,7 +236,7 @@ internal void init_stacking_scene(GameScene* scn) {
 	// GUI - label
 
 	GUILabel* lbl;
-	lbl = gui->add(new GUILabel({0, 0}, "naphy test :: stacking", COL_WHITE, COL_BLUE));
+	lbl = gui->add(new GUILabel({0, 0}, "stacking", COL_WHITE, COL_BLUE));
 }
 
 internal void init_bridge_test(GameScene* scn) {
@@ -265,7 +265,6 @@ internal void init_bridge_test(GameScene* scn) {
 		bridge.push_back(new PhysBody(Vec2(80 + w + gap * x, 324), Shape(Vec2(w, 16))));
 		scene->add(bridge[x]);
 
-		
 		if (x == 0 || x == bridge_cnt - 1) {
 			bridge[x]->calc_mass(0);
 		} else {
@@ -328,7 +327,7 @@ internal void init_bridge_test(GameScene* scn) {
 	// GUI - label
 
 	GUILabel* lbl;
-	lbl = gui->add(new GUILabel({0, 0}, "naphy test :: bridge (arrow keys, space)", COL_WHITE, COL_BLUE));
+	lbl = gui->add(new GUILabel({0, 0}, "bridge (arrow keys, space)", COL_WHITE, COL_BLUE));
 }
 
 internal void init_drifter_scene(GameScene* scn) {
@@ -344,12 +343,12 @@ internal void init_drifter_scene(GameScene* scn) {
 	b->layer = LAYER_SOLID;
 	b->material.e = 0;
 
-	b = scene->add(new PhysBody({113, 136}, Shape(Vec2{105, 35})));
+	b = scene->add(new PhysBody({113, 136}, Shape(Vec2{105, 36})));
 	b->calc_mass(0);
 	b->layer = LAYER_SOLID;
 	b->material.e = 0;
 
-	b = scene->add(new PhysBody({183, 153}, Shape({{36, -8}, {26, 46}, {-28, 0}, {-18, -34}})));
+	b = scene->add(new PhysBody({183, 153}, Shape({{36, -8}, {25.25, 45}, {-28, 0}, {-18, -34.55}})));
 	b->calc_mass(0);
 	b->layer = LAYER_SOLID;
 	b->material.e = 0;
@@ -403,14 +402,14 @@ internal void init_drifter_scene(GameScene* scn) {
 
 	GUIButton* btn;
 
-	btn = gui->add(new GUIButton(gui, {48, 48}, "Reset scene"));
+	btn = gui->add(new GUIButton(gui, {144, 48}, "Reset scene"));
 		btn->reg_click_callback(reset_scene);
-	btn = gui->add(new GUIButton(gui, {96, 48}, "Next test"));
+	btn = gui->add(new GUIButton(gui, {192, 48}, "Next test"));
 		btn->reg_click_callback(next_scene);
 
 	GUILabel* lbl;
 
-	lbl = gui->add(new GUILabel({0, 0}, "naphy test :: drifter (WASD, mouse, space)", COL_WHITE, COL_BLUE));
+	lbl = gui->add(new GUILabel({0, 0}, "drifter (WASD, mouse, space)", COL_WHITE, COL_BLUE));
 }
 
 
@@ -421,7 +420,7 @@ void start_scene(GameScene* gamescene) {
 	gamescene->physscene->clear();
 	gamescene->gui->clear();
 
-	const std::vector<void (*)(GameScene*)> init_func_arr = {
+	static std::vector<void (*)(GameScene*)> init_func_arr = {
 		init_test_basic,
 		init_stacking_scene,
 		init_bridge_test,

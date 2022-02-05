@@ -1,0 +1,42 @@
+naphy
+
+----------------------------------------------------------
+
+compiled and tested with mingw under windows
+libraries for the native build are in lib/
+the dlls from lib/ can be copied into the binary directory
+files from res/ are copied into build/ by cmake
+
+----------------------------------------------------------
+
+supported shapes:
+    - circle
+    - convex polygon
+collision detection using separating axis test
+collision data compiled in an arbiter
+sequential impulses for collision correction
+springs simulated using hooke's law
+spatial indexing using quad trees
+
+----------------------------------------------------------
+
+src/naphy
+    * core engine
+src/gui
+    * very basic gui
+src/rend
+    * wrappers for sdl renderer and related structures
+src/utility
+    * input/output, math header, timing
+src/game
+    * applicative layer for naphy
+    * entites built with relational model instead of oop
+src/test
+    * demonstration scenes
+
+----------------------------------------------------------
+
+can't be used for much because:
+    - stacking bodies fall apart
+    - springs break under poor strength/damping coefs
+    - no continuous collision detection
