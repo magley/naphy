@@ -7,7 +7,6 @@ demo: https://www.youtube.com/watch?v=fU-hMEc7FZk
 compiled and tested with mingw under windows
 libraries for the native build are in lib/
 the dlls from lib/ can be copied into the binary directory
-files from res/ are copied into build/ by cmake
 
 ----------------------------------------------------------
 

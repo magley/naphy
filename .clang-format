@@ -1,0 +1,32 @@
+---
+# options: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+BasedOnStyle: LLVM
+IndentWidth: 4
+# Must be 80 characters or less!
+ColumnLimit: 120
+# does (int) x instead of (int)x
+SpaceAfterCStyleCast: false
+# spaces, not tabs!
+UseTab: Never
+# if (x) doStuff()  is not allowed, bad style
+AllowShortIfStatementsOnASingleLine: false
+# 
+AlignTrailingComments: true
+SpacesBeforeTrailingComments: 3
+# change the next line to All for Alistair's textbook style
+AlignConsecutiveMacros: Consecutive
+# use \n instead of \r\n
+UseCRLF: false
+
+NamespaceIndentation: All
+BinPackArguments: false
+BinPackParameters: false
+ExperimentalAutoDetectBinPacking: false
+AllowAllParametersOfDeclarationOnNextLine: false
+SortIncludes: CaseInsensitive
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine : false
+AlignArrayOfStructures: Left
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+PointerAlignment: Right

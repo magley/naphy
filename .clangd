@@ -1,0 +1,6 @@
+CompileFlags:
+  Add: [-std=c++17,  -Wall -Wextra -Wpedantic -Werror -Wno-sign-compare -Wno-unused-function -Wno-deprecated]
+
+
+Diagnostics:
+  UnusedIncludes: Strict

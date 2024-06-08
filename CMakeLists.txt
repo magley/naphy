@@ -28,7 +28,3 @@ target_link_libraries(naphy
     ${LIB_DIR}/libpng16-16.dll
     ${LIB_DIR}/SDL2_image.dll
 )
-
-# copy res/ folder into build/res
-# that way we have all the resources already there without manual copying
-file(COPY res DESTINATION ./)
